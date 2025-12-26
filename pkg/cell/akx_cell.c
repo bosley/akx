@@ -1,7 +1,38 @@
 #include "akx_cell.h"
-#include "akx_sv.h"
 #include <ctype.h>
 #include <string.h>
+
+typedef struct parse_context_t {
+  akx_parse_error_t *errors;
+  akx_parse_error_t *errors_tail;
+} parse_context_t;
+
+static void add_parse_error(parse_context_t *ctx, ak_source_loc_t *loc,
+                            const char *message) {
+  for (akx_parse_error_t *err = ctx->errors; err; err = err->next) {
+    if (err->location.file == loc->file &&
+        err->location.offset == loc->offset) {
+      return;
+    }
+  }
+
+  akx_parse_error_t *error = AK24_ALLOC(sizeof(akx_parse_error_t));
+  if (!error) {
+    return;
+  }
+
+  error->location = *loc;
+  snprintf(error->message, sizeof(error->message), "%s", message);
+  error->next = NULL;
+
+  if (!ctx->errors) {
+    ctx->errors = error;
+    ctx->errors_tail = error;
+  } else {
+    ctx->errors_tail->next = error;
+    ctx->errors_tail = error;
+  }
+}
 
 static akx_cell_t *create_cell(akx_type_t type, ak_source_range_t *range) {
   akx_cell_t *cell = AK24_ALLOC(sizeof(akx_cell_t));
@@ -51,16 +82,22 @@ void akx_cell_free(akx_cell_t *cell) {
 }
 
 static akx_cell_t *parse_argument(ak_scanner_t *scanner,
-                                  ak_source_file_t *source_file);
+                                  ak_source_file_t *source_file,
+                                  parse_context_t *ctx);
 static akx_cell_t *parse_explicit_list(ak_scanner_t *scanner,
-                                       ak_source_file_t *source_file);
+                                       ak_source_file_t *source_file,
+                                       parse_context_t *ctx);
 static akx_cell_t *parse_virtual_list(ak_scanner_t *scanner,
-                                      ak_source_file_t *source_file);
+                                      ak_source_file_t *source_file,
+                                      parse_context_t *ctx);
 static akx_cell_t *parse_quoted(ak_scanner_t *scanner,
-                                ak_source_file_t *source_file);
+                                ak_source_file_t *source_file,
+                                parse_context_t *ctx);
 
 static akx_cell_t *parse_static_type(ak_scanner_t *scanner,
-                                     ak_source_file_t *source_file) {
+                                     ak_source_file_t *source_file,
+                                     parse_context_t *ctx) {
+  (void)ctx;
   size_t start_pos = scanner->position;
 
   ak_scanner_static_type_result_t result =
@@ -119,7 +156,8 @@ static akx_cell_t *parse_static_type(ak_scanner_t *scanner,
 }
 
 static akx_cell_t *parse_string_literal(ak_scanner_t *scanner,
-                                        ak_source_file_t *source_file) {
+                                        ak_source_file_t *source_file,
+                                        parse_context_t *ctx) {
   size_t start_pos = scanner->position;
 
   uint8_t escape = '\\';
@@ -129,8 +167,7 @@ static akx_cell_t *parse_string_literal(ak_scanner_t *scanner,
   if (!result.success) {
     ak_source_loc_t error_loc =
         ak_source_loc_from_offset(source_file, start_pos);
-    akx_sv_show_location(&error_loc, AKX_ERROR_LEVEL_ERROR,
-                         "unterminated string literal");
+    add_parse_error(ctx, &error_loc, "unterminated string literal");
     return NULL;
   }
 
@@ -162,23 +199,39 @@ static akx_cell_t *parse_string_literal(ak_scanner_t *scanner,
   return cell;
 }
 
-static akx_cell_t *parse_explicit_list_generic(ak_scanner_t *scanner,
-                                               ak_source_file_t *source_file,
-                                               uint8_t open_delim,
-                                               uint8_t close_delim,
-                                               akx_type_t list_type) {
+static akx_cell_t *parse_explicit_list_generic(
+    ak_scanner_t *scanner, ak_source_file_t *source_file, uint8_t open_delim,
+    uint8_t close_delim, akx_type_t list_type, parse_context_t *ctx) {
   size_t start_pos = scanner->position;
 
   ak_scanner_find_group_result_t result =
       ak_scanner_find_group(scanner, open_delim, close_delim, NULL, true);
 
   if (!result.success) {
+    size_t scan_pos = scanner->position + 1;
+    uint8_t *buf_data = ak_buffer_data(scanner->buffer);
+    size_t buf_len = ak_buffer_count(scanner->buffer);
+    size_t last_open_pos = start_pos;
+    int depth = 0;
+
+    for (size_t i = scan_pos; i < buf_len; i++) {
+      uint8_t c = buf_data[i];
+      if (c == open_delim) {
+        last_open_pos = i;
+        depth++;
+      } else if (c == close_delim) {
+        if (depth > 0) {
+          depth--;
+        }
+      }
+    }
+
     ak_source_loc_t error_loc =
-        ak_source_loc_from_offset(source_file, start_pos);
+        ak_source_loc_from_offset(source_file, last_open_pos);
     char error_msg[128];
     snprintf(error_msg, sizeof(error_msg),
              "unterminated list - missing closing '%c'", close_delim);
-    akx_sv_show_location(&error_loc, AKX_ERROR_LEVEL_ERROR, error_msg);
+    add_parse_error(ctx, &error_loc, error_msg);
     return NULL;
   }
 
@@ -215,7 +268,7 @@ static akx_cell_t *parse_explicit_list_generic(ak_scanner_t *scanner,
             break;
           }
 
-          akx_cell_t *arg = parse_argument(sub_scanner, source_file);
+          akx_cell_t *arg = parse_argument(sub_scanner, source_file, ctx);
           if (!arg) {
             break;
           }
@@ -248,36 +301,41 @@ static akx_cell_t *parse_explicit_list_generic(ak_scanner_t *scanner,
 }
 
 static akx_cell_t *parse_explicit_list(ak_scanner_t *scanner,
-                                       ak_source_file_t *source_file) {
+                                       ak_source_file_t *source_file,
+                                       parse_context_t *ctx) {
   return parse_explicit_list_generic(scanner, source_file, '(', ')',
-                                     AKX_TYPE_LIST);
+                                     AKX_TYPE_LIST, ctx);
 }
 
 static akx_cell_t *parse_explicit_list_square(ak_scanner_t *scanner,
-                                              ak_source_file_t *source_file) {
+                                              ak_source_file_t *source_file,
+                                              parse_context_t *ctx) {
   return parse_explicit_list_generic(scanner, source_file, '[', ']',
-                                     AKX_TYPE_LIST_SQUARE);
+                                     AKX_TYPE_LIST_SQUARE, ctx);
 }
 
 static akx_cell_t *parse_explicit_list_curly(ak_scanner_t *scanner,
-                                             ak_source_file_t *source_file) {
+                                             ak_source_file_t *source_file,
+                                             parse_context_t *ctx) {
   return parse_explicit_list_generic(scanner, source_file, '{', '}',
-                                     AKX_TYPE_LIST_CURLY);
+                                     AKX_TYPE_LIST_CURLY, ctx);
 }
 
 static akx_cell_t *parse_explicit_list_temple(ak_scanner_t *scanner,
-                                              ak_source_file_t *source_file) {
+                                              ak_source_file_t *source_file,
+                                              parse_context_t *ctx) {
   return parse_explicit_list_generic(scanner, source_file, '<', '>',
-                                     AKX_TYPE_LIST_TEMPLE);
+                                     AKX_TYPE_LIST_TEMPLE, ctx);
 }
 
 static int is_newline(uint8_t c) { return c == '\n' || c == '\r'; }
 
 static akx_cell_t *parse_virtual_list(ak_scanner_t *scanner,
-                                      ak_source_file_t *source_file) {
+                                      ak_source_file_t *source_file,
+                                      parse_context_t *ctx) {
   size_t start_pos = scanner->position;
 
-  akx_cell_t *first_symbol = parse_static_type(scanner, source_file);
+  akx_cell_t *first_symbol = parse_static_type(scanner, source_file, ctx);
   if (!first_symbol || first_symbol->type != AKX_TYPE_SYMBOL) {
     if (first_symbol) {
       akx_cell_free(first_symbol);
@@ -315,7 +373,7 @@ static akx_cell_t *parse_virtual_list(ak_scanner_t *scanner,
       break;
     }
 
-    akx_cell_t *arg = parse_argument(scanner, source_file);
+    akx_cell_t *arg = parse_argument(scanner, source_file, ctx);
     if (!arg) {
       break;
     }
@@ -347,17 +405,17 @@ end_virtual_list:;
 }
 
 static akx_cell_t *parse_quoted(ak_scanner_t *scanner,
-                                ak_source_file_t *source_file) {
+                                ak_source_file_t *source_file,
+                                parse_context_t *ctx) {
   size_t start_pos = scanner->position;
 
   scanner->position++;
 
-  akx_cell_t *inner = parse_argument(scanner, source_file);
+  akx_cell_t *inner = parse_argument(scanner, source_file, ctx);
   if (!inner) {
     ak_source_loc_t error_loc =
         ak_source_loc_from_offset(source_file, start_pos);
-    akx_sv_show_location(&error_loc, AKX_ERROR_LEVEL_ERROR,
-                         "invalid expression after quote");
+    add_parse_error(ctx, &error_loc, "invalid expression after quote");
     return NULL;
   }
 
@@ -392,7 +450,8 @@ static akx_cell_t *parse_quoted(ak_scanner_t *scanner,
 }
 
 static akx_cell_t *parse_argument(ak_scanner_t *scanner,
-                                  ak_source_file_t *source_file) {
+                                  ak_source_file_t *source_file,
+                                  parse_context_t *ctx) {
   if (!ak_scanner_skip_whitespace_and_comments(scanner)) {
     return NULL;
   }
@@ -406,43 +465,48 @@ static akx_cell_t *parse_argument(ak_scanner_t *scanner,
 
   switch (current) {
   case '(':
-    return parse_explicit_list(scanner, source_file);
+    return parse_explicit_list(scanner, source_file, ctx);
   case '[':
-    return parse_explicit_list_square(scanner, source_file);
+    return parse_explicit_list_square(scanner, source_file, ctx);
   case '{':
-    return parse_explicit_list_curly(scanner, source_file);
+    return parse_explicit_list_curly(scanner, source_file, ctx);
   case '<':
-    return parse_explicit_list_temple(scanner, source_file);
+    return parse_explicit_list_temple(scanner, source_file, ctx);
   case '"':
-    return parse_string_literal(scanner, source_file);
+    return parse_string_literal(scanner, source_file, ctx);
   case '\'':
-    return parse_quoted(scanner, source_file);
+    return parse_quoted(scanner, source_file, ctx);
   default:
-    return parse_static_type(scanner, source_file);
+    return parse_static_type(scanner, source_file, ctx);
   }
 }
 
-akx_cell_t *akx_cell_parse_buffer(ak_buffer_t *buf, const char *filename) {
+akx_parse_result_t akx_cell_parse_buffer(ak_buffer_t *buf,
+                                         const char *filename) {
+  akx_parse_result_t result;
+  list_init(&result.cells);
+  result.errors = NULL;
+  result.source_file = NULL;
+
   if (!buf || !filename) {
-    return NULL;
+    return result;
   }
+
+  parse_context_t ctx = {NULL, NULL};
 
   ak_source_file_t *source_file = ak_source_file_new(
       filename, (const char *)ak_buffer_data(buf), ak_buffer_count(buf));
   if (!source_file) {
     AK24_LOG_ERROR("Failed to create source file for %s", filename);
-    return NULL;
+    return result;
   }
 
   ak_scanner_t *scanner = ak_scanner_new(buf, 0);
   if (!scanner) {
     AK24_LOG_ERROR("Failed to create scanner");
     ak_source_file_release(source_file);
-    return NULL;
+    return result;
   }
-
-  akx_cell_t *head = NULL;
-  akx_cell_t *tail = NULL;
 
   while (scanner->position < ak_buffer_count(buf)) {
     if (!ak_scanner_skip_whitespace_and_comments(scanner)) {
@@ -460,22 +524,22 @@ akx_cell_t *akx_cell_parse_buffer(ak_buffer_t *buf, const char *filename) {
 
     switch (current) {
     case '(':
-      expr = parse_explicit_list(scanner, source_file);
+      expr = parse_explicit_list(scanner, source_file, &ctx);
       break;
     case '[':
-      expr = parse_explicit_list_square(scanner, source_file);
+      expr = parse_explicit_list_square(scanner, source_file, &ctx);
       break;
     case '{':
-      expr = parse_explicit_list_curly(scanner, source_file);
+      expr = parse_explicit_list_curly(scanner, source_file, &ctx);
       break;
     case '<':
-      expr = parse_explicit_list_temple(scanner, source_file);
+      expr = parse_explicit_list_temple(scanner, source_file, &ctx);
       break;
     case '\'':
-      expr = parse_quoted(scanner, source_file);
+      expr = parse_quoted(scanner, source_file, &ctx);
       break;
     default:
-      expr = parse_virtual_list(scanner, source_file);
+      expr = parse_virtual_list(scanner, source_file, &ctx);
       break;
     }
 
@@ -483,40 +547,68 @@ akx_cell_t *akx_cell_parse_buffer(ak_buffer_t *buf, const char *filename) {
       break;
     }
 
-    if (!head) {
-      head = expr;
-      tail = expr;
-    } else {
-      tail->next = expr;
-      tail = expr;
-    }
-
-    while (tail->next) {
-      tail = tail->next;
+    akx_cell_t *cell_iter = expr;
+    while (cell_iter) {
+      akx_cell_t *next = cell_iter->next;
+      cell_iter->next = NULL;
+      list_push(&result.cells, cell_iter);
+      cell_iter = next;
     }
   }
 
   ak_scanner_free(scanner);
-  ak_source_file_release(source_file);
 
-  return head;
+  result.errors = ctx.errors;
+  result.source_file = source_file;
+  return result;
 }
 
-akx_cell_t *akx_cell_parse_file(const char *path) {
+akx_parse_result_t akx_cell_parse_file(const char *path) {
+  akx_parse_result_t result;
+  list_init(&result.cells);
+  result.errors = NULL;
+  result.source_file = NULL;
+
   if (!path) {
-    return NULL;
+    return result;
   }
 
   ak_buffer_t *buf = ak_buffer_from_file(path);
   if (!buf) {
     AK24_LOG_ERROR("Failed to read file: %s", path);
-    return NULL;
+    return result;
   }
 
-  akx_cell_t *result = akx_cell_parse_buffer(buf, path);
+  result = akx_cell_parse_buffer(buf, path);
   ak_buffer_free(buf);
 
   return result;
+}
+
+void akx_parse_result_free(akx_parse_result_t *result) {
+  if (!result) {
+    return;
+  }
+
+  list_iter_t iter = list_iter(&result->cells);
+  akx_cell_t **cell_ptr;
+  while ((cell_ptr = list_next(&result->cells, &iter))) {
+    akx_cell_free(*cell_ptr);
+  }
+  list_deinit(&result->cells);
+
+  akx_parse_error_t *err = result->errors;
+  while (err) {
+    akx_parse_error_t *next = err->next;
+    AK24_FREE(err);
+    err = next;
+  }
+  result->errors = NULL;
+
+  if (result->source_file) {
+    ak_source_file_release(result->source_file);
+    result->source_file = NULL;
+  }
 }
 
 akx_cell_t *akx_cell_unwrap_quoted(akx_cell_t *quoted_cell) {
@@ -533,10 +625,19 @@ akx_cell_t *akx_cell_unwrap_quoted(akx_cell_t *quoted_cell) {
     filename = ak_source_file_name(quoted_cell->sourceloc->start.file);
   }
 
-  akx_cell_t *result =
+  akx_parse_result_t result =
       akx_cell_parse_buffer(quoted_cell->value.quoted_literal, filename);
 
-  return result;
+  akx_cell_t *first = list_count(&result.cells) > 0
+                          ? *((akx_cell_t **)list_get(&result.cells, 0))
+                          : NULL;
+
+  list_deinit(&result.cells);
+  if (result.source_file) {
+    ak_source_file_release(result.source_file);
+  }
+
+  return first;
 }
 
 static ak_buffer_t *clone_buffer(ak_buffer_t *buf) {

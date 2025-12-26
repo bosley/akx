@@ -22,6 +22,18 @@ typedef enum {
 
 typedef struct akx_cell_t akx_cell_t;
 
+typedef struct akx_parse_error_t {
+  ak_source_loc_t location;
+  char message[256];
+  struct akx_parse_error_t *next;
+} akx_parse_error_t;
+
+typedef struct {
+  list_t(akx_cell_t *) cells;
+  akx_parse_error_t *errors;
+  ak_source_file_t *source_file;
+} akx_parse_result_t;
+
 struct akx_cell_t {
   akx_type_t type;
   akx_cell_t *next;
@@ -38,11 +50,14 @@ struct akx_cell_t {
   ak_source_range_t *sourceloc;
 };
 
-akx_cell_t *akx_cell_parse_file(const char *path);
+akx_parse_result_t akx_cell_parse_file(const char *path);
 
-akx_cell_t *akx_cell_parse_buffer(ak_buffer_t *buf, const char *filename);
+akx_parse_result_t akx_cell_parse_buffer(ak_buffer_t *buf,
+                                         const char *filename);
 
 void akx_cell_free(akx_cell_t *cell);
+
+void akx_parse_result_free(akx_parse_result_t *result);
 
 akx_cell_t *akx_cell_unwrap_quoted(akx_cell_t *quoted_cell);
 

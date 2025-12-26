@@ -106,12 +106,31 @@ static akx_cell_t *parse_string_as_file(const char *content,
     return NULL;
   }
 
-  akx_cell_t *result = akx_cell_parse_file(path_str);
+  akx_parse_result_t result = akx_cell_parse_file(path_str);
 
   remove(path_str);
   ak_buffer_free(temp_path);
 
-  return result;
+  akx_cell_t *head = NULL;
+  akx_cell_t *tail = NULL;
+
+  for (size_t i = 0; i < list_count(&result.cells); i++) {
+    akx_cell_t *cell = *((akx_cell_t **)list_get(&result.cells, i));
+    if (!head) {
+      head = cell;
+      tail = cell;
+    } else {
+      tail->next = cell;
+      tail = cell;
+    }
+  }
+
+  list_deinit(&result.cells);
+  if (result.source_file) {
+    ak_source_file_release(result.source_file);
+  }
+
+  return head;
 }
 
 static void test_integer_literals(void) {

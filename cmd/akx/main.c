@@ -1,5 +1,6 @@
 #include "akx.h"
 #include "akx_core.h"
+#include "akx_sv.h"
 #include <ak24/application.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -150,14 +151,27 @@ APP_MAIN(app_main) {
 
       printf("\n=== Parsing file: %s ===\n", *arg);
 
-      akx_cell_t *cells = akx_cell_parse_file(*arg);
-      if (cells) {
-        printf("\n=== Parsed cells ===\n");
-        print_cell(cells, 0);
-        akx_cell_free(cells);
-      } else {
-        AK24_LOG_ERROR("Failed to parse file: %s", *arg);
+      akx_parse_result_t result = akx_cell_parse_file(*arg);
+
+      if (result.errors) {
+        akx_parse_error_t *err = result.errors;
+        while (err) {
+          akx_sv_show_location(&err->location, AKX_ERROR_LEVEL_ERROR,
+                               err->message);
+          err = err->next;
+        }
       }
+
+      if (list_count(&result.cells) > 0) {
+        printf("\n=== Parsed cells ===\n");
+        list_iter_t iter = list_iter(&result.cells);
+        akx_cell_t **cell_ptr;
+        while ((cell_ptr = list_next(&result.cells, &iter))) {
+          print_cell(*cell_ptr, 0);
+        }
+      }
+
+      akx_parse_result_free(&result);
       arg_index++;
     }
   } else {

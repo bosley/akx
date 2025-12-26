@@ -1,4 +1,4 @@
-put (strcat "hello" "world"
+put (strcat "hello" "world" (strcat "ayyy"
 
 add 1 2 3
 
