@@ -1,3 +1,4 @@
+#include "akx.h"
 #include "akx_core.h"
 #include <ak24/application.h>
 #include <stdio.h>
@@ -55,6 +56,44 @@ APP_ON_SHUTDOWN(on_shutdown) {
   printf("======================\n");
 }
 
+static void print_cell(akx_cell_t *cell, int indent) {
+  if (!cell) {
+    return;
+  }
+
+  for (int i = 0; i < indent; i++) {
+    printf("  ");
+  }
+
+  switch (cell->type) {
+  case AKX_TYPE_SYMBOL:
+    printf("SYMBOL: %s\n", cell->value.symbol);
+    break;
+  case AKX_TYPE_STRING_LITERAL:
+    printf("STRING: \"%.*s\"\n",
+           (int)ak_buffer_count(cell->value.string_literal),
+           (char *)ak_buffer_data(cell->value.string_literal));
+    break;
+  case AKX_TYPE_CHAR_LITERAL:
+    printf("CHAR: '%c'\n", cell->value.char_literal);
+    break;
+  case AKX_TYPE_INTEGER_LITERAL:
+    printf("INT: %d\n", cell->value.integer_literal);
+    break;
+  case AKX_TYPE_REAL_LITERAL:
+    printf("REAL: %f\n", cell->value.real_literal);
+    break;
+  case AKX_TYPE_LIST:
+    printf("LIST:\n");
+    print_cell(cell->value.list_head, indent + 1);
+    break;
+  }
+
+  if (cell->next) {
+    print_cell(cell->next, indent);
+  }
+}
+
 APP_MAIN(app_main) {
   ak_log_set_level(AK24_LOG_LEVEL_INFO);
   ak_log_set_color(true);
@@ -69,31 +108,38 @@ APP_MAIN(app_main) {
     return 1;
   }
 
-  printf("Arguments (%u):\n", list_count(&ctx->args));
-  list_iter_t iter = list_iter(&ctx->args);
-  char **arg;
-  while ((arg = list_next(&ctx->args, &iter))) {
-    printf("  %s\n", *arg);
-  }
-  printf("\n");
-
   AK24_REGISTER_SIGNAL_HANDLER(handle_sigint);
   AK24_REGISTER_SIGNAL_HANDLER(handle_sigterm);
 
   AK24_LOG_INFO("All signal handlers registered successfully");
   AK24_LOG_INFO("AKX core initialized and ready");
 
-  printf("\nRunning main loop... (Press Ctrl+C to exit)\n\n");
+  if (list_count(&ctx->args) > 1) {
+    list_iter_t iter = list_iter(&ctx->args);
+    char **arg;
+    int arg_index = 0;
+    while ((arg = list_next(&ctx->args, &iter))) {
+      if (arg_index == 0) {
+        arg_index++;
+        continue;
+      }
 
-  int iteration = 0;
-  while (keep_running) {
-    iteration++;
-    printf("\r[%d] Running... (signals received: %d)", iteration, signal_count);
-    fflush(stdout);
-    sleep(1);
+      printf("\n=== Parsing file: %s ===\n", *arg);
+
+      akx_cell_t *cells = akx_cell_parse_file(*arg);
+      if (cells) {
+        printf("\n=== Parsed cells ===\n");
+        print_cell(cells, 0);
+        akx_cell_free(cells);
+      } else {
+        AK24_LOG_ERROR("Failed to parse file: %s", *arg);
+      }
+      arg_index++;
+    }
+  } else {
+    printf("\nNo files provided. Usage: akx <file1> [file2] ...\n");
   }
 
-  printf("\n\nMain loop exited.\n");
   return 0;
 }
 

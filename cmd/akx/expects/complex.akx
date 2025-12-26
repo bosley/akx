@@ -1,0 +1,6 @@
+put (strcat "moot" "toot" "loot" "foot") "this also comes out" "and this" "and this"
+
+add 1 2 3
+
+(explicit-list "with" "args")
+

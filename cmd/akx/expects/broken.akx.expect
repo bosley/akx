@@ -1,0 +1,7 @@
+error: unterminated string literal
+  --> cmd/akx/expects/broken.akx:1:13-14
+   |
+  1 | put "hello" "world
+   |             ^
+   |
+
