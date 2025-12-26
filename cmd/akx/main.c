@@ -87,6 +87,18 @@ static void print_cell(akx_cell_t *cell, int indent) {
     printf("LIST:\n");
     print_cell(cell->value.list_head, indent + 1);
     break;
+  case AKX_TYPE_LIST_SQUARE:
+    printf("LIST_SQUARE:\n");
+    print_cell(cell->value.list_head, indent + 1);
+    break;
+  case AKX_TYPE_LIST_CURLY:
+    printf("LIST_CURLY:\n");
+    print_cell(cell->value.list_head, indent + 1);
+    break;
+  case AKX_TYPE_LIST_TEMPLE:
+    printf("LIST_TEMPLE:\n");
+    print_cell(cell->value.list_head, indent + 1);
+    break;
   case AKX_TYPE_QUOTED: {
     printf("QUOTED: '%.*s'\n", (int)ak_buffer_count(cell->value.quoted_literal),
            (char *)ak_buffer_data(cell->value.quoted_literal));

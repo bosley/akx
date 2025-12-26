@@ -31,7 +31,11 @@ void akx_cell_free(akx_cell_t *cell) {
 
     if (cell->type == AKX_TYPE_STRING_LITERAL && cell->value.string_literal) {
       ak_buffer_free(cell->value.string_literal);
-    } else if (cell->type == AKX_TYPE_LIST && cell->value.list_head) {
+    } else if ((cell->type == AKX_TYPE_LIST ||
+                cell->type == AKX_TYPE_LIST_SQUARE ||
+                cell->type == AKX_TYPE_LIST_CURLY ||
+                cell->type == AKX_TYPE_LIST_TEMPLE) &&
+               cell->value.list_head) {
       akx_cell_free(cell->value.list_head);
     } else if (cell->type == AKX_TYPE_QUOTED && cell->value.quoted_literal) {
       ak_buffer_free(cell->value.quoted_literal);
@@ -228,18 +232,23 @@ static akx_cell_t *parse_char_literal(ak_scanner_t *scanner,
   return cell;
 }
 
-static akx_cell_t *parse_explicit_list(ak_scanner_t *scanner,
-                                       ak_source_file_t *source_file) {
+static akx_cell_t *parse_explicit_list_generic(ak_scanner_t *scanner,
+                                               ak_source_file_t *source_file,
+                                               uint8_t open_delim,
+                                               uint8_t close_delim,
+                                               akx_type_t list_type) {
   size_t start_pos = scanner->position;
 
   ak_scanner_find_group_result_t result =
-      ak_scanner_find_group(scanner, '(', ')', NULL, true);
+      ak_scanner_find_group(scanner, open_delim, close_delim, NULL, true);
 
   if (!result.success) {
     ak_source_loc_t error_loc =
         ak_source_loc_from_offset(source_file, start_pos);
-    akx_sv_show_location(&error_loc, AKX_ERROR_LEVEL_ERROR,
-                         "unterminated list - missing closing ')'");
+    char error_msg[128];
+    snprintf(error_msg, sizeof(error_msg),
+             "unterminated list - missing closing '%c'", close_delim);
+    akx_sv_show_location(&error_loc, AKX_ERROR_LEVEL_ERROR, error_msg);
     return NULL;
   }
 
@@ -248,7 +257,7 @@ static akx_cell_t *parse_explicit_list(ak_scanner_t *scanner,
       source_file, result.index_of_closing_symbol + 1);
   ak_source_range_t range = ak_source_range_new(start_loc, end_loc);
 
-  akx_cell_t *list_cell = create_cell(AKX_TYPE_LIST, &range);
+  akx_cell_t *list_cell = create_cell(list_type, &range);
   if (!list_cell) {
     return NULL;
   }
@@ -306,6 +315,30 @@ static akx_cell_t *parse_explicit_list(ak_scanner_t *scanner,
   scanner->position = result.index_of_closing_symbol + 1;
 
   return list_cell;
+}
+
+static akx_cell_t *parse_explicit_list(ak_scanner_t *scanner,
+                                       ak_source_file_t *source_file) {
+  return parse_explicit_list_generic(scanner, source_file, '(', ')',
+                                     AKX_TYPE_LIST);
+}
+
+static akx_cell_t *parse_explicit_list_square(ak_scanner_t *scanner,
+                                              ak_source_file_t *source_file) {
+  return parse_explicit_list_generic(scanner, source_file, '[', ']',
+                                     AKX_TYPE_LIST_SQUARE);
+}
+
+static akx_cell_t *parse_explicit_list_curly(ak_scanner_t *scanner,
+                                             ak_source_file_t *source_file) {
+  return parse_explicit_list_generic(scanner, source_file, '{', '}',
+                                     AKX_TYPE_LIST_CURLY);
+}
+
+static akx_cell_t *parse_explicit_list_temple(ak_scanner_t *scanner,
+                                              ak_source_file_t *source_file) {
+  return parse_explicit_list_generic(scanner, source_file, '<', '>',
+                                     AKX_TYPE_LIST_TEMPLE);
 }
 
 static int is_newline(uint8_t c) { return c == '\n' || c == '\r'; }
@@ -441,11 +474,18 @@ static akx_cell_t *parse_argument(ak_scanner_t *scanner,
   uint8_t *buf_data = ak_buffer_data(scanner->buffer);
   uint8_t current = buf_data[scanner->position];
 
-  if (current == '(') {
+  switch (current) {
+  case '(':
     return parse_explicit_list(scanner, source_file);
-  } else if (current == '"') {
+  case '[':
+    return parse_explicit_list_square(scanner, source_file);
+  case '{':
+    return parse_explicit_list_curly(scanner, source_file);
+  case '<':
+    return parse_explicit_list_temple(scanner, source_file);
+  case '"':
     return parse_string_literal(scanner, source_file);
-  } else if (current == '\'') {
+  case '\'': {
     size_t lookahead = scanner->position + 1;
     if (lookahead < ak_buffer_count(scanner->buffer)) {
       uint8_t next_char = buf_data[lookahead];
@@ -458,7 +498,8 @@ static akx_cell_t *parse_argument(ak_scanner_t *scanner,
       }
     }
     return parse_quoted(scanner, source_file);
-  } else {
+  }
+  default:
     return parse_static_type(scanner, source_file);
   }
 }
@@ -499,12 +540,25 @@ akx_cell_t *akx_cell_parse_buffer(ak_buffer_t *buf, const char *filename) {
 
     akx_cell_t *expr = NULL;
 
-    if (current == '(') {
+    switch (current) {
+    case '(':
       expr = parse_explicit_list(scanner, source_file);
-    } else if (current == '\'') {
+      break;
+    case '[':
+      expr = parse_explicit_list_square(scanner, source_file);
+      break;
+    case '{':
+      expr = parse_explicit_list_curly(scanner, source_file);
+      break;
+    case '<':
+      expr = parse_explicit_list_temple(scanner, source_file);
+      break;
+    case '\'':
       expr = parse_quoted(scanner, source_file);
-    } else {
+      break;
+    default:
       expr = parse_virtual_list(scanner, source_file);
+      break;
     }
 
     if (!expr) {
