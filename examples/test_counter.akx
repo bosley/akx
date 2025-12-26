@@ -1,5 +1,5 @@
-(cjit-load-builtin println :root "builtins/println.c")
-(cjit-load-builtin counter :root "builtins/counter.c")
+(cjit-load-builtin println :root "examples/builtins/println.c")
+(cjit-load-builtin counter :root "examples/builtins/counter.c")
 
 (println "Testing counter builtin with lifecycle hooks...")
 
@@ -8,7 +8,7 @@
 (println "Third call:" (counter))
 
 (println "Hot reloading counter...")
-(cjit-load-builtin counter :root "builtins/counter.c")
+(cjit-load-builtin counter :root "examples/builtins/counter.c")
 
 (println "After reload - Fourth call:" (counter))
 (println "After reload - Fifth call:" (counter))

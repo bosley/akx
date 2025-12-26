@@ -1,6 +1,6 @@
-(cjit-load-builtin println :root "builtins/println.c")
-(cjit-load-builtin simple :root "builtins/simple.c")
-(cjit-load-builtin counter :root "builtins/counter.c")
+(cjit-load-builtin println :root "examples/builtins/println.c")
+(cjit-load-builtin simple :root "examples/builtins/simple.c")
+(cjit-load-builtin counter :root "examples/builtins/counter.c")
 
 (println "=== Testing Mixed Builtins ===")
 (println "")
@@ -12,8 +12,8 @@
 
 (println "")
 (println "=== Hot Reloading Both ===")
-(cjit-load-builtin simple :root "builtins/simple.c")
-(cjit-load-builtin counter :root "builtins/counter.c")
+(cjit-load-builtin simple :root "examples/builtins/simple.c")
+(cjit-load-builtin counter :root "examples/builtins/counter.c")
 
 (println "")
 (println "After reload:")

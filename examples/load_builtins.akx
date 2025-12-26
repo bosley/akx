@@ -1,5 +1,5 @@
-(cjit-load-builtin add :root "builtins/add.c")
-(cjit-load-builtin println :root "builtins/println.c")
+(cjit-load-builtin add :root "examples/builtins/add.c")
+(cjit-load-builtin println :root "examples/builtins/println.c")
 
 (println "Builtins loaded successfully!")
 

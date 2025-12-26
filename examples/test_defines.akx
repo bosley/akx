@@ -1,7 +1,7 @@
-(cjit-load-builtin println :root "builtins/println.c")
+(cjit-load-builtin println :root "examples/builtins/println.c")
 
 (cjit-load-builtin config_demo
-    :root "builtins/config_demo.c"
+    :root "examples/builtins/config_demo.c"
     :linker {
         :defines {
             ["DEBUG_MODE" ""]
