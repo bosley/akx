@@ -1,10 +1,11 @@
-akx_cell_t* println(akx_runtime_ctx_t *rt, akx_cell_t *args) {
+akx_cell_t *println(akx_runtime_ctx_t *rt, akx_cell_t *args) {
   akx_cell_t *current = args;
-  
+
   while (current) {
     akx_cell_t *evaled = akx_rt_eval(rt, current);
-    if (!evaled) return NULL;
-    
+    if (!evaled)
+      return NULL;
+
     if (akx_rt_cell_is_type(evaled, AKX_TYPE_STRING_LITERAL)) {
       printf("%s", akx_rt_cell_as_string(evaled));
     } else if (akx_rt_cell_is_type(evaled, AKX_TYPE_INTEGER_LITERAL)) {
@@ -14,15 +15,15 @@ akx_cell_t* println(akx_runtime_ctx_t *rt, akx_cell_t *args) {
     } else if (akx_rt_cell_is_type(evaled, AKX_TYPE_SYMBOL)) {
       printf("%s", akx_rt_cell_as_symbol(evaled));
     }
-    
+
     akx_rt_free_cell(rt, evaled);
     current = akx_rt_cell_next(current);
-    if (current) printf(" ");
+    if (current)
+      printf(" ");
   }
   printf("\n");
-  
+
   akx_cell_t *nil = akx_rt_alloc_cell(rt, AKX_TYPE_SYMBOL);
   akx_rt_set_symbol(rt, nil, "nil");
   return nil;
 }
-

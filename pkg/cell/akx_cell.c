@@ -107,9 +107,11 @@ static akx_cell_t *parse_static_type(ak_scanner_t *scanner,
     return NULL;
   }
 
-  ak_source_loc_t start_loc = ak_source_loc_from_offset(source_file, start_pos);
+  size_t origin_offset = scanner->buffer->origin_offset;
+  ak_source_loc_t start_loc =
+      ak_source_loc_from_offset(source_file, start_pos + origin_offset);
   ak_source_loc_t end_loc =
-      ak_source_loc_from_offset(source_file, scanner->position);
+      ak_source_loc_from_offset(source_file, scanner->position + origin_offset);
   ak_source_range_t range = ak_source_range_new(start_loc, end_loc);
 
   akx_cell_t *cell = NULL;
@@ -165,15 +167,17 @@ static akx_cell_t *parse_string_literal(ak_scanner_t *scanner,
       ak_scanner_find_group(scanner, '"', '"', &escape, false);
 
   if (!result.success) {
-    ak_source_loc_t error_loc =
-        ak_source_loc_from_offset(source_file, start_pos);
+    ak_source_loc_t error_loc = ak_source_loc_from_offset(
+        source_file, start_pos + scanner->buffer->origin_offset);
     add_parse_error(ctx, &error_loc, "unterminated string literal");
     return NULL;
   }
 
-  ak_source_loc_t start_loc = ak_source_loc_from_offset(source_file, start_pos);
+  size_t origin_offset = scanner->buffer->origin_offset;
+  ak_source_loc_t start_loc =
+      ak_source_loc_from_offset(source_file, start_pos + origin_offset);
   ak_source_loc_t end_loc = ak_source_loc_from_offset(
-      source_file, result.index_of_closing_symbol + 1);
+      source_file, result.index_of_closing_symbol + 1 + origin_offset);
   ak_source_range_t range = ak_source_range_new(start_loc, end_loc);
 
   akx_cell_t *cell = create_cell(AKX_TYPE_STRING_LITERAL, &range);
@@ -203,6 +207,7 @@ static akx_cell_t *parse_explicit_list_generic(
     ak_scanner_t *scanner, ak_source_file_t *source_file, uint8_t open_delim,
     uint8_t close_delim, akx_type_t list_type, parse_context_t *ctx) {
   size_t start_pos = scanner->position;
+  size_t origin_offset = scanner->buffer->origin_offset;
 
   ak_scanner_find_group_result_t result =
       ak_scanner_find_group(scanner, open_delim, close_delim, NULL, true);
@@ -227,7 +232,7 @@ static akx_cell_t *parse_explicit_list_generic(
     }
 
     ak_source_loc_t error_loc =
-        ak_source_loc_from_offset(source_file, last_open_pos);
+        ak_source_loc_from_offset(source_file, last_open_pos + origin_offset);
     char error_msg[128];
     snprintf(error_msg, sizeof(error_msg),
              "unterminated list - missing closing '%c'", close_delim);
@@ -235,9 +240,10 @@ static akx_cell_t *parse_explicit_list_generic(
     return NULL;
   }
 
-  ak_source_loc_t start_loc = ak_source_loc_from_offset(source_file, start_pos);
+  ak_source_loc_t start_loc =
+      ak_source_loc_from_offset(source_file, start_pos + origin_offset);
   ak_source_loc_t end_loc = ak_source_loc_from_offset(
-      source_file, result.index_of_closing_symbol + 1);
+      source_file, result.index_of_closing_symbol + 1 + origin_offset);
   ak_source_range_t range = ak_source_range_new(start_loc, end_loc);
 
   akx_cell_t *list_cell = create_cell(list_type, &range);
@@ -388,9 +394,11 @@ static akx_cell_t *parse_virtual_list(ak_scanner_t *scanner,
 
 end_virtual_list:;
 
-  ak_source_loc_t start_loc = ak_source_loc_from_offset(source_file, start_pos);
+  size_t origin_offset = scanner->buffer->origin_offset;
+  ak_source_loc_t start_loc =
+      ak_source_loc_from_offset(source_file, start_pos + origin_offset);
   ak_source_loc_t end_loc =
-      ak_source_loc_from_offset(source_file, scanner->position);
+      ak_source_loc_from_offset(source_file, scanner->position + origin_offset);
   ak_source_range_t range = ak_source_range_new(start_loc, end_loc);
 
   akx_cell_t *list_cell = create_cell(AKX_TYPE_LIST, &range);
@@ -413,8 +421,8 @@ static akx_cell_t *parse_quoted(ak_scanner_t *scanner,
 
   akx_cell_t *inner = parse_argument(scanner, source_file, ctx);
   if (!inner) {
-    ak_source_loc_t error_loc =
-        ak_source_loc_from_offset(source_file, start_pos);
+    ak_source_loc_t error_loc = ak_source_loc_from_offset(
+        source_file, start_pos + scanner->buffer->origin_offset);
     add_parse_error(ctx, &error_loc, "invalid expression after quote");
     return NULL;
   }
@@ -422,8 +430,10 @@ static akx_cell_t *parse_quoted(ak_scanner_t *scanner,
   size_t content_start = start_pos + 1;
   size_t content_end = scanner->position;
 
-  ak_source_loc_t start_loc = ak_source_loc_from_offset(source_file, start_pos);
-  ak_source_loc_t end_loc = ak_source_loc_from_offset(source_file, content_end);
+  ak_source_loc_t start_loc = ak_source_loc_from_offset(
+      source_file, start_pos + scanner->buffer->origin_offset);
+  ak_source_loc_t end_loc = ak_source_loc_from_offset(
+      source_file, content_end + scanner->buffer->origin_offset);
   ak_source_range_t range = ak_source_range_new(start_loc, end_loc);
 
   akx_cell_t *quoted_cell = create_cell(AKX_TYPE_QUOTED, &range);

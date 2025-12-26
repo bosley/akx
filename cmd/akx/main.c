@@ -37,7 +37,8 @@ APP_ON_SIGNAL(handle_sigterm, SIGTERM) {
 
 APP_ON_SHUTDOWN(on_shutdown) {
   time_t uptime = time(NULL) - ctx->shutdown_info->start_time;
-  AK24_LOG_TRACE("Shutting down AKX runtime (uptime: %ld seconds)", (long)uptime);
+  AK24_LOG_TRACE("Shutting down AKX runtime (uptime: %ld seconds)",
+                 (long)uptime);
   AK24_LOG_TRACE("Deinitializing AKX core");
   if (g_runtime) {
     akx_runtime_deinit(g_runtime);
@@ -110,8 +111,14 @@ APP_MAIN(app_main) {
       }
 
       if (list_count(&result.cells) > 0) {
-        if (akx_runtime_start(g_runtime, (akx_cell_list_t *)&result.cells) != 0) {
-          AK24_LOG_ERROR("Runtime execution failed for %s", *arg);
+        if (akx_runtime_start(g_runtime, (akx_cell_list_t *)&result.cells) !=
+            0) {
+          akx_parse_error_t *err = akx_runtime_get_errors(g_runtime);
+          while (err) {
+            akx_sv_show_location(&err->location, AKX_ERROR_LEVEL_ERROR,
+                                 err->message);
+            err = err->next;
+          }
         }
       }
 

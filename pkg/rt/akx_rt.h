@@ -30,8 +30,10 @@ int akx_runtime_start(akx_runtime_ctx_t *ctx, akx_cell_list_t *cells);
 
 ak_context_t *akx_runtime_get_current_scope(akx_runtime_ctx_t *ctx);
 
+akx_parse_error_t *akx_runtime_get_errors(akx_runtime_ctx_t *ctx);
+
 int akx_runtime_load_builtin(akx_runtime_ctx_t *rt, const char *name,
-                              const char *source_path);
+                             const char *source_path);
 
 akx_cell_t *akx_rt_alloc_cell(akx_runtime_ctx_t *rt, akx_type_t type);
 void akx_rt_free_cell(akx_runtime_ctx_t *rt, akx_cell_t *cell);
@@ -42,8 +44,7 @@ void akx_rt_set_int(akx_runtime_ctx_t *rt, akx_cell_t *cell, int value);
 void akx_rt_set_real(akx_runtime_ctx_t *rt, akx_cell_t *cell, double value);
 void akx_rt_set_string(akx_runtime_ctx_t *rt, akx_cell_t *cell,
                        const char *str);
-void akx_rt_set_list(akx_runtime_ctx_t *rt, akx_cell_t *cell,
-                     akx_cell_t *head);
+void akx_rt_set_list(akx_runtime_ctx_t *rt, akx_cell_t *cell, akx_cell_t *head);
 
 int akx_rt_cell_is_type(akx_cell_t *cell, akx_type_t type);
 const char *akx_rt_cell_as_symbol(akx_cell_t *cell);
@@ -63,6 +64,8 @@ int akx_rt_scope_set(akx_runtime_ctx_t *rt, const char *key, void *value);
 void *akx_rt_scope_get(akx_runtime_ctx_t *rt, const char *key);
 
 void akx_rt_error(akx_runtime_ctx_t *rt, const char *message);
+void akx_rt_error_at(akx_runtime_ctx_t *rt, akx_cell_t *cell,
+                     const char *message);
 void akx_rt_error_fmt(akx_runtime_ctx_t *rt, const char *fmt, ...);
 
 akx_cell_t *akx_rt_eval(akx_runtime_ctx_t *rt, akx_cell_t *expr);

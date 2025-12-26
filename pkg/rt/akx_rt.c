@@ -22,7 +22,7 @@ struct akx_runtime_ctx_t {
 };
 
 static akx_cell_t *builtin_cjit_load_builtin(akx_runtime_ctx_t *rt,
-                                              akx_cell_t *args) {
+                                             akx_cell_t *args) {
   if (akx_rt_list_length(args) != 2) {
     akx_rt_error(rt, "cjit-load-builtin requires 2 arguments: name and path");
     return NULL;
@@ -86,8 +86,7 @@ akx_runtime_ctx_t *akx_runtime_init(void) {
   map_init_generic(&ctx->builtins, sizeof(char *), map_hash_str, map_cmp_str);
   list_init(&ctx->cjit_units);
 
-  akx_builtin_info_t *bootstrap_info =
-      AK24_ALLOC(sizeof(akx_builtin_info_t));
+  akx_builtin_info_t *bootstrap_info = AK24_ALLOC(sizeof(akx_builtin_info_t));
   if (bootstrap_info) {
     bootstrap_info->function = builtin_cjit_load_builtin;
     bootstrap_info->source_path = NULL;
@@ -185,6 +184,13 @@ ak_context_t *akx_runtime_get_current_scope(akx_runtime_ctx_t *ctx) {
     return NULL;
   }
   return ctx->context;
+}
+
+akx_parse_error_t *akx_runtime_get_errors(akx_runtime_ctx_t *ctx) {
+  if (!ctx || !ctx->error_ctx) {
+    return NULL;
+  }
+  return ctx->error_ctx->errors;
 }
 
 static const char *generate_abi_header(void) {
@@ -468,6 +474,37 @@ void akx_rt_error(akx_runtime_ctx_t *rt, const char *message) {
   rt->error_ctx->error_count++;
 }
 
+void akx_rt_error_at(akx_runtime_ctx_t *rt, akx_cell_t *cell,
+                     const char *message) {
+  if (!rt || !rt->error_ctx || !message) {
+    return;
+  }
+
+  akx_parse_error_t *error = AK24_ALLOC(sizeof(akx_parse_error_t));
+  if (!error) {
+    return;
+  }
+
+  memset(error, 0, sizeof(akx_parse_error_t));
+  snprintf(error->message, sizeof(error->message), "%s", message);
+  error->next = NULL;
+
+  if (cell && cell->sourceloc) {
+    error->location = cell->sourceloc->start;
+  }
+
+  if (!rt->error_ctx->errors) {
+    rt->error_ctx->errors = error;
+  } else {
+    akx_parse_error_t *current = rt->error_ctx->errors;
+    while (current->next) {
+      current = current->next;
+    }
+    current->next = error;
+  }
+  rt->error_ctx->error_count++;
+}
+
 void akx_rt_error_fmt(akx_runtime_ctx_t *rt, const char *fmt, ...) {
   if (!rt || !rt->error_ctx || !fmt) {
     return;
@@ -516,7 +553,9 @@ akx_cell_t *akx_rt_eval(akx_runtime_ctx_t *rt, akx_cell_t *expr) {
     if (value) {
       return (akx_cell_t *)value;
     }
-    akx_rt_error_fmt(rt, "undefined symbol: %s", sym);
+    char error_msg[256];
+    snprintf(error_msg, sizeof(error_msg), "undefined symbol: %s", sym);
+    akx_rt_error_at(rt, expr, error_msg);
     return NULL;
   }
 
@@ -533,15 +572,22 @@ akx_cell_t *akx_rt_eval(akx_runtime_ctx_t *rt, akx_cell_t *expr) {
 
     if (head->type == AKX_TYPE_SYMBOL) {
       const char *func_name = head->value.symbol;
+
       void **builtin_ptr = map_get_generic(&rt->builtins, &func_name);
       if (builtin_ptr && *builtin_ptr) {
         akx_builtin_info_t *info = (akx_builtin_info_t *)*builtin_ptr;
         akx_cell_t *args = head->next;
         return info->function(rt, args);
       }
+
+      char error_msg[256];
+      snprintf(error_msg, sizeof(error_msg), "undefined function: %s",
+               func_name);
+      akx_rt_error_at(rt, head, error_msg);
+      return NULL;
     }
 
-    akx_rt_error(rt, "cannot evaluate list - not a function call");
+    akx_rt_error_at(rt, expr, "cannot evaluate list - not a function call");
     return NULL;
   }
 
@@ -610,7 +656,7 @@ akx_cell_t *akx_rt_eval_and_assert(akx_runtime_ctx_t *rt, akx_cell_t *expr,
 }
 
 int akx_runtime_load_builtin(akx_runtime_ctx_t *rt, const char *name,
-                              const char *source_path) {
+                             const char *source_path) {
   if (!rt || !name || !source_path) {
     AK24_LOG_ERROR("Invalid arguments to akx_runtime_load_builtin");
     return -1;
@@ -622,7 +668,8 @@ int akx_runtime_load_builtin(akx_runtime_ctx_t *rt, const char *name,
     AK24_LOG_ERROR("Failed to read source file: %s", source_path);
     return -1;
   }
-  AK24_LOG_DEBUG("Source file read successfully (%zu bytes)", ak_buffer_count(source_buf));
+  AK24_LOG_DEBUG("Source file read successfully (%zu bytes)",
+                 ak_buffer_count(source_buf));
 
   AK24_LOG_DEBUG("Generating ABI header");
   const char *abi_header = generate_abi_header();
@@ -720,10 +767,12 @@ int akx_runtime_load_builtin(akx_runtime_ctx_t *rt, const char *name,
 
   AK24_LOG_DEBUG("Checking for existing builtin with name='%s'", name);
   void **existing_info_ptr = map_get_generic(&rt->builtins, &name);
-  AK24_LOG_DEBUG("Checked for existing builtin (ptr=%p)", (void*)existing_info_ptr);
+  AK24_LOG_DEBUG("Checked for existing builtin (ptr=%p)",
+                 (void *)existing_info_ptr);
   if (existing_info_ptr != NULL) {
     AK24_LOG_DEBUG("Found existing info, dereferencing");
-    akx_builtin_info_t *existing_info = (akx_builtin_info_t *)*existing_info_ptr;
+    akx_builtin_info_t *existing_info =
+        (akx_builtin_info_t *)*existing_info_ptr;
     AK24_LOG_DEBUG("Dereferenced successfully");
     AK24_LOG_TRACE("Hot-reloading builtin: %s", name);
     if (existing_info->source_path) {

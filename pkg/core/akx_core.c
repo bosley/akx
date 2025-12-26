@@ -62,7 +62,7 @@ akx_core_t *akx_core_init(void) {
   }
 
   AK24_LOG_TRACE("AKX core initialized (CJIT test: 5 + 3 = %d, backend: %s)",
-                result, ak_cjit_backend_name());
+                 result, ak_cjit_backend_name());
 
   return core;
 }
