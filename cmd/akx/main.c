@@ -37,10 +37,8 @@ APP_ON_SIGNAL(handle_sigterm, SIGTERM) {
 
 APP_ON_SHUTDOWN(on_shutdown) {
   time_t uptime = time(NULL) - ctx->shutdown_info->start_time;
-  printf("\n=== Shutting Down ===\n");
-  printf("Uptime: %ld seconds\n", uptime);
-  printf("Total signals received: %d\n", signal_count);
-
+  AK24_LOG_TRACE("Shutting down AKX runtime (uptime: %ld seconds)", (long)uptime);
+  AK24_LOG_TRACE("Deinitializing AKX core");
   if (g_runtime) {
     akx_runtime_deinit(g_runtime);
     g_runtime = NULL;
@@ -59,80 +57,14 @@ APP_ON_SHUTDOWN(on_shutdown) {
   printf("Current bytes: %zu\n",
          ctx->shutdown_info->memory_stats.current_bytes);
   printf("Peak bytes: %zu\n", ctx->shutdown_info->memory_stats.peak_bytes);
-#endif
-
   printf("======================\n");
-}
-
-static void print_cell(akx_cell_t *cell, int indent) {
-  if (!cell) {
-    return;
-  }
-
-  for (int i = 0; i < indent; i++) {
-    printf("  ");
-  }
-
-  switch (cell->type) {
-  case AKX_TYPE_SYMBOL:
-    printf("SYMBOL: %s\n", cell->value.symbol);
-    break;
-  case AKX_TYPE_STRING_LITERAL:
-    printf("STRING: \"%.*s\"\n",
-           (int)ak_buffer_count(cell->value.string_literal),
-           (char *)ak_buffer_data(cell->value.string_literal));
-    break;
-  case AKX_TYPE_INTEGER_LITERAL:
-    printf("INT: %d\n", cell->value.integer_literal);
-    break;
-  case AKX_TYPE_REAL_LITERAL:
-    printf("REAL: %f\n", cell->value.real_literal);
-    break;
-  case AKX_TYPE_LIST:
-    printf("LIST:\n");
-    print_cell(cell->value.list_head, indent + 1);
-    break;
-  case AKX_TYPE_LIST_SQUARE:
-    printf("LIST_SQUARE:\n");
-    print_cell(cell->value.list_head, indent + 1);
-    break;
-  case AKX_TYPE_LIST_CURLY:
-    printf("LIST_CURLY:\n");
-    print_cell(cell->value.list_head, indent + 1);
-    break;
-  case AKX_TYPE_LIST_TEMPLE:
-    printf("LIST_TEMPLE:\n");
-    print_cell(cell->value.list_head, indent + 1);
-    break;
-  case AKX_TYPE_QUOTED: {
-    printf("QUOTED: '%.*s'\n", (int)ak_buffer_count(cell->value.quoted_literal),
-           (char *)ak_buffer_data(cell->value.quoted_literal));
-
-    akx_cell_t *unwrapped = akx_cell_unwrap_quoted(cell);
-    if (unwrapped) {
-      for (int i = 0; i < indent; i++) {
-        printf("  ");
-      }
-      printf("  -> ");
-      print_cell(unwrapped, indent + 1);
-      akx_cell_free(unwrapped);
-    }
-    break;
-  }
-  }
-
-  if (cell->next) {
-    print_cell(cell->next, indent);
-  }
+#endif
 }
 
 APP_MAIN(app_main) {
   ak_log_set_level(AK24_LOG_LEVEL_INFO);
   ak_log_set_color(true);
   ak_log_set_path_format(AK24_LOG_PATH_ABBREV);
-
-  printf("=== AKX - AK24 S-Expression Tokenizer ===\n\n");
-  printf("Process ID: %d\n\n", getpid());
 
   g_core = akx_core_init();
   if (!g_core) {
@@ -150,8 +82,8 @@ APP_MAIN(app_main) {
   AK24_REGISTER_SIGNAL_HANDLER(handle_sigint);
   AK24_REGISTER_SIGNAL_HANDLER(handle_sigterm);
 
-  AK24_LOG_INFO("All signal handlers registered successfully");
-  AK24_LOG_INFO("AKX core initialized and ready");
+  AK24_LOG_TRACE("All signal handlers registered successfully");
+  AK24_LOG_TRACE("AKX core initialized and ready");
 
   if (list_count(&ctx->args) > 1) {
     list_iter_t iter = list_iter(&ctx->args);
@@ -163,8 +95,6 @@ APP_MAIN(app_main) {
         continue;
       }
 
-      printf("\n=== Parsing file: %s ===\n", *arg);
-
       akx_parse_result_t result = akx_cell_parse_file(*arg);
 
       if (result.errors) {
@@ -174,14 +104,14 @@ APP_MAIN(app_main) {
                                err->message);
           err = err->next;
         }
+        akx_parse_result_free(&result);
+        arg_index++;
+        continue;
       }
 
       if (list_count(&result.cells) > 0) {
-        printf("\n=== Parsed cells ===\n");
-        list_iter_t iter = list_iter(&result.cells);
-        akx_cell_t **cell_ptr;
-        while ((cell_ptr = list_next(&result.cells, &iter))) {
-          print_cell(*cell_ptr, 0);
+        if (akx_runtime_start(g_runtime, (akx_cell_list_t *)&result.cells) != 0) {
+          AK24_LOG_ERROR("Runtime execution failed for %s", *arg);
         }
       }
 

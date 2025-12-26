@@ -61,7 +61,7 @@ akx_core_t *akx_core_init(void) {
     return NULL;
   }
 
-  AK24_LOG_INFO("AKX core initialized (CJIT test: 5 + 3 = %d, backend: %s)",
+  AK24_LOG_TRACE("AKX core initialized (CJIT test: 5 + 3 = %d, backend: %s)",
                 result, ak_cjit_backend_name());
 
   return core;
@@ -76,7 +76,7 @@ void akx_core_deinit(akx_core_t *core) {
     ak_cjit_unit_free(core->cjit);
   }
 
-  AK24_LOG_INFO("AKX core deinitialized");
+  AK24_LOG_TRACE("AKX core deinitialized");
 
   AK24_FREE(core);
 }

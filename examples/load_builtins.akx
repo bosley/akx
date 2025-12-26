@@ -1,0 +1,8 @@
+cjit-load-builtin add "builtins/add.c"
+cjit-load-builtin println "builtins/println.c"
+
+println "Builtins loaded successfully!"
+
+
+println "Testing add:" (adsss 1 2 3 4 5)
+
