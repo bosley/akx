@@ -1,5 +1,6 @@
 #include "akx_cell.h"
 #include "akx_sv.h"
+#include <ctype.h>
 #include <string.h>
 
 static akx_cell_t *create_cell(akx_type_t type, ak_source_range_t *range) {
@@ -32,6 +33,8 @@ void akx_cell_free(akx_cell_t *cell) {
       ak_buffer_free(cell->value.string_literal);
     } else if (cell->type == AKX_TYPE_LIST && cell->value.list_head) {
       akx_cell_free(cell->value.list_head);
+    } else if (cell->type == AKX_TYPE_QUOTED && cell->value.quoted_literal) {
+      ak_buffer_free(cell->value.quoted_literal);
     }
 
     if (cell->sourceloc) {
@@ -49,6 +52,8 @@ static akx_cell_t *parse_explicit_list(ak_scanner_t *scanner,
                                        ak_source_file_t *source_file);
 static akx_cell_t *parse_virtual_list(ak_scanner_t *scanner,
                                       ak_source_file_t *source_file);
+static akx_cell_t *parse_quoted(ak_scanner_t *scanner,
+                                ak_source_file_t *source_file);
 
 static akx_cell_t *parse_static_type(ak_scanner_t *scanner,
                                      ak_source_file_t *source_file) {
@@ -378,6 +383,51 @@ end_virtual_list:;
   return list_cell;
 }
 
+static akx_cell_t *parse_quoted(ak_scanner_t *scanner,
+                                ak_source_file_t *source_file) {
+  size_t start_pos = scanner->position;
+
+  scanner->position++;
+
+  akx_cell_t *inner = parse_argument(scanner, source_file);
+  if (!inner) {
+    ak_source_loc_t error_loc =
+        ak_source_loc_from_offset(source_file, start_pos);
+    akx_sv_show_location(&error_loc, AKX_ERROR_LEVEL_ERROR,
+                         "invalid expression after quote");
+    return NULL;
+  }
+
+  size_t content_start = start_pos + 1;
+  size_t content_end = scanner->position;
+
+  ak_source_loc_t start_loc = ak_source_loc_from_offset(source_file, start_pos);
+  ak_source_loc_t end_loc = ak_source_loc_from_offset(source_file, content_end);
+  ak_source_range_t range = ak_source_range_new(start_loc, end_loc);
+
+  akx_cell_t *quoted_cell = create_cell(AKX_TYPE_QUOTED, &range);
+  if (!quoted_cell) {
+    akx_cell_free(inner);
+    return NULL;
+  }
+
+  uint8_t *buf_data = ak_buffer_data(scanner->buffer);
+  size_t content_len = content_end - content_start;
+  quoted_cell->value.quoted_literal = ak_buffer_new(content_len + 1);
+  if (!quoted_cell->value.quoted_literal) {
+    akx_cell_free(quoted_cell);
+    akx_cell_free(inner);
+    return NULL;
+  }
+
+  ak_buffer_copy_to(quoted_cell->value.quoted_literal, buf_data + content_start,
+                    content_len);
+
+  akx_cell_free(inner);
+
+  return quoted_cell;
+}
+
 static akx_cell_t *parse_argument(ak_scanner_t *scanner,
                                   ak_source_file_t *source_file) {
   if (!ak_scanner_skip_whitespace_and_comments(scanner)) {
@@ -396,7 +446,18 @@ static akx_cell_t *parse_argument(ak_scanner_t *scanner,
   } else if (current == '"') {
     return parse_string_literal(scanner, source_file);
   } else if (current == '\'') {
-    return parse_char_literal(scanner, source_file);
+    size_t lookahead = scanner->position + 1;
+    if (lookahead < ak_buffer_count(scanner->buffer)) {
+      uint8_t next_char = buf_data[lookahead];
+      if (next_char != '(' && next_char != '"' && !isspace(next_char)) {
+        size_t lookahead2 = lookahead + 1;
+        if (lookahead2 < ak_buffer_count(scanner->buffer) &&
+            buf_data[lookahead2] == '\'') {
+          return parse_char_literal(scanner, source_file);
+        }
+      }
+    }
+    return parse_quoted(scanner, source_file);
   } else {
     return parse_static_type(scanner, source_file);
   }
@@ -440,6 +501,8 @@ akx_cell_t *akx_cell_parse_buffer(ak_buffer_t *buf, const char *filename) {
 
     if (current == '(') {
       expr = parse_explicit_list(scanner, source_file);
+    } else if (current == '\'') {
+      expr = parse_quoted(scanner, source_file);
     } else {
       expr = parse_virtual_list(scanner, source_file);
     }
@@ -480,6 +543,26 @@ akx_cell_t *akx_cell_parse_file(const char *path) {
 
   akx_cell_t *result = akx_cell_parse_buffer(buf, path);
   ak_buffer_free(buf);
+
+  return result;
+}
+
+akx_cell_t *akx_cell_unwrap_quoted(akx_cell_t *quoted_cell) {
+  if (!quoted_cell || quoted_cell->type != AKX_TYPE_QUOTED) {
+    return NULL;
+  }
+
+  if (!quoted_cell->value.quoted_literal) {
+    return NULL;
+  }
+
+  const char *filename = "<quoted>";
+  if (quoted_cell->sourceloc && quoted_cell->sourceloc->start.file) {
+    filename = ak_source_file_name(quoted_cell->sourceloc->start.file);
+  }
+
+  akx_cell_t *result =
+      akx_cell_parse_buffer(quoted_cell->value.quoted_literal, filename);
 
   return result;
 }

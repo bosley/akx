@@ -15,6 +15,7 @@ typedef enum {
   AKX_TYPE_INTEGER_LITERAL,
   AKX_TYPE_REAL_LITERAL,
   AKX_TYPE_LIST,
+  AKX_TYPE_QUOTED,
 } akx_type_t;
 
 typedef struct akx_cell_t akx_cell_t;
@@ -30,6 +31,7 @@ struct akx_cell_t {
     double real_literal;
     ak_buffer_t *string_literal;
     akx_cell_t *list_head;
+    ak_buffer_t *quoted_literal;
   } value;
 
   ak_source_range_t *sourceloc;
@@ -40,5 +42,7 @@ akx_cell_t *akx_cell_parse_file(const char *path);
 akx_cell_t *akx_cell_parse_buffer(ak_buffer_t *buf, const char *filename);
 
 void akx_cell_free(akx_cell_t *cell);
+
+akx_cell_t *akx_cell_unwrap_quoted(akx_cell_t *quoted_cell);
 
 #endif

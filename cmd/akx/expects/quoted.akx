@@ -1,0 +1,6 @@
+put '(add 1 2 3)
+
+eval 'x
+
+define 'my-symbol "some value"
+
