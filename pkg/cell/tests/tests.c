@@ -857,6 +857,135 @@ static void test_quoted_mixed_delimiters(void) {
   akx_cell_free(cells);
 }
 
+static void test_multiple_quote_levels(void) {
+  printf("  test_multiple_quote_levels...\n");
+
+  akx_cell_t *cells = parse_string_as_file("'''a", "triple_quote");
+  ASSERT_NOT_NULL(cells);
+  assert_cell_type(cells, AKX_TYPE_QUOTED);
+  ASSERT_NOT_NULL(cells->value.quoted_literal);
+
+  const char *quoted =
+      (const char *)ak_buffer_data(cells->value.quoted_literal);
+  ASSERT_STREQ(quoted, "''a");
+
+  akx_cell_t *unwrapped1 = akx_cell_unwrap_quoted(cells);
+  ASSERT_NOT_NULL(unwrapped1);
+  assert_cell_type(unwrapped1, AKX_TYPE_QUOTED);
+
+  const char *quoted2 =
+      (const char *)ak_buffer_data(unwrapped1->value.quoted_literal);
+  ASSERT_STREQ(quoted2, "'a");
+
+  akx_cell_t *unwrapped2 = akx_cell_unwrap_quoted(unwrapped1);
+  ASSERT_NOT_NULL(unwrapped2);
+  assert_cell_type(unwrapped2, AKX_TYPE_QUOTED);
+
+  const char *quoted3 =
+      (const char *)ak_buffer_data(unwrapped2->value.quoted_literal);
+  ASSERT_STREQ(quoted3, "a");
+
+  akx_cell_t *unwrapped3 = akx_cell_unwrap_quoted(unwrapped2);
+  ASSERT_NOT_NULL(unwrapped3);
+  assert_cell_type(unwrapped3, AKX_TYPE_LIST);
+  assert_symbol(unwrapped3->value.list_head, "a");
+
+  akx_cell_free(unwrapped3);
+  akx_cell_free(unwrapped2);
+  akx_cell_free(unwrapped1);
+  akx_cell_free(cells);
+}
+
+static void test_quote_in_explicit_list(void) {
+  printf("  test_quote_in_explicit_list...\n");
+
+  akx_cell_t *cells = parse_string_as_file("('a)", "quote_in_paren");
+  ASSERT_NOT_NULL(cells);
+  assert_cell_type(cells, AKX_TYPE_LIST);
+  assert_list_length(cells, 1);
+
+  akx_cell_t *quoted = cells->value.list_head;
+  assert_cell_type(quoted, AKX_TYPE_QUOTED);
+  ASSERT_NOT_NULL(quoted->value.quoted_literal);
+
+  const char *quoted_str =
+      (const char *)ak_buffer_data(quoted->value.quoted_literal);
+  ASSERT_STREQ(quoted_str, "a");
+
+  akx_cell_free(cells);
+}
+
+static void test_multiple_quotes_in_list(void) {
+  printf("  test_multiple_quotes_in_list...\n");
+
+  akx_cell_t *cells = parse_string_as_file("'(a 'b 'c)", "multi_quote_list");
+  ASSERT_NOT_NULL(cells);
+  assert_cell_type(cells, AKX_TYPE_QUOTED);
+
+  akx_cell_t *unwrapped = akx_cell_unwrap_quoted(cells);
+  ASSERT_NOT_NULL(unwrapped);
+  assert_cell_type(unwrapped, AKX_TYPE_LIST);
+  assert_list_length(unwrapped, 3);
+
+  akx_cell_t *first = unwrapped->value.list_head;
+  assert_symbol(first, "a");
+
+  akx_cell_t *second = first->next;
+  assert_cell_type(second, AKX_TYPE_QUOTED);
+  const char *quoted_b =
+      (const char *)ak_buffer_data(second->value.quoted_literal);
+  ASSERT_STREQ(quoted_b, "b");
+
+  akx_cell_t *third = second->next;
+  assert_cell_type(third, AKX_TYPE_QUOTED);
+  const char *quoted_c =
+      (const char *)ak_buffer_data(third->value.quoted_literal);
+  ASSERT_STREQ(quoted_c, "c");
+
+  akx_cell_free(unwrapped);
+  akx_cell_free(cells);
+}
+
+static void test_deeply_nested_quotes(void) {
+  printf("  test_deeply_nested_quotes...\n");
+
+  akx_cell_t *cells = parse_string_as_file("'''(''moot)", "deep_quote_nest");
+  ASSERT_NOT_NULL(cells);
+  assert_cell_type(cells, AKX_TYPE_QUOTED);
+
+  akx_cell_t *unwrapped1 = akx_cell_unwrap_quoted(cells);
+  ASSERT_NOT_NULL(unwrapped1);
+  assert_cell_type(unwrapped1, AKX_TYPE_QUOTED);
+
+  akx_cell_t *unwrapped2 = akx_cell_unwrap_quoted(unwrapped1);
+  ASSERT_NOT_NULL(unwrapped2);
+  assert_cell_type(unwrapped2, AKX_TYPE_QUOTED);
+
+  akx_cell_t *unwrapped3 = akx_cell_unwrap_quoted(unwrapped2);
+  ASSERT_NOT_NULL(unwrapped3);
+  assert_cell_type(unwrapped3, AKX_TYPE_LIST);
+  assert_list_length(unwrapped3, 1);
+
+  akx_cell_t *inner_quoted = unwrapped3->value.list_head;
+  assert_cell_type(inner_quoted, AKX_TYPE_QUOTED);
+
+  akx_cell_t *unwrapped4 = akx_cell_unwrap_quoted(inner_quoted);
+  ASSERT_NOT_NULL(unwrapped4);
+  assert_cell_type(unwrapped4, AKX_TYPE_QUOTED);
+
+  akx_cell_t *unwrapped5 = akx_cell_unwrap_quoted(unwrapped4);
+  ASSERT_NOT_NULL(unwrapped5);
+  assert_cell_type(unwrapped5, AKX_TYPE_LIST);
+  assert_symbol(unwrapped5->value.list_head, "moot");
+
+  akx_cell_free(unwrapped5);
+  akx_cell_free(unwrapped4);
+  akx_cell_free(unwrapped3);
+  akx_cell_free(unwrapped2);
+  akx_cell_free(unwrapped1);
+  akx_cell_free(cells);
+}
+
 static void test_adjacent_empty_lists(void) {
   printf("  test_adjacent_empty_lists...\n");
 
@@ -1376,6 +1505,10 @@ void run_all_tests(void) {
   test_quoted_nested_list();
   test_unwrap_quoted_nested();
   test_quoted_mixed_delimiters();
+  test_multiple_quote_levels();
+  test_quote_in_explicit_list();
+  test_multiple_quotes_in_list();
+  test_deeply_nested_quotes();
 
   printf("\n=== Edge Cases ===\n");
   test_adjacent_empty_lists();

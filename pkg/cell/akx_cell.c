@@ -162,76 +162,6 @@ static akx_cell_t *parse_string_literal(ak_scanner_t *scanner,
   return cell;
 }
 
-static akx_cell_t *parse_char_literal(ak_scanner_t *scanner,
-                                      ak_source_file_t *source_file) {
-  size_t start_pos = scanner->position;
-
-  uint8_t escape = '\\';
-  ak_scanner_find_group_result_t result =
-      ak_scanner_find_group(scanner, '\'', '\'', &escape, false);
-
-  if (!result.success) {
-    ak_source_loc_t error_loc =
-        ak_source_loc_from_offset(source_file, start_pos);
-    akx_sv_show_location(&error_loc, AKX_ERROR_LEVEL_ERROR,
-                         "unterminated character literal");
-    return NULL;
-  }
-
-  ak_source_loc_t start_loc = ak_source_loc_from_offset(source_file, start_pos);
-  ak_source_loc_t end_loc = ak_source_loc_from_offset(
-      source_file, result.index_of_closing_symbol + 1);
-  ak_source_range_t range = ak_source_range_new(start_loc, end_loc);
-
-  akx_cell_t *cell = create_cell(AKX_TYPE_CHAR_LITERAL, &range);
-  if (!cell) {
-    return NULL;
-  }
-
-  size_t content_start = result.index_of_start_symbol + 1;
-  size_t content_len = result.index_of_closing_symbol - content_start;
-
-  if (content_len == 0) {
-    cell->value.char_literal = '\0';
-  } else if (content_len == 1) {
-    uint8_t *buf_data = ak_buffer_data(scanner->buffer);
-    cell->value.char_literal = buf_data[content_start];
-  } else if (content_len == 2) {
-    uint8_t *buf_data = ak_buffer_data(scanner->buffer);
-    if (buf_data[content_start] == '\\') {
-      switch (buf_data[content_start + 1]) {
-      case 'n':
-        cell->value.char_literal = '\n';
-        break;
-      case 't':
-        cell->value.char_literal = '\t';
-        break;
-      case 'r':
-        cell->value.char_literal = '\r';
-        break;
-      case '\\':
-        cell->value.char_literal = '\\';
-        break;
-      case '\'':
-        cell->value.char_literal = '\'';
-        break;
-      default:
-        cell->value.char_literal = buf_data[content_start + 1];
-        break;
-      }
-    } else {
-      cell->value.char_literal = buf_data[content_start];
-    }
-  } else {
-    uint8_t *buf_data = ak_buffer_data(scanner->buffer);
-    cell->value.char_literal = buf_data[content_start];
-  }
-
-  scanner->position = result.index_of_closing_symbol + 1;
-
-  return cell;
-}
-
 static akx_cell_t *parse_explicit_list_generic(ak_scanner_t *scanner,
                                                ak_source_file_t *source_file,
                                                uint8_t open_delim,
@@ -485,20 +415,8 @@ static akx_cell_t *parse_argument(ak_scanner_t *scanner,
     return parse_explicit_list_temple(scanner, source_file);
   case '"':
     return parse_string_literal(scanner, source_file);
-  case '\'': {
-    size_t lookahead = scanner->position + 1;
-    if (lookahead < ak_buffer_count(scanner->buffer)) {
-      uint8_t next_char = buf_data[lookahead];
-      if (next_char != '(' && next_char != '"' && !isspace(next_char)) {
-        size_t lookahead2 = lookahead + 1;
-        if (lookahead2 < ak_buffer_count(scanner->buffer) &&
-            buf_data[lookahead2] == '\'') {
-          return parse_char_literal(scanner, source_file);
-        }
-      }
-    }
+  case '\'':
     return parse_quoted(scanner, source_file);
-  }
   default:
     return parse_static_type(scanner, source_file);
   }
@@ -651,10 +569,6 @@ akx_cell_t *akx_cell_clone(akx_cell_t *cell) {
   switch (cell->type) {
   case AKX_TYPE_SYMBOL:
     cloned->value.symbol = cell->value.symbol;
-    break;
-
-  case AKX_TYPE_CHAR_LITERAL:
-    cloned->value.char_literal = cell->value.char_literal;
     break;
 
   case AKX_TYPE_INTEGER_LITERAL:

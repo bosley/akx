@@ -74,9 +74,6 @@ static void print_cell(akx_cell_t *cell, int indent) {
            (int)ak_buffer_count(cell->value.string_literal),
            (char *)ak_buffer_data(cell->value.string_literal));
     break;
-  case AKX_TYPE_CHAR_LITERAL:
-    printf("CHAR: '%c'\n", cell->value.char_literal);
-    break;
   case AKX_TYPE_INTEGER_LITERAL:
     printf("INT: %d\n", cell->value.integer_literal);
     break;

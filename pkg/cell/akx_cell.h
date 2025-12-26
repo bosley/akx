@@ -11,7 +11,6 @@
 typedef enum {
   AKX_TYPE_SYMBOL,
   AKX_TYPE_STRING_LITERAL,
-  AKX_TYPE_CHAR_LITERAL,
   AKX_TYPE_INTEGER_LITERAL,
   AKX_TYPE_REAL_LITERAL,
   AKX_TYPE_LIST,
@@ -29,7 +28,6 @@ struct akx_cell_t {
 
   union {
     const char *symbol;
-    char char_literal;
     int integer_literal;
     double real_literal;
     ak_buffer_t *string_literal;
