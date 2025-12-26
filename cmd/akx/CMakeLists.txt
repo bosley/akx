@@ -6,12 +6,14 @@ add_executable(akx
 target_include_directories(akx PRIVATE
     ${CMAKE_SOURCE_DIR}/pkg/core
     ${CMAKE_SOURCE_DIR}/pkg/cell
+    ${CMAKE_SOURCE_DIR}/pkg/rt
     ${AK24_INCLUDE_DIR}
 )
 
 target_link_libraries(akx PRIVATE
     akx_core
     akx_cell
+    akx_rt
     ${AK24_LIBRARY}
     pthread
 )

@@ -1,5 +1,6 @@
 #include "akx.h"
 #include "akx_core.h"
+#include "akx_rt.h"
 #include "akx_sv.h"
 #include <ak24/application.h>
 #include <stdio.h>
@@ -8,6 +9,7 @@
 static volatile int keep_running = 1;
 static volatile int signal_count = 0;
 static akx_core_t *g_core = NULL;
+static akx_runtime_ctx_t *g_runtime = NULL;
 
 APP_ON_SIGNAL(handle_sigint, SIGINT) {
   (void)captured;
@@ -38,6 +40,11 @@ APP_ON_SHUTDOWN(on_shutdown) {
   printf("\n=== Shutting Down ===\n");
   printf("Uptime: %ld seconds\n", uptime);
   printf("Total signals received: %d\n", signal_count);
+
+  if (g_runtime) {
+    akx_runtime_deinit(g_runtime);
+    g_runtime = NULL;
+  }
 
   if (g_core) {
     akx_core_deinit(g_core);
@@ -130,6 +137,13 @@ APP_MAIN(app_main) {
   g_core = akx_core_init();
   if (!g_core) {
     AK24_LOG_ERROR("Failed to initialize AKX core");
+    return 1;
+  }
+
+  g_runtime = akx_runtime_init();
+  if (!g_runtime) {
+    AK24_LOG_ERROR("Failed to initialize AKX runtime");
+    akx_core_deinit(g_core);
     return 1;
   }
 
