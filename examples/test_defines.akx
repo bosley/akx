@@ -1,0 +1,14 @@
+(cjit-load-builtin println :root "builtins/println.c")
+
+(cjit-load-builtin config_demo
+    :root "builtins/config_demo.c"
+    :linker {
+        :defines {
+            ["DEBUG_MODE" ""]
+        }
+    })
+
+(println "=== Testing Preprocessor Defines ===")
+(println "")
+(println "Config status:" (config_demo))
+

@@ -1,0 +1,18 @@
+(cjit-load-builtin println :root "builtins/println.c")
+
+(cjit-load-builtin advanced_math
+    :root "builtins/advanced_math.c"
+    :include-paths {
+        "builtins"
+    }
+    :implementation-files {
+        "math_helper.c"
+    })
+
+(println "=== Testing Advanced Multi-File Builtin ===")
+(println "")
+
+(println "advanced_math(5) = x^2 + 10x = 25 + 50 =" (advanced_math 5))
+(println "advanced_math(10) = x^2 + 10x = 100 + 100 =" (advanced_math 10))
+(println "advanced_math(3) = x^2 + 10x = 9 + 30 =" (advanced_math 3))
+

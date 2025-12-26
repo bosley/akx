@@ -1,8 +1,8 @@
-cjit-load-builtin add "builtins/add.c"
-cjit-load-builtin println "builtins/println.c"
+(cjit-load-builtin add :root "builtins/add.c")
+(cjit-load-builtin println :root "builtins/println.c")
 
-println "Builtins loaded successfully!"
+(println "Builtins loaded successfully!")
 
 
-println "Testing add:" (add 1 2 3 4 5)
+(println "Testing add:" (add 1 2 3 4 5))
 

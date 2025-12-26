@@ -19,22 +19,63 @@ All other builtins (arithmetic, I/O, data structures, etc.) are loaded dynamical
 ## How It Works
 
 ```akx
-cjit-load-builtin add "builtins/add.c"
-cjit-load-builtin println "builtins/println.c"
+(cjit-load-builtin add :root "builtins/add.c")
+(cjit-load-builtin println :root "builtins/println.c")
 
-println "Hello from JIT!"
-add 1 2 3
+(println "Hello from JIT!")
+(add 1 2 3)
 ```
 
 When `cjit-load-builtin` executes:
-1. Reads the C source file
-2. Injects runtime API declarations (see below)
-3. Compiles the source using TCC
-4. Resolves all runtime API symbols
-5. Extracts the builtin function pointer
-6. Registers it in the runtime's builtin map
+1. Parses keyword arguments (`:root`, `:include-paths`, `:implementation-files`, `:linker`)
+2. Creates a CJIT compilation unit with specified compiler options
+3. Adds include paths, library paths, libraries, and preprocessor defines
+4. Reads the root C source file
+5. Injects runtime API declarations
+6. Reads and adds any additional implementation files
+7. Compiles all sources using TCC
+8. Resolves all runtime API symbols
+9. Extracts the builtin function pointer and lifecycle hooks
+10. Registers it in the runtime's builtin map
 
 Future calls to that builtin name invoke the JIT-compiled function directly.
+
+## Advanced Usage
+
+### Multi-File Builtins with Custom Compilation
+
+```akx
+(cjit-load-builtin complex-builtin
+    :root "builtins/complex/main.c"
+    :include-paths {
+        "/usr/local/include"
+        "/opt/custom/headers"
+    }
+    :implementation-files {
+        "helper.c"
+        "utils.c"
+        "algorithms.c"
+    }
+    :linker {
+        :library-paths { "/usr/local/lib" }
+        :libraries { "m" "pthread" }
+        :defines {
+            ["DEBUG" "1"]
+            ["VERSION" "\"2.0.0\""]
+            ["ENABLE_LOGGING" ""]
+        }
+    })
+```
+
+### Keyword Arguments
+
+- **`:root`** (required) - Path to the main C file containing the builtin function and optional lifecycle hooks
+- **`:include-paths`** (optional) - Curly-brace list of directory paths to search for header files
+- **`:implementation-files`** (optional) - Curly-brace list of additional C files to compile (paths relative to root file's directory)
+- **`:linker`** (optional) - Curly-brace list containing linker configuration:
+  - **`:library-paths`** - Directories to search for libraries
+  - **`:libraries`** - Library names to link (without `lib` prefix or extension)
+  - **`:defines`** - Preprocessor defines as `[name value]` pairs (empty string for flag-only defines)
 
 ## Runtime API
 
@@ -63,7 +104,7 @@ For the full API specification and implementation details, see `akx_rt.c` and `a
 | `akx_runtime_start` | Execute a list of top-level expressions |
 | `akx_runtime_get_current_scope` | Get the current runtime scope context |
 | `akx_runtime_get_errors` | Retrieve the linked list of runtime errors |
-| `akx_runtime_load_builtin` | Load and compile a C builtin from source file |
+| `akx_runtime_load_builtin_ex` | Load and compile a C builtin with custom compilation options |
 | `akx_rt_alloc_cell` | Allocate a new cell of the specified type |
 | `akx_rt_free_cell` | Free a cell and its resources |
 | `akx_rt_set_symbol` | Set a cell's value to an interned symbol |

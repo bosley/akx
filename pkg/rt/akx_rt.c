@@ -1,4 +1,5 @@
 #include "akx_rt.h"
+#include "akx_rt_compiler.h"
 #include <ak24/buffer.h>
 #include <ak24/cjit.h>
 #include <ak24/intern.h>
@@ -24,30 +25,87 @@ struct akx_runtime_ctx_t {
 
 static akx_cell_t *builtin_cjit_load_builtin(akx_runtime_ctx_t *rt,
                                              akx_cell_t *args) {
-  if (akx_rt_list_length(args) != 2) {
-    akx_rt_error(rt, "cjit-load-builtin requires 2 arguments: name and path");
-    return NULL;
-  }
-
   akx_cell_t *name_cell = akx_rt_list_nth(args, 0);
   if (!name_cell || name_cell->type != AKX_TYPE_SYMBOL) {
-    akx_rt_error(rt, "first argument must be a symbol");
-    return NULL;
-  }
-
-  akx_cell_t *path_cell = akx_rt_eval_and_assert(
-      rt, akx_rt_list_nth(args, 1), AKX_TYPE_STRING_LITERAL,
-      "second argument must be a string");
-  if (!path_cell) {
+    akx_rt_error(rt, "first argument must be a symbol (builtin name)");
     return NULL;
   }
 
   const char *name = akx_rt_cell_as_symbol(name_cell);
-  const char *path = akx_rt_cell_as_string(path_cell);
 
-  int result = akx_runtime_load_builtin(rt, name, path);
+  akx_builtin_compile_opts_t opts;
+  memset(&opts, 0, sizeof(opts));
 
-  akx_rt_free_cell(rt, path_cell);
+  const char *root_path = NULL;
+
+  akx_cell_t *current = akx_rt_list_nth(args, 1);
+  while (current) {
+    if (current->type != AKX_TYPE_SYMBOL) {
+      akx_rt_error(rt, "expected keyword (symbol starting with ':')");
+      goto cleanup_error;
+    }
+
+    const char *keyword = akx_rt_cell_as_symbol(current);
+    if (keyword[0] != ':') {
+      akx_rt_error_fmt(rt, "keywords must start with ':', got: %s", keyword);
+      goto cleanup_error;
+    }
+
+    current = akx_rt_cell_next(current);
+    if (!current) {
+      akx_rt_error_fmt(rt, "missing value for keyword %s", keyword);
+      goto cleanup_error;
+    }
+
+    if (strcmp(keyword, ":root") == 0) {
+      akx_cell_t *root_evaled = akx_rt_eval_and_assert(
+          rt, current, AKX_TYPE_STRING_LITERAL, ":root value must be a string");
+      if (!root_evaled) {
+        goto cleanup_error;
+      }
+      const char *root_str = akx_rt_cell_as_string(root_evaled);
+      size_t root_len = strlen(root_str);
+      char *root_dup = AK24_ALLOC(root_len + 1);
+      if (!root_dup) {
+        akx_rt_free_cell(rt, root_evaled);
+        akx_rt_error(rt, "failed to allocate root path");
+        goto cleanup_error;
+      }
+      strcpy(root_dup, root_str);
+      root_path = root_dup;
+      akx_rt_free_cell(rt, root_evaled);
+    } else if (strcmp(keyword, ":include-paths") == 0) {
+      if (akx_compiler_extract_string_list(rt, current, &opts.include_paths,
+                                           &opts.include_path_count) != 0) {
+        goto cleanup_error;
+      }
+    } else if (strcmp(keyword, ":implementation-files") == 0) {
+      if (akx_compiler_extract_string_list(rt, current, &opts.impl_files,
+                                           &opts.impl_file_count) != 0) {
+        goto cleanup_error;
+      }
+    } else if (strcmp(keyword, ":linker") == 0) {
+      if (akx_compiler_parse_linker_options(rt, current, &opts) != 0) {
+        goto cleanup_error;
+      }
+    } else {
+      akx_rt_error_fmt(rt, "unknown keyword: %s", keyword);
+      goto cleanup_error;
+    }
+
+    current = akx_rt_cell_next(current);
+  }
+
+  if (!root_path) {
+    akx_rt_error(rt, ":root keyword is required");
+    goto cleanup_error;
+  }
+
+  int result = akx_runtime_load_builtin_ex(rt, name, root_path, &opts);
+
+  if (root_path)
+    AK24_FREE((void *)root_path);
+  akx_compiler_free_compile_opts(&opts);
 
   akx_cell_t *ret = akx_rt_alloc_cell(rt, AKX_TYPE_SYMBOL);
   if (result == 0) {
@@ -56,6 +114,12 @@ static akx_cell_t *builtin_cjit_load_builtin(akx_runtime_ctx_t *rt,
     akx_rt_set_symbol(rt, ret, "nil");
   }
   return ret;
+
+cleanup_error:
+  if (root_path)
+    AK24_FREE((void *)root_path);
+  akx_compiler_free_compile_opts(&opts);
+  return NULL;
 }
 
 akx_runtime_ctx_t *akx_runtime_init(void) {
@@ -708,20 +772,74 @@ void *akx_rt_module_get_data(akx_runtime_ctx_t *rt) {
   return NULL;
 }
 
-int akx_runtime_load_builtin(akx_runtime_ctx_t *rt, const char *name,
-                             const char *source_path) {
-  if (!rt || !name || !source_path) {
-    AK24_LOG_ERROR("Invalid arguments to akx_runtime_load_builtin");
+int akx_runtime_load_builtin_ex(akx_runtime_ctx_t *rt, const char *name,
+                                const char *root_path,
+                                const akx_builtin_compile_opts_t *opts) {
+  if (!rt || !name || !root_path) {
+    AK24_LOG_ERROR("Invalid arguments to akx_runtime_load_builtin_ex");
     return -1;
   }
 
-  AK24_LOG_DEBUG("Reading source file: %s", source_path);
-  ak_buffer_t *source_buf = ak_buffer_from_file(source_path);
-  if (!source_buf) {
-    AK24_LOG_ERROR("Failed to read source file: %s", source_path);
+  AK24_LOG_DEBUG("Creating CJIT unit");
+  ak_cjit_unit_t *unit = ak_cjit_unit_new(NULL, NULL, NULL);
+  if (!unit) {
+    AK24_LOG_ERROR("Failed to create CJIT unit");
     return -1;
   }
-  AK24_LOG_DEBUG("Source file read successfully (%zu bytes)",
+  AK24_LOG_DEBUG("CJIT unit created");
+
+  if (opts) {
+    for (size_t i = 0; i < opts->include_path_count; i++) {
+      AK24_LOG_DEBUG("Adding include path: %s", opts->include_paths[i]);
+      if (ak_cjit_add_include_path(unit, opts->include_paths[i]) !=
+          AK_CJIT_OK) {
+        AK24_LOG_ERROR("Failed to add include path: %s",
+                       opts->include_paths[i]);
+        ak_cjit_unit_free(unit);
+        return -1;
+      }
+    }
+
+    for (size_t i = 0; i < opts->library_path_count; i++) {
+      AK24_LOG_DEBUG("Adding library path: %s", opts->library_paths[i]);
+      if (ak_cjit_add_library_path(unit, opts->library_paths[i]) !=
+          AK_CJIT_OK) {
+        AK24_LOG_ERROR("Failed to add library path: %s",
+                       opts->library_paths[i]);
+        ak_cjit_unit_free(unit);
+        return -1;
+      }
+    }
+
+    for (size_t i = 0; i < opts->library_count; i++) {
+      AK24_LOG_DEBUG("Adding library: %s", opts->libraries[i]);
+      if (ak_cjit_add_library(unit, opts->libraries[i]) != AK_CJIT_OK) {
+        AK24_LOG_ERROR("Failed to add library: %s", opts->libraries[i]);
+        ak_cjit_unit_free(unit);
+        return -1;
+      }
+    }
+
+    for (size_t i = 0; i < opts->define_count; i++) {
+      AK24_LOG_DEBUG("Adding define: %s=%s", opts->define_names[i],
+                     opts->define_values[i]);
+      if (ak_cjit_define(unit, opts->define_names[i], opts->define_values[i]) !=
+          AK_CJIT_OK) {
+        AK24_LOG_ERROR("Failed to add define: %s", opts->define_names[i]);
+        ak_cjit_unit_free(unit);
+        return -1;
+      }
+    }
+  }
+
+  AK24_LOG_DEBUG("Reading root source file: %s", root_path);
+  ak_buffer_t *source_buf = ak_buffer_from_file(root_path);
+  if (!source_buf) {
+    AK24_LOG_ERROR("Failed to read root source file: %s", root_path);
+    ak_cjit_unit_free(unit);
+    return -1;
+  }
+  AK24_LOG_DEBUG("Root source file read successfully (%zu bytes)",
                  ak_buffer_count(source_buf));
 
   AK24_LOG_DEBUG("Generating ABI header");
@@ -735,24 +853,16 @@ int akx_runtime_load_builtin(akx_runtime_ctx_t *rt, const char *name,
   if (!combined_source) {
     AK24_LOG_ERROR("Failed to allocate memory for combined source");
     ak_buffer_free(source_buf);
+    ak_cjit_unit_free(unit);
     return -1;
   }
 
-  AK24_LOG_DEBUG("Combining ABI header and source");
+  AK24_LOG_DEBUG("Combining ABI header and root source");
   memcpy(combined_source, abi_header, abi_len);
   memcpy(combined_source + abi_len, ak_buffer_data(source_buf), source_len);
   combined_source[abi_len + source_len] = '\0';
 
   ak_buffer_free(source_buf);
-
-  AK24_LOG_DEBUG("Creating CJIT unit");
-  ak_cjit_unit_t *unit = ak_cjit_unit_new(NULL, NULL, NULL);
-  if (!unit) {
-    AK24_LOG_ERROR("Failed to create CJIT unit");
-    AK24_FREE(combined_source);
-    return -1;
-  }
-  AK24_LOG_DEBUG("CJIT unit created");
 
   AK24_LOG_DEBUG("Adding symbols to CJIT unit");
 
@@ -794,20 +904,63 @@ int akx_runtime_load_builtin(akx_runtime_ctx_t *rt, const char *name,
 
   AK24_LOG_DEBUG("All symbols added");
 
-  AK24_LOG_DEBUG("Adding source to CJIT unit");
-  if (ak_cjit_add_source(unit, combined_source, source_path) != AK_CJIT_OK) {
-    AK24_LOG_ERROR("Failed to add source to CJIT unit");
+  AK24_LOG_DEBUG("Adding root source to CJIT unit");
+  if (ak_cjit_add_source(unit, combined_source, root_path) != AK_CJIT_OK) {
+    AK24_LOG_ERROR("Failed to add root source to CJIT unit");
     ak_cjit_unit_free(unit);
     AK24_FREE(combined_source);
     return -1;
   }
-  AK24_LOG_DEBUG("Source added successfully");
+  AK24_LOG_DEBUG("Root source added successfully");
 
   AK24_FREE(combined_source);
 
+  if (opts && opts->impl_file_count > 0) {
+    char root_dir[1024];
+    const char *last_slash = strrchr(root_path, '/');
+    if (last_slash) {
+      size_t dir_len = last_slash - root_path;
+      if (dir_len >= sizeof(root_dir)) {
+        AK24_LOG_ERROR("Root path too long");
+        ak_cjit_unit_free(unit);
+        return -1;
+      }
+      memcpy(root_dir, root_path, dir_len);
+      root_dir[dir_len] = '\0';
+    } else {
+      strcpy(root_dir, ".");
+    }
+
+    for (size_t i = 0; i < opts->impl_file_count; i++) {
+      char impl_path[2048];
+      snprintf(impl_path, sizeof(impl_path), "%s/%s", root_dir,
+               opts->impl_files[i]);
+
+      AK24_LOG_DEBUG("Reading implementation file: %s", impl_path);
+      ak_buffer_t *impl_buf = ak_buffer_from_file(impl_path);
+      if (!impl_buf) {
+        AK24_LOG_ERROR("Failed to read implementation file: %s", impl_path);
+        ak_cjit_unit_free(unit);
+        return -1;
+      }
+
+      const char *impl_source = (const char *)ak_buffer_data(impl_buf);
+      AK24_LOG_DEBUG("Adding implementation file to CJIT unit: %s", impl_path);
+      if (ak_cjit_add_source(unit, impl_source, impl_path) != AK_CJIT_OK) {
+        AK24_LOG_ERROR("Failed to add implementation file: %s", impl_path);
+        ak_buffer_free(impl_buf);
+        ak_cjit_unit_free(unit);
+        return -1;
+      }
+
+      ak_buffer_free(impl_buf);
+      AK24_LOG_DEBUG("Implementation file added: %s", impl_path);
+    }
+  }
+
   AK24_LOG_DEBUG("Compiling builtin");
   if (ak_cjit_relocate(unit) != AK_CJIT_OK) {
-    AK24_LOG_ERROR("Failed to compile builtin: %s", source_path);
+    AK24_LOG_ERROR("Failed to compile builtin: %s", root_path);
     ak_cjit_unit_free(unit);
     return -1;
   }
@@ -865,9 +1018,9 @@ int akx_runtime_load_builtin(akx_runtime_ctx_t *rt, const char *name,
     }
 
     existing_info->function = function;
-    existing_info->source_path = AK24_ALLOC(strlen(source_path) + 1);
+    existing_info->source_path = AK24_ALLOC(strlen(root_path) + 1);
     if (existing_info->source_path) {
-      strcpy(existing_info->source_path, source_path);
+      strcpy(existing_info->source_path, root_path);
     }
     existing_info->load_time = time(NULL);
     existing_info->init_fn = init_fn;
@@ -890,9 +1043,9 @@ int akx_runtime_load_builtin(akx_runtime_ctx_t *rt, const char *name,
     }
 
     info->function = function;
-    info->source_path = AK24_ALLOC(strlen(source_path) + 1);
+    info->source_path = AK24_ALLOC(strlen(root_path) + 1);
     if (info->source_path) {
-      strcpy(info->source_path, source_path);
+      strcpy(info->source_path, root_path);
     }
     info->load_time = time(NULL);
     info->init_fn = init_fn;
@@ -914,6 +1067,6 @@ int akx_runtime_load_builtin(akx_runtime_ctx_t *rt, const char *name,
     }
   }
 
-  AK24_LOG_TRACE("Successfully loaded builtin '%s' from %s", name, source_path);
+  AK24_LOG_TRACE("Successfully loaded builtin '%s' from %s", name, root_path);
   return 0;
 }

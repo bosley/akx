@@ -1,5 +1,6 @@
 add_library(akx_rt STATIC
     akx_rt.c
+    akx_rt_compiler.c
 )
 
 target_include_directories(akx_rt PUBLIC

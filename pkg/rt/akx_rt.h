@@ -31,6 +31,20 @@ typedef struct {
   ak_cjit_unit_t *unit;
 } akx_builtin_info_t;
 
+typedef struct {
+  const char **include_paths;
+  size_t include_path_count;
+  const char **impl_files;
+  size_t impl_file_count;
+  const char **library_paths;
+  size_t library_path_count;
+  const char **libraries;
+  size_t library_count;
+  const char **define_names;
+  const char **define_values;
+  size_t define_count;
+} akx_builtin_compile_opts_t;
+
 akx_runtime_ctx_t *akx_runtime_init(void);
 
 void akx_runtime_deinit(akx_runtime_ctx_t *ctx);
@@ -41,8 +55,9 @@ ak_context_t *akx_runtime_get_current_scope(akx_runtime_ctx_t *ctx);
 
 akx_parse_error_t *akx_runtime_get_errors(akx_runtime_ctx_t *ctx);
 
-int akx_runtime_load_builtin(akx_runtime_ctx_t *rt, const char *name,
-                             const char *source_path);
+int akx_runtime_load_builtin_ex(akx_runtime_ctx_t *rt, const char *name,
+                                const char *root_path,
+                                const akx_builtin_compile_opts_t *opts);
 
 akx_cell_t *akx_rt_alloc_cell(akx_runtime_ctx_t *rt, akx_type_t type);
 void akx_rt_free_cell(akx_runtime_ctx_t *rt, akx_cell_t *cell);

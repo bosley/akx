@@ -1,22 +1,22 @@
-cjit-load-builtin println "builtins/println.c"
-cjit-load-builtin simple "builtins/simple.c"
-cjit-load-builtin counter "builtins/counter.c"
+(cjit-load-builtin println :root "builtins/println.c")
+(cjit-load-builtin simple :root "builtins/simple.c")
+(cjit-load-builtin counter :root "builtins/counter.c")
 
-println "=== Testing Mixed Builtins ==="
-println ""
+(println "=== Testing Mixed Builtins ===")
+(println "")
 
-println "Simple (no hooks):" (simple)
-println "Counter (with hooks) - call 1:" (counter)
-println "Simple again:" (simple)
-println "Counter - call 2:" (counter)
+(println "Simple (no hooks):" (simple))
+(println "Counter (with hooks) - call 1:" (counter))
+(println "Simple again:" (simple))
+(println "Counter - call 2:" (counter))
 
-println ""
-println "=== Hot Reloading Both ==="
-cjit-load-builtin simple "builtins/simple.c"
-cjit-load-builtin counter "builtins/counter.c"
+(println "")
+(println "=== Hot Reloading Both ===")
+(cjit-load-builtin simple :root "builtins/simple.c")
+(cjit-load-builtin counter :root "builtins/counter.c")
 
-println ""
-println "After reload:"
-println "Simple:" (simple)
-println "Counter - call 3:" (counter)
+(println "")
+(println "After reload:")
+(println "Simple:" (simple))
+(println "Counter - call 3:" (counter))
 
