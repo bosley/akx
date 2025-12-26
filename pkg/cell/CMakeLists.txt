@@ -31,6 +31,12 @@ target_link_libraries(akx_cell_tests PRIVATE
     ${AK24_LIBRARY}
 )
 
+if(APPLE)
+    target_link_options(akx_cell_tests PRIVATE
+        -Wl,-w
+    )
+endif()
+
 add_custom_target(run_akx_cell_tests ALL
     COMMAND akx_cell_tests
     DEPENDS akx_cell_tests

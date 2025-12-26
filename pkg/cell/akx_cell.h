@@ -48,4 +48,6 @@ void akx_cell_free(akx_cell_t *cell);
 
 akx_cell_t *akx_cell_unwrap_quoted(akx_cell_t *quoted_cell);
 
+akx_cell_t *akx_cell_clone(akx_cell_t *cell);
+
 #endif

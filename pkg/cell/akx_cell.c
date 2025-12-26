@@ -620,3 +620,76 @@ akx_cell_t *akx_cell_unwrap_quoted(akx_cell_t *quoted_cell) {
 
   return result;
 }
+
+static ak_buffer_t *clone_buffer(ak_buffer_t *buf) {
+  if (!buf) {
+    return NULL;
+  }
+
+  size_t size = ak_buffer_count(buf);
+  ak_buffer_t *cloned = ak_buffer_new(size);
+  if (!cloned) {
+    return NULL;
+  }
+
+  uint8_t *src_data = ak_buffer_data(buf);
+  ak_buffer_copy_to(cloned, src_data, size);
+
+  return cloned;
+}
+
+akx_cell_t *akx_cell_clone(akx_cell_t *cell) {
+  if (!cell) {
+    return NULL;
+  }
+
+  akx_cell_t *cloned = create_cell(cell->type, cell->sourceloc);
+  if (!cloned) {
+    return NULL;
+  }
+
+  switch (cell->type) {
+  case AKX_TYPE_SYMBOL:
+    cloned->value.symbol = cell->value.symbol;
+    break;
+
+  case AKX_TYPE_CHAR_LITERAL:
+    cloned->value.char_literal = cell->value.char_literal;
+    break;
+
+  case AKX_TYPE_INTEGER_LITERAL:
+    cloned->value.integer_literal = cell->value.integer_literal;
+    break;
+
+  case AKX_TYPE_REAL_LITERAL:
+    cloned->value.real_literal = cell->value.real_literal;
+    break;
+
+  case AKX_TYPE_STRING_LITERAL:
+    cloned->value.string_literal = clone_buffer(cell->value.string_literal);
+    if (!cloned->value.string_literal && cell->value.string_literal) {
+      akx_cell_free(cloned);
+      return NULL;
+    }
+    break;
+
+  case AKX_TYPE_LIST:
+  case AKX_TYPE_LIST_SQUARE:
+  case AKX_TYPE_LIST_CURLY:
+  case AKX_TYPE_LIST_TEMPLE:
+    cloned->value.list_head = akx_cell_clone(cell->value.list_head);
+    break;
+
+  case AKX_TYPE_QUOTED:
+    cloned->value.quoted_literal = clone_buffer(cell->value.quoted_literal);
+    if (!cloned->value.quoted_literal && cell->value.quoted_literal) {
+      akx_cell_free(cloned);
+      return NULL;
+    }
+    break;
+  }
+
+  cloned->next = akx_cell_clone(cell->next);
+
+  return cloned;
+}

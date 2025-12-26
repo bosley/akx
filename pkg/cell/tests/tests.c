@@ -1015,6 +1015,312 @@ static void test_sourceloc_nested(void) {
   akx_cell_free(cells);
 }
 
+static void test_clone_simple_types(void) {
+  printf("  test_clone_simple_types...\n");
+
+  akx_cell_t *cells = parse_string_as_file("(42)", "clone_int");
+  ASSERT_NOT_NULL(cells);
+  akx_cell_t *cloned = akx_cell_clone(cells);
+  ASSERT_NOT_NULL(cloned);
+  assert_cell_type(cloned, AKX_TYPE_LIST);
+  assert_integer(cloned->value.list_head, 42);
+  akx_cell_free(cells);
+  akx_cell_free(cloned);
+
+  cells = parse_string_as_file("(3.14)", "clone_real");
+  ASSERT_NOT_NULL(cells);
+  cloned = akx_cell_clone(cells);
+  ASSERT_NOT_NULL(cloned);
+  assert_real(cloned->value.list_head, 3.14, 0.001);
+  akx_cell_free(cells);
+  akx_cell_free(cloned);
+
+  cells = parse_string_as_file("(\"hello\")", "clone_str");
+  ASSERT_NOT_NULL(cells);
+  cloned = akx_cell_clone(cells);
+  ASSERT_NOT_NULL(cloned);
+  assert_string(cloned->value.list_head, "hello");
+  akx_cell_free(cells);
+  akx_cell_free(cloned);
+
+  cells = parse_string_as_file("foo", "clone_sym");
+  ASSERT_NOT_NULL(cells);
+  cloned = akx_cell_clone(cells);
+  ASSERT_NOT_NULL(cloned);
+  assert_symbol(cloned->value.list_head, "foo");
+  akx_cell_free(cells);
+  akx_cell_free(cloned);
+}
+
+static void test_clone_empty_lists(void) {
+  printf("  test_clone_empty_lists...\n");
+
+  akx_cell_t *cells = parse_string_as_file("()", "clone_empty_paren");
+  ASSERT_NOT_NULL(cells);
+  akx_cell_t *cloned = akx_cell_clone(cells);
+  ASSERT_NOT_NULL(cloned);
+  assert_cell_type(cloned, AKX_TYPE_LIST);
+  assert_list_length(cloned, 0);
+  akx_cell_free(cells);
+  akx_cell_free(cloned);
+
+  cells = parse_string_as_file("[]", "clone_empty_square");
+  ASSERT_NOT_NULL(cells);
+  cloned = akx_cell_clone(cells);
+  ASSERT_NOT_NULL(cloned);
+  assert_cell_type(cloned, AKX_TYPE_LIST_SQUARE);
+  assert_list_length(cloned, 0);
+  akx_cell_free(cells);
+  akx_cell_free(cloned);
+
+  cells = parse_string_as_file("{}", "clone_empty_curly");
+  ASSERT_NOT_NULL(cells);
+  cloned = akx_cell_clone(cells);
+  ASSERT_NOT_NULL(cloned);
+  assert_cell_type(cloned, AKX_TYPE_LIST_CURLY);
+  assert_list_length(cloned, 0);
+  akx_cell_free(cells);
+  akx_cell_free(cloned);
+
+  cells = parse_string_as_file("<>", "clone_empty_temple");
+  ASSERT_NOT_NULL(cells);
+  cloned = akx_cell_clone(cells);
+  ASSERT_NOT_NULL(cloned);
+  assert_cell_type(cloned, AKX_TYPE_LIST_TEMPLE);
+  assert_list_length(cloned, 0);
+  akx_cell_free(cells);
+  akx_cell_free(cloned);
+}
+
+static void test_clone_flat_list(void) {
+  printf("  test_clone_flat_list...\n");
+
+  akx_cell_t *cells = parse_string_as_file("(a b c)", "clone_flat");
+  ASSERT_NOT_NULL(cells);
+  akx_cell_t *cloned = akx_cell_clone(cells);
+  ASSERT_NOT_NULL(cloned);
+  assert_cell_type(cloned, AKX_TYPE_LIST);
+  assert_list_length(cloned, 3);
+
+  akx_cell_t *elem = cloned->value.list_head;
+  assert_symbol(elem, "a");
+  assert_symbol(elem->next, "b");
+  assert_symbol(elem->next->next, "c");
+
+  akx_cell_free(cells);
+  akx_cell_free(cloned);
+}
+
+static void test_clone_nested_lists(void) {
+  printf("  test_clone_nested_lists...\n");
+
+  akx_cell_t *cells =
+      parse_string_as_file("(a (b (c (d (e)))))", "clone_nested");
+  ASSERT_NOT_NULL(cells);
+  akx_cell_t *cloned = akx_cell_clone(cells);
+  ASSERT_NOT_NULL(cloned);
+  assert_cell_type(cloned, AKX_TYPE_LIST);
+  assert_list_length(cloned, 2);
+
+  akx_cell_t *level1 = cloned->value.list_head;
+  assert_symbol(level1, "a");
+
+  akx_cell_t *level2 = level1->next;
+  assert_cell_type(level2, AKX_TYPE_LIST);
+  assert_list_length(level2, 2);
+  assert_symbol(level2->value.list_head, "b");
+
+  akx_cell_t *level3 = level2->value.list_head->next;
+  assert_cell_type(level3, AKX_TYPE_LIST);
+  assert_list_length(level3, 2);
+  assert_symbol(level3->value.list_head, "c");
+
+  akx_cell_t *level4 = level3->value.list_head->next;
+  assert_cell_type(level4, AKX_TYPE_LIST);
+  assert_list_length(level4, 2);
+  assert_symbol(level4->value.list_head, "d");
+
+  akx_cell_t *level5 = level4->value.list_head->next;
+  assert_cell_type(level5, AKX_TYPE_LIST);
+  assert_list_length(level5, 1);
+  assert_symbol(level5->value.list_head, "e");
+
+  akx_cell_free(cells);
+  akx_cell_free(cloned);
+}
+
+static void test_clone_mixed_delimiters(void) {
+  printf("  test_clone_mixed_delimiters...\n");
+
+  akx_cell_t *cells =
+      parse_string_as_file("(outer [inner {deep <temple>}])", "clone_mixed");
+  ASSERT_NOT_NULL(cells);
+  akx_cell_t *cloned = akx_cell_clone(cells);
+  ASSERT_NOT_NULL(cloned);
+  assert_cell_type(cloned, AKX_TYPE_LIST);
+  assert_list_length(cloned, 2);
+
+  akx_cell_t *outer_sym = cloned->value.list_head;
+  assert_symbol(outer_sym, "outer");
+
+  akx_cell_t *square = outer_sym->next;
+  assert_cell_type(square, AKX_TYPE_LIST_SQUARE);
+  assert_list_length(square, 2);
+
+  akx_cell_t *inner_sym = square->value.list_head;
+  assert_symbol(inner_sym, "inner");
+
+  akx_cell_t *curly = inner_sym->next;
+  assert_cell_type(curly, AKX_TYPE_LIST_CURLY);
+  assert_list_length(curly, 2);
+
+  akx_cell_t *deep_sym = curly->value.list_head;
+  assert_symbol(deep_sym, "deep");
+
+  akx_cell_t *temple = deep_sym->next;
+  assert_cell_type(temple, AKX_TYPE_LIST_TEMPLE);
+  assert_list_length(temple, 1);
+  assert_symbol(temple->value.list_head, "temple");
+
+  akx_cell_free(cells);
+  akx_cell_free(cloned);
+}
+
+static void test_clone_quoted_expressions(void) {
+  printf("  test_clone_quoted_expressions...\n");
+
+  akx_cell_t *cells = parse_string_as_file("'x", "clone_quote_sym");
+  ASSERT_NOT_NULL(cells);
+  akx_cell_t *cloned = akx_cell_clone(cells);
+  ASSERT_NOT_NULL(cloned);
+  assert_cell_type(cloned, AKX_TYPE_QUOTED);
+  ASSERT_NOT_NULL(cloned->value.quoted_literal);
+  const char *quoted =
+      (const char *)ak_buffer_data(cloned->value.quoted_literal);
+  ASSERT_STREQ(quoted, "x");
+  akx_cell_free(cells);
+  akx_cell_free(cloned);
+
+  cells = parse_string_as_file("'(a b c)", "clone_quote_list");
+  ASSERT_NOT_NULL(cells);
+  cloned = akx_cell_clone(cells);
+  ASSERT_NOT_NULL(cloned);
+  assert_cell_type(cloned, AKX_TYPE_QUOTED);
+  ASSERT_NOT_NULL(cloned->value.quoted_literal);
+  quoted = (const char *)ak_buffer_data(cloned->value.quoted_literal);
+  ASSERT_STREQ(quoted, "(a b c)");
+  akx_cell_free(cells);
+  akx_cell_free(cloned);
+}
+
+static void test_clone_virtual_list(void) {
+  printf("  test_clone_virtual_list...\n");
+
+  akx_cell_t *cells =
+      parse_string_as_file("put \"hello\" 1 2 3", "clone_vlist");
+  ASSERT_NOT_NULL(cells);
+  akx_cell_t *cloned = akx_cell_clone(cells);
+  ASSERT_NOT_NULL(cloned);
+  assert_cell_type(cloned, AKX_TYPE_LIST);
+  assert_list_length(cloned, 5);
+
+  akx_cell_t *elem = cloned->value.list_head;
+  assert_symbol(elem, "put");
+  elem = elem->next;
+  assert_string(elem, "hello");
+  elem = elem->next;
+  assert_integer(elem, 1);
+  elem = elem->next;
+  assert_integer(elem, 2);
+  elem = elem->next;
+  assert_integer(elem, 3);
+
+  akx_cell_free(cells);
+  akx_cell_free(cloned);
+}
+
+static void test_clone_multiple_expressions(void) {
+  printf("  test_clone_multiple_expressions...\n");
+
+  akx_cell_t *cells =
+      parse_string_as_file("add 1 2\n(mul 3 4)\nput \"hello\"", "clone_multi");
+  ASSERT_NOT_NULL(cells);
+  akx_cell_t *cloned = akx_cell_clone(cells);
+  ASSERT_NOT_NULL(cloned);
+
+  ASSERT_EQ(count_cells(cloned), 3);
+
+  assert_cell_type(cloned, AKX_TYPE_LIST);
+  assert_symbol(cloned->value.list_head, "add");
+
+  akx_cell_t *second = cloned->next;
+  assert_cell_type(second, AKX_TYPE_LIST);
+  assert_symbol(second->value.list_head, "mul");
+
+  akx_cell_t *third = second->next;
+  assert_cell_type(third, AKX_TYPE_LIST);
+  assert_symbol(third->value.list_head, "put");
+
+  akx_cell_free(cells);
+  akx_cell_free(cloned);
+}
+
+static void test_clone_independence(void) {
+  printf("  test_clone_independence...\n");
+
+  akx_cell_t *cells = parse_string_as_file("(1 2 3)", "clone_indep");
+  ASSERT_NOT_NULL(cells);
+  akx_cell_t *cloned = akx_cell_clone(cells);
+  ASSERT_NOT_NULL(cloned);
+
+  akx_cell_t *orig_first = cells->value.list_head;
+  akx_cell_t *clone_first = cloned->value.list_head;
+
+  ASSERT_EQ(orig_first->value.integer_literal, 1);
+  ASSERT_EQ(clone_first->value.integer_literal, 1);
+
+  clone_first->value.integer_literal = 999;
+
+  ASSERT_EQ(orig_first->value.integer_literal, 1);
+  ASSERT_EQ(clone_first->value.integer_literal, 999);
+
+  akx_cell_free(cells);
+  akx_cell_free(cloned);
+}
+
+static void test_clone_sourceloc_preservation(void) {
+  printf("  test_clone_sourceloc_preservation...\n");
+
+  akx_cell_t *cells =
+      parse_string_as_file("(outer (inner))", "clone_sourceloc");
+  ASSERT_NOT_NULL(cells);
+  akx_cell_t *cloned = akx_cell_clone(cells);
+  ASSERT_NOT_NULL(cloned);
+
+  ASSERT_NOT_NULL(cells->sourceloc);
+  ASSERT_NOT_NULL(cloned->sourceloc);
+
+  akx_cell_t *orig_outer = cells->value.list_head;
+  akx_cell_t *clone_outer = cloned->value.list_head;
+  ASSERT_NOT_NULL(orig_outer->sourceloc);
+  ASSERT_NOT_NULL(clone_outer->sourceloc);
+
+  akx_cell_t *orig_inner = orig_outer->next;
+  akx_cell_t *clone_inner = clone_outer->next;
+  ASSERT_NOT_NULL(orig_inner->sourceloc);
+  ASSERT_NOT_NULL(clone_inner->sourceloc);
+
+  akx_cell_free(cells);
+  akx_cell_free(cloned);
+}
+
+static void test_clone_null_cell(void) {
+  printf("  test_clone_null_cell...\n");
+
+  akx_cell_t *cloned = akx_cell_clone(NULL);
+  ASSERT_TRUE(cloned == NULL);
+}
+
 void run_all_tests(void) {
   printf("Running akx_cell tests...\n");
 
@@ -1081,6 +1387,19 @@ void run_all_tests(void) {
   test_symbol_identity_nested();
   test_list_chain_integrity();
   test_sourceloc_nested();
+
+  printf("\n=== Clone Tests ===\n");
+  test_clone_simple_types();
+  test_clone_empty_lists();
+  test_clone_flat_list();
+  test_clone_nested_lists();
+  test_clone_mixed_delimiters();
+  test_clone_quoted_expressions();
+  test_clone_virtual_list();
+  test_clone_multiple_expressions();
+  test_clone_independence();
+  test_clone_sourceloc_preservation();
+  test_clone_null_cell();
 
   printf("\nAll tests passed!\n");
 }
