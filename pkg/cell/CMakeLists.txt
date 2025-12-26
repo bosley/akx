@@ -10,7 +10,7 @@ target_include_directories(akx_cell PUBLIC
 
 target_link_libraries(akx_cell PUBLIC
     akx_sv
-    ${AK24_LIBRARY}
+    ${AK24_LIBRARIES}
 )
 
 add_executable(akx_cell_tests
@@ -28,7 +28,7 @@ target_include_directories(akx_cell_tests PRIVATE
 target_link_libraries(akx_cell_tests PRIVATE
     akx_cell
     akx_sv
-    ${AK24_LIBRARY}
+    ${AK24_LIBRARIES}
 )
 
 if(APPLE)

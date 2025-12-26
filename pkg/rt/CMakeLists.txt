@@ -13,7 +13,7 @@ target_include_directories(akx_rt PUBLIC
 target_link_libraries(akx_rt PUBLIC
     akx_cell
     akx_sv
-    ${AK24_LIBRARY}
+    ${AK24_LIBRARIES}
     pthread
 )
 

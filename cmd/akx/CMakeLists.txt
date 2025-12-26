@@ -14,7 +14,7 @@ target_link_libraries(akx PRIVATE
     akx_core
     akx_cell
     akx_rt
-    ${AK24_LIBRARY}
+    ${AK24_LIBRARIES}
     pthread
 )
 

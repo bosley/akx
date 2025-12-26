@@ -8,7 +8,7 @@ target_include_directories(akx_core PUBLIC
 )
 
 target_link_libraries(akx_core PUBLIC
-    ${AK24_LIBRARY}
+    ${AK24_LIBRARIES}
     pthread
 )
 

@@ -15,20 +15,9 @@ if(UNIX OR APPLE)
     set(CMAKE_C_FLAGS_RELEASE "-O3 -Wall -Wextra -Wpedantic")
 endif()
 
-if(DEFINED ENV{AK24_HOME})
-    set(AK24_HOME "$ENV{AK24_HOME}")
-else()
-    set(AK24_HOME "$ENV{HOME}/.ak24")
-endif()
-
-message(STATUS "AK24_HOME: ${AK24_HOME}")
-
-if(NOT EXISTS "${AK24_HOME}/include/ak24/kernel.h")
-    message(FATAL_ERROR "AK24 not found at ${AK24_HOME}. Please install AK24 first.")
-endif()
-
-set(AK24_INCLUDE_DIR "${AK24_HOME}/include")
-set(AK24_LIB_DIR "${AK24_HOME}/lib")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(ak24)
+ensure_ak24_installed()
 
 find_library(AK24_LIBRARY
     NAMES ak24_kernel
@@ -38,6 +27,16 @@ find_library(AK24_LIBRARY
 )
 
 message(STATUS "Found AK24 library: ${AK24_LIBRARY}")
+
+set(AK24_LIBRARIES ${AK24_LIBRARY})
+
+if(AK24_GC_LIBRARY)
+    list(APPEND AK24_LIBRARIES ${AK24_GC_LIBRARY})
+endif()
+
+if(AK24_TCC_LIBRARY)
+    list(APPEND AK24_LIBRARIES ${AK24_TCC_LIBRARY})
+endif()
 
 find_package(OpenSSL QUIET)
 if(OPENSSL_FOUND)

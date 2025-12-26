@@ -8,6 +8,6 @@ target_include_directories(akx_sv PUBLIC
 )
 
 target_link_libraries(akx_sv PUBLIC
-    ${AK24_LIBRARY}
+    ${AK24_LIBRARIES}
 )
 
