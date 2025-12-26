@@ -54,6 +54,43 @@ The runtime provides a complete API for:
 
 For the full API specification and implementation details, see `akx_rt.c` and `akx_rt.h`.
 
+## Runtime API Functions
+
+| Function | Purpose |
+|----------|---------|
+| `akx_runtime_init` | Initialize the runtime context and register the bootstrap builtin |
+| `akx_runtime_deinit` | Clean up runtime resources, free CJIT units and builtins |
+| `akx_runtime_start` | Execute a list of top-level expressions |
+| `akx_runtime_get_current_scope` | Get the current runtime scope context |
+| `akx_runtime_get_errors` | Retrieve the linked list of runtime errors |
+| `akx_runtime_load_builtin` | Load and compile a C builtin from source file |
+| `akx_rt_alloc_cell` | Allocate a new cell of the specified type |
+| `akx_rt_free_cell` | Free a cell and its resources |
+| `akx_rt_set_symbol` | Set a cell's value to an interned symbol |
+| `akx_rt_set_int` | Set a cell's value to an integer |
+| `akx_rt_set_real` | Set a cell's value to a floating-point number |
+| `akx_rt_set_string` | Set a cell's value to a string |
+| `akx_rt_set_list` | Set a cell's value to a list head |
+| `akx_rt_cell_is_type` | Check if a cell matches a specific type |
+| `akx_rt_cell_as_symbol` | Extract symbol value from a cell |
+| `akx_rt_cell_as_int` | Extract integer value from a cell |
+| `akx_rt_cell_as_real` | Extract floating-point value from a cell |
+| `akx_rt_cell_as_string` | Extract string value from a cell |
+| `akx_rt_cell_as_list` | Extract list head from a cell |
+| `akx_rt_cell_next` | Get the next sibling cell in a list |
+| `akx_rt_list_length` | Count the number of elements in a list |
+| `akx_rt_list_nth` | Get the nth element of a list |
+| `akx_rt_list_append` | Append an item to the end of a list |
+| `akx_rt_get_scope` | Get the runtime's scope context |
+| `akx_rt_scope_set` | Set a variable in the current scope |
+| `akx_rt_scope_get` | Get a variable from the current scope |
+| `akx_rt_error` | Report a runtime error with a message |
+| `akx_rt_error_at` | Report a runtime error with source location from a cell |
+| `akx_rt_error_fmt` | Report a formatted runtime error |
+| `akx_rt_eval` | Evaluate an expression and return the result |
+| `akx_rt_eval_list` | Evaluate all elements in a list and return results |
+| `akx_rt_eval_and_assert` | Evaluate and assert the result is of expected type |
+
 ## Hot Reloading
 
 Calling `cjit-load-builtin` on an already-loaded builtin replaces it. The old CJIT unit is freed and the new one takes its place immediately.
@@ -61,4 +98,3 @@ Calling `cjit-load-builtin` on an already-loaded builtin replaces it. The old CJ
 ## Error Reporting
 
 Runtime errors capture source locations from cells and display them using the source view (sv) module, showing the exact line and column where the error occurred with visual context.
-
