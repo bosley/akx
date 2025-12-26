@@ -19,6 +19,7 @@ struct akx_runtime_ctx_t {
   ak_context_t *context;
   map_void_t builtins;
   list_t(ak_cjit_unit_t *) cjit_units;
+  const char *current_module_name;
 };
 
 static akx_cell_t *builtin_cjit_load_builtin(akx_runtime_ctx_t *rt,
@@ -85,12 +86,19 @@ akx_runtime_ctx_t *akx_runtime_init(void) {
 
   map_init_generic(&ctx->builtins, sizeof(char *), map_hash_str, map_cmp_str);
   list_init(&ctx->cjit_units);
+  ctx->current_module_name = NULL;
 
   akx_builtin_info_t *bootstrap_info = AK24_ALLOC(sizeof(akx_builtin_info_t));
   if (bootstrap_info) {
     bootstrap_info->function = builtin_cjit_load_builtin;
     bootstrap_info->source_path = NULL;
     bootstrap_info->load_time = time(NULL);
+    bootstrap_info->init_fn = NULL;
+    bootstrap_info->deinit_fn = NULL;
+    bootstrap_info->reload_fn = NULL;
+    bootstrap_info->module_data = NULL;
+    bootstrap_info->module_name = ak_intern("cjit-load-builtin");
+    bootstrap_info->unit = NULL;
     const char *name = "cjit-load-builtin";
     map_set_generic(&ctx->builtins, &name, bootstrap_info);
     AK24_LOG_TRACE("Registered native builtin: cjit-load-builtin");
@@ -112,6 +120,17 @@ void akx_runtime_deinit(akx_runtime_ctx_t *ctx) {
     void **info_ptr = map_get_generic(&ctx->builtins, key_ptr);
     if (info_ptr && *info_ptr) {
       akx_builtin_info_t *info = (akx_builtin_info_t *)*info_ptr;
+
+      if (info->deinit_fn) {
+        ctx->current_module_name = info->module_name;
+        info->deinit_fn(ctx);
+        ctx->current_module_name = NULL;
+      }
+
+      if (info->unit) {
+        ak_cjit_unit_free(info->unit);
+      }
+
       if (info->source_path) {
         AK24_FREE(info->source_path);
       }
@@ -197,6 +216,7 @@ static const char *generate_abi_header(void) {
   return "#include <stddef.h>\n"
          "#include <stdint.h>\n"
          "#include <stdio.h>\n"
+         "#include <stdlib.h>\n"
          "\n"
          "typedef struct akx_runtime_ctx_t akx_runtime_ctx_t;\n"
          "typedef struct akx_cell_t akx_cell_t;\n"
@@ -263,6 +283,10 @@ static const char *generate_abi_header(void) {
          "akx_cell_t *list);\n"
          "extern akx_cell_t* akx_rt_eval_and_assert(akx_runtime_ctx_t *rt, "
          "akx_cell_t *expr, akx_type_t expected_type, const char *error_msg);\n"
+         "\n"
+         "extern void akx_rt_module_set_data(akx_runtime_ctx_t *rt, void "
+         "*data);\n"
+         "extern void* akx_rt_module_get_data(akx_runtime_ctx_t *rt);\n"
          "\n";
 }
 
@@ -577,7 +601,10 @@ akx_cell_t *akx_rt_eval(akx_runtime_ctx_t *rt, akx_cell_t *expr) {
       if (builtin_ptr && *builtin_ptr) {
         akx_builtin_info_t *info = (akx_builtin_info_t *)*builtin_ptr;
         akx_cell_t *args = head->next;
-        return info->function(rt, args);
+        rt->current_module_name = info->module_name;
+        akx_cell_t *result = info->function(rt, args);
+        rt->current_module_name = NULL;
+        return result;
       }
 
       char error_msg[256];
@@ -655,6 +682,32 @@ akx_cell_t *akx_rt_eval_and_assert(akx_runtime_ctx_t *rt, akx_cell_t *expr,
   return result;
 }
 
+void akx_rt_module_set_data(akx_runtime_ctx_t *rt, void *data) {
+  if (!rt || !rt->current_module_name) {
+    return;
+  }
+
+  void **info_ptr = map_get_generic(&rt->builtins, &rt->current_module_name);
+  if (info_ptr && *info_ptr) {
+    akx_builtin_info_t *info = (akx_builtin_info_t *)*info_ptr;
+    info->module_data = data;
+  }
+}
+
+void *akx_rt_module_get_data(akx_runtime_ctx_t *rt) {
+  if (!rt || !rt->current_module_name) {
+    return NULL;
+  }
+
+  void **info_ptr = map_get_generic(&rt->builtins, &rt->current_module_name);
+  if (info_ptr && *info_ptr) {
+    akx_builtin_info_t *info = (akx_builtin_info_t *)*info_ptr;
+    return info->module_data;
+  }
+
+  return NULL;
+}
+
 int akx_runtime_load_builtin(akx_runtime_ctx_t *rt, const char *name,
                              const char *source_path) {
   if (!rt || !name || !source_path) {
@@ -707,6 +760,8 @@ int akx_runtime_load_builtin(akx_runtime_ctx_t *rt, const char *name,
 #pragma clang diagnostic ignored "-Wpedantic"
 
   ak_cjit_add_symbol(unit, "printf", printf);
+  ak_cjit_add_symbol(unit, "malloc", malloc);
+  ak_cjit_add_symbol(unit, "free", free);
   ak_cjit_add_symbol(unit, "akx_rt_alloc_cell", akx_rt_alloc_cell);
   ak_cjit_add_symbol(unit, "akx_rt_free_cell", akx_rt_free_cell);
   ak_cjit_add_symbol(unit, "akx_rt_set_symbol", akx_rt_set_symbol);
@@ -732,6 +787,8 @@ int akx_runtime_load_builtin(akx_runtime_ctx_t *rt, const char *name,
   ak_cjit_add_symbol(unit, "akx_rt_eval", akx_rt_eval);
   ak_cjit_add_symbol(unit, "akx_rt_eval_list", akx_rt_eval_list);
   ak_cjit_add_symbol(unit, "akx_rt_eval_and_assert", akx_rt_eval_and_assert);
+  ak_cjit_add_symbol(unit, "akx_rt_module_set_data", akx_rt_module_set_data);
+  ak_cjit_add_symbol(unit, "akx_rt_module_get_data", akx_rt_module_get_data);
 
 #pragma clang diagnostic pop
 
@@ -765,25 +822,65 @@ int akx_runtime_load_builtin(akx_runtime_ctx_t *rt, const char *name,
   }
   AK24_LOG_DEBUG("Symbol found");
 
+  char init_name[256];
+  char deinit_name[256];
+  char reload_name[256];
+  snprintf(init_name, sizeof(init_name), "%s_init", name);
+  snprintf(deinit_name, sizeof(deinit_name), "%s_deinit", name);
+  snprintf(reload_name, sizeof(reload_name), "%s_reload", name);
+
+  void (*init_fn)(akx_runtime_ctx_t *) =
+      (void (*)(akx_runtime_ctx_t *))ak_cjit_get_symbol(unit, init_name);
+  void (*deinit_fn)(akx_runtime_ctx_t *) =
+      (void (*)(akx_runtime_ctx_t *))ak_cjit_get_symbol(unit, deinit_name);
+  void (*reload_fn)(akx_runtime_ctx_t *, void *) =
+      (void (*)(akx_runtime_ctx_t *, void *))ak_cjit_get_symbol(unit,
+                                                                reload_name);
+
   AK24_LOG_DEBUG("Checking for existing builtin with name='%s'", name);
   void **existing_info_ptr = map_get_generic(&rt->builtins, &name);
-  AK24_LOG_DEBUG("Checked for existing builtin (ptr=%p)",
-                 (void *)existing_info_ptr);
+
   if (existing_info_ptr != NULL) {
-    AK24_LOG_DEBUG("Found existing info, dereferencing");
     akx_builtin_info_t *existing_info =
         (akx_builtin_info_t *)*existing_info_ptr;
-    AK24_LOG_DEBUG("Dereferenced successfully");
     AK24_LOG_TRACE("Hot-reloading builtin: %s", name);
+
+    void *old_state = existing_info->module_data;
+    rt->current_module_name = existing_info->module_name;
+
+    if (reload_fn) {
+      AK24_LOG_DEBUG("Calling reload hook for %s", name);
+      reload_fn(rt, old_state);
+    } else if (existing_info->deinit_fn) {
+      AK24_LOG_DEBUG("Calling deinit hook for old %s", name);
+      existing_info->deinit_fn(rt);
+    }
+
     if (existing_info->source_path) {
       AK24_FREE(existing_info->source_path);
     }
+
+    if (existing_info->unit) {
+      ak_cjit_unit_free(existing_info->unit);
+    }
+
     existing_info->function = function;
     existing_info->source_path = AK24_ALLOC(strlen(source_path) + 1);
     if (existing_info->source_path) {
       strcpy(existing_info->source_path, source_path);
     }
     existing_info->load_time = time(NULL);
+    existing_info->init_fn = init_fn;
+    existing_info->deinit_fn = deinit_fn;
+    existing_info->reload_fn = reload_fn;
+    existing_info->unit = unit;
+
+    if (!reload_fn && init_fn) {
+      AK24_LOG_DEBUG("Calling init hook for new %s", name);
+      init_fn(rt);
+    }
+
+    rt->current_module_name = NULL;
   } else {
     akx_builtin_info_t *info = AK24_ALLOC(sizeof(akx_builtin_info_t));
     if (!info) {
@@ -798,13 +895,24 @@ int akx_runtime_load_builtin(akx_runtime_ctx_t *rt, const char *name,
       strcpy(info->source_path, source_path);
     }
     info->load_time = time(NULL);
+    info->init_fn = init_fn;
+    info->deinit_fn = deinit_fn;
+    info->reload_fn = reload_fn;
+    info->module_data = NULL;
+    info->module_name = ak_intern(name);
+    info->unit = unit;
 
     AK24_LOG_DEBUG("Storing builtin info in map with name='%s'", name);
     map_set_generic(&rt->builtins, &name, info);
     AK24_LOG_DEBUG("Builtin info stored");
-  }
 
-  list_push(&rt->cjit_units, unit);
+    if (init_fn) {
+      rt->current_module_name = info->module_name;
+      AK24_LOG_DEBUG("Calling init hook for %s", name);
+      init_fn(rt);
+      rt->current_module_name = NULL;
+    }
+  }
 
   AK24_LOG_TRACE("Successfully loaded builtin '%s' from %s", name, source_path);
   return 0;

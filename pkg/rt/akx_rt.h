@@ -3,6 +3,7 @@
 
 #include "akx_cell.h"
 #include "akx_sv.h"
+#include <ak24/cjit.h>
 #include <ak24/context.h>
 #include <ak24/kernel.h>
 #include <ak24/list.h>
@@ -20,6 +21,14 @@ typedef struct {
   akx_builtin_fn function;
   char *source_path;
   time_t load_time;
+
+  void (*init_fn)(akx_runtime_ctx_t *);
+  void (*deinit_fn)(akx_runtime_ctx_t *);
+  void (*reload_fn)(akx_runtime_ctx_t *, void *);
+
+  void *module_data;
+  const char *module_name;
+  ak_cjit_unit_t *unit;
 } akx_builtin_info_t;
 
 akx_runtime_ctx_t *akx_runtime_init(void);
@@ -73,5 +82,8 @@ akx_cell_t *akx_rt_eval_list(akx_runtime_ctx_t *rt, akx_cell_t *list);
 akx_cell_t *akx_rt_eval_and_assert(akx_runtime_ctx_t *rt, akx_cell_t *expr,
                                    akx_type_t expected_type,
                                    const char *error_msg);
+
+void akx_rt_module_set_data(akx_runtime_ctx_t *rt, void *data);
+void *akx_rt_module_get_data(akx_runtime_ctx_t *rt);
 
 #endif

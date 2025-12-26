@@ -1,0 +1,15 @@
+cjit-load-builtin println "builtins/println.c"
+cjit-load-builtin counter "builtins/counter.c"
+
+println "Testing counter builtin with lifecycle hooks..."
+
+println "First call:" (counter)
+println "Second call:" (counter)
+println "Third call:" (counter)
+
+println "Hot reloading counter..."
+cjit-load-builtin counter "builtins/counter.c"
+
+println "After reload - Fourth call:" (counter)
+println "After reload - Fifth call:" (counter)
+
