@@ -241,7 +241,13 @@ static akx_cell_t *builtin_set(akx_runtime_ctx_t *rt, akx_cell_t *args) {
     ak_context_set(containing, symbol, evaled);
   }
 
-  return evaled;
+  akx_cell_t *returned = akx_cell_clone(evaled);
+  if (!returned) {
+    akx_rt_error(rt, "set: failed to clone value for return");
+    return NULL;
+  }
+
+  return returned;
 }
 
 static akx_cell_t *builtin_cjit_load_builtin(akx_runtime_ctx_t *rt,

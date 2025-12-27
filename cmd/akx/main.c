@@ -35,6 +35,15 @@ APP_ON_SIGNAL(handle_sigterm, SIGTERM) {
   keep_running = 0;
 }
 
+APP_ON_SIGNAL(handle_sigabrt, SIGABRT) {
+  (void)captured;
+  (void)args;
+
+  printf("\n[SIGABRT] Abort signal raised - terminating execution\n");
+  fflush(stdout);
+  _exit(134);
+}
+
 APP_ON_SHUTDOWN(on_shutdown) {
   time_t uptime = time(NULL) - ctx->shutdown_info->start_time;
   AK24_LOG_TRACE("Shutting down AKX runtime (uptime: %ld seconds)",
@@ -82,6 +91,7 @@ APP_MAIN(app_main) {
 
   AK24_REGISTER_SIGNAL_HANDLER(handle_sigint);
   AK24_REGISTER_SIGNAL_HANDLER(handle_sigterm);
+  AK24_REGISTER_SIGNAL_HANDLER(handle_sigabrt);
 
   AK24_LOG_TRACE("All signal handlers registered successfully");
   AK24_LOG_TRACE("AKX core initialized and ready");

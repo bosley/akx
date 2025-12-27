@@ -21,7 +21,7 @@ akx_cell_t *print(akx_runtime_ctx_t *rt, akx_cell_t *args) {
     if (evaled->type != AKX_TYPE_LAMBDA) {
       akx_rt_free_cell(rt, evaled);
     }
-    
+
     current = akx_rt_cell_next(current);
   }
 
@@ -29,4 +29,3 @@ akx_cell_t *print(akx_runtime_ctx_t *rt, akx_cell_t *args) {
   akx_rt_set_symbol(rt, nil, "nil");
   return nil;
 }
-

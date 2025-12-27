@@ -3,10 +3,13 @@
 #include <ak24/intern.h>
 #include <ak24/lambda.h>
 #include <ak24/map.h>
+#include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+
+#define AKX_MAX_RECURSION_DEPTH 1000
 
 struct akx_rt_error_ctx_t {
   int error_count;
@@ -20,6 +23,8 @@ struct akx_runtime_ctx_t {
   map_void_t builtins;
   list_t(ak_cjit_unit_t *) cjit_units;
   const char *current_module_name;
+  size_t recursion_depth;
+  size_t max_recursion_depth;
 };
 
 akx_runtime_ctx_t *akx_runtime_init(void) {
@@ -51,6 +56,8 @@ akx_runtime_ctx_t *akx_runtime_init(void) {
   map_init_generic(&ctx->builtins, sizeof(char *), map_hash_str, map_cmp_str);
   list_init(&ctx->cjit_units);
   ctx->current_module_name = NULL;
+  ctx->recursion_depth = 0;
+  ctx->max_recursion_depth = AKX_MAX_RECURSION_DEPTH;
 
   akx_rt_register_bootstrap_builtins(ctx);
 
@@ -614,12 +621,19 @@ akx_cell_t *akx_rt_invoke_lambda(akx_runtime_ctx_t *rt, akx_cell_t *lambda_cell,
     return NULL;
   }
 
+  if (rt->recursion_depth >= rt->max_recursion_depth) {
+    AK24_LOG_ERROR("Maximum recursion depth exceeded (%zu)",
+                   rt->max_recursion_depth);
+    raise(SIGABRT);
+  }
+
   ak_lambda_t *lambda = lambda_cell->value.lambda;
   if (!lambda) {
     akx_rt_error(rt, "invalid lambda cell - no lambda data");
     return NULL;
   }
 
+  rt->recursion_depth++;
   akx_rt_push_scope(rt);
 
   ak_lambda_invoke(lambda, args);
@@ -629,6 +643,7 @@ akx_cell_t *akx_rt_invoke_lambda(akx_runtime_ctx_t *rt, akx_cell_t *lambda_cell,
   akx_cell_t *result = lambda_ctx ? lambda_ctx->result : NULL;
 
   akx_rt_pop_scope(rt);
+  rt->recursion_depth--;
 
   if (!result) {
     result = akx_rt_alloc_cell(rt, AKX_TYPE_SYMBOL);
