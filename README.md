@@ -269,10 +269,12 @@ See **[tests/README.md](tests/README.md)** for detailed testing documentation.
 AKX automatically fetches and installs AK24 if not found. No manual installation required.
 
 ```bash
-make          # Build the project
-make test     # Run test suite
+make          # Build the project (compile-time tests will run)
 make install  # Install to ~/.akx (or $AKX_HOME if set)
+make test     # Run test suite (requires make install first - tests using installed system)
 ```
+
+**Note:** `make test` requires `make install` to be run first, as tests depend on the stdlib being installed at `~/.akx`.
 
 The build system will:
 - Check for AK24 at `$AK24_HOME` or `~/.ak24`
