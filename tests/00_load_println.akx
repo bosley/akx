@@ -1,2 +1,0 @@
-(cjit-load-builtin println :root "examples/builtins/println.c")
-
