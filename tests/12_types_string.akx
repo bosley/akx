@@ -1,0 +1,14 @@
+(cjit-load-builtin println :root "nucleus/io/println.c")
+
+(let empty "")
+(let hello "hello")
+(let world "world")
+
+(println "empty =" empty)
+(println "hello =" hello)
+(println "world =" world)
+
+(assert-eq empty "")
+(assert-eq hello "hello")
+(assert-ne hello world)
+(println "PASS: string types work")

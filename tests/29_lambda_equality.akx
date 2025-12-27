@@ -1,0 +1,17 @@
+(import "$AKX_HOME/stdlib/io.akx")
+
+(println "=== Lambda Equality Tests ===")
+
+(let f (lambda [x] x))
+(let g (lambda [x] x))
+(let h f)
+
+(println "(eq f f):" (eq f f))
+(println "(eq f h):" (eq f h))
+(println "(eq f g):" (eq f g))
+
+(println "(neq f g):" (neq f g))
+(println "(neq f h):" (neq f h))
+
+(println "=== Lambda equality tests passed ===")
+

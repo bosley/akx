@@ -1,0 +1,2 @@
+(cjit-load-builtin println :root "nucleus/io/println.c")
+(println "Test builtins loaded")

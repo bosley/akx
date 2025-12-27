@@ -1,0 +1,11 @@
+(cjit-load-builtin println :root "nucleus/io/println.c")
+
+(let make-identity (lambda []
+  (lambda [y] y)))
+
+(let my-identity (make-identity))
+(let result (my-identity 100))
+
+(println "make-identity()() returned:" result)
+(assert-eq result 100)
+(println "PASS: higher-order lambdas work")

@@ -1,0 +1,18 @@
+(cjit-load-builtin println :root "nucleus/io/println.c")
+
+(println "Testing :as keyword with multiple builtins")
+
+(cjit-load-builtin + :root "nucleus/math/add.c" :as "add")
+(println "Loaded + with :as add")
+(let sum1 (+ 1 2 3))
+(println "  + 1 2 3 =" sum1)
+(assert-eq sum1 6 "+ should work with :as")
+
+(cjit-load-builtin if :root "nucleus/core/if.c" :as "if_impl")
+(println "Loaded if with :as builtin_if")
+(let result (if 1 "yes" "no"))
+(println "  if 1 yes no =" result)
+(assert-eq result "yes" "if should work with :as")
+
+(println "All :as tests passed!")
+

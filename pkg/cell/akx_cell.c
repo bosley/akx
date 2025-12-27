@@ -70,6 +70,8 @@ void akx_cell_free(akx_cell_t *cell) {
       akx_cell_free(cell->value.list_head);
     } else if (cell->type == AKX_TYPE_QUOTED && cell->value.quoted_literal) {
       ak_buffer_free(cell->value.quoted_literal);
+    } else if (cell->type == AKX_TYPE_LAMBDA && cell->value.lambda) {
+      ak_lambda_free(cell->value.lambda);
     }
 
     if (cell->sourceloc) {
@@ -233,7 +235,7 @@ static akx_cell_t *parse_explicit_list_generic(
 
     ak_source_loc_t error_loc =
         ak_source_loc_from_offset(source_file, last_open_pos + origin_offset);
-    char error_msg[128];
+    char error_msg[AKX_CELL_MAX_ERROR_MESSAGE_SIZE_MAX];
     snprintf(error_msg, sizeof(error_msg),
              "unterminated list - missing closing '%c'", close_delim);
     add_parse_error(ctx, &error_loc, error_msg);
@@ -708,6 +710,14 @@ akx_cell_t *akx_cell_clone(akx_cell_t *cell) {
   case AKX_TYPE_QUOTED:
     cloned->value.quoted_literal = clone_buffer(cell->value.quoted_literal);
     if (!cloned->value.quoted_literal && cell->value.quoted_literal) {
+      akx_cell_free(cloned);
+      return NULL;
+    }
+    break;
+
+  case AKX_TYPE_LAMBDA:
+    cloned->value.lambda = ak_lambda_clone(cell->value.lambda);
+    if (!cloned->value.lambda && cell->value.lambda) {
       akx_cell_free(cloned);
       return NULL;
     }

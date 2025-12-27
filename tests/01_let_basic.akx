@@ -1,0 +1,9 @@
+(cjit-load-builtin println :root "nucleus/io/println.c")
+
+(let x 10)
+(let y 20)
+(let z 30)
+
+(println "x =" x)
+(println "y =" y)
+(println "z =" z)

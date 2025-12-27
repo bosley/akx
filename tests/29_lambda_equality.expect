@@ -1,0 +1,7 @@
+=== Lambda Equality Tests ===
+(eq f f): 1
+(eq f h): 1
+(eq f g): 0
+(neq f g): 1
+(neq f h): 0
+=== Lambda equality tests passed ===

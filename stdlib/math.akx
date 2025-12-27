@@ -1,0 +1,6 @@
+(cjit-load-builtin + :root "$AKX_HOME/nucleus/math/add.c" :as "add")
+(cjit-load-builtin - :root "$AKX_HOME/nucleus/math/sub.c" :as "sub")
+(cjit-load-builtin * :root "$AKX_HOME/nucleus/math/mul.c" :as "mul")
+(cjit-load-builtin / :root "$AKX_HOME/nucleus/math/div.c" :as "akx_div")
+(cjit-load-builtin % :root "$AKX_HOME/nucleus/math/mod.c" :as "akx_mod")
+(cjit-load-builtin = :root "$AKX_HOME/nucleus/math/eq.c" :as "akx_eq")

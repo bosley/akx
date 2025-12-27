@@ -1,5 +1,11 @@
 #include "akx_rt_compiler.h"
+#include <ak24/buffer.h>
+#include <ak24/cjit.h>
+#include <ak24/filepath.h>
+#include <ctype.h>
+#include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 int akx_compiler_extract_string_list(akx_runtime_ctx_t *rt,
                                      akx_cell_t *list_cell,
@@ -276,4 +282,453 @@ void akx_compiler_free_compile_opts(akx_builtin_compile_opts_t *opts) {
     }
     AK24_FREE(opts->define_values);
   }
+}
+
+static char *expand_env_vars_in_path(const char *path) {
+  if (!path) {
+    return NULL;
+  }
+
+  const char *dollar = strchr(path, '$');
+  if (!dollar) {
+    size_t len = strlen(path);
+    char *result = AK24_ALLOC(len + 1);
+    if (result) {
+      memcpy(result, path, len + 1);
+    }
+    return result;
+  }
+
+  size_t estimated_len = strlen(path) + AKX_RT_META_STRING_SIZE_MAX;
+  char *result = AK24_ALLOC(estimated_len);
+  if (!result) {
+    return NULL;
+  }
+
+  const char *current = path;
+  size_t result_pos = 0;
+  ak_buffer_t *temp_default_path = NULL;
+
+  while (*current) {
+    if (*current == '$') {
+      const char *var_start = current + 1;
+      const char *var_end = var_start;
+
+      while (*var_end && (isalnum(*var_end) || *var_end == '_')) {
+        var_end++;
+      }
+
+      if (var_end > var_start) {
+        size_t var_len = var_end - var_start;
+        char *var_name = AK24_ALLOC(var_len + 1);
+        if (!var_name) {
+          AK24_FREE(result);
+          if (temp_default_path) {
+            ak_buffer_free(temp_default_path);
+          }
+          return NULL;
+        }
+        memcpy(var_name, var_start, var_len);
+        var_name[var_len] = '\0';
+
+        const char *var_value = getenv(var_name);
+        if (!var_value && strcmp(var_name, "AKX_HOME") == 0) {
+          const char *home = getenv("HOME");
+          if (home) {
+            temp_default_path = ak_filepath_join(2, home, ".akx");
+            if (temp_default_path) {
+              var_value = (const char *)ak_buffer_data(temp_default_path);
+            }
+          }
+        }
+
+        if (var_value) {
+          size_t val_len = strlen(var_value);
+          if (result_pos + val_len >= estimated_len) {
+            estimated_len = result_pos + val_len + AKX_RT_META_STRING_SIZE_MAX;
+            char *new_result = AK24_ALLOC(estimated_len);
+            if (!new_result) {
+              AK24_FREE(result);
+              AK24_FREE(var_name);
+              if (temp_default_path) {
+                ak_buffer_free(temp_default_path);
+              }
+              return NULL;
+            }
+            memcpy(new_result, result, result_pos);
+            AK24_FREE(result);
+            result = new_result;
+          }
+          memcpy(result + result_pos, var_value, val_len);
+          result_pos += val_len;
+        }
+
+        AK24_FREE(var_name);
+        current = var_end;
+        continue;
+      }
+    }
+
+    if (result_pos + 1 >= estimated_len) {
+      estimated_len = result_pos + AKX_RT_META_STRING_SIZE_MAX;
+      char *new_result = AK24_ALLOC(estimated_len);
+      if (!new_result) {
+        AK24_FREE(result);
+        if (temp_default_path) {
+          ak_buffer_free(temp_default_path);
+        }
+        return NULL;
+      }
+      memcpy(new_result, result, result_pos);
+      AK24_FREE(result);
+      result = new_result;
+    }
+    result[result_pos++] = *current;
+    current++;
+  }
+
+  result[result_pos] = '\0';
+
+  if (temp_default_path) {
+    ak_buffer_free(temp_default_path);
+  }
+
+  return result;
+}
+
+const char *akx_compiler_generate_abi_header(void) {
+  return "#include <stddef.h>\n"
+         "#include <stdint.h>\n"
+         "#include <stdio.h>\n"
+         "#include <stdlib.h>\n"
+         "#include <string.h>\n"
+         "\n"
+         "typedef struct akx_runtime_ctx_t akx_runtime_ctx_t;\n"
+         "typedef struct akx_cell_t akx_cell_t;\n"
+         "typedef struct ak_context_t ak_context_t;\n"
+         "typedef struct ak_lambda_t ak_lambda_t;\n"
+         "\n"
+         "typedef enum {\n"
+         "  AKX_TYPE_SYMBOL = 0,\n"
+         "  AKX_TYPE_STRING_LITERAL = 1,\n"
+         "  AKX_TYPE_INTEGER_LITERAL = 2,\n"
+         "  AKX_TYPE_REAL_LITERAL = 3,\n"
+         "  AKX_TYPE_LIST = 4,\n"
+         "  AKX_TYPE_LIST_SQUARE = 5,\n"
+         "  AKX_TYPE_LIST_CURLY = 6,\n"
+         "  AKX_TYPE_LIST_TEMPLE = 7,\n"
+         "  AKX_TYPE_QUOTED = 8,\n"
+         "  AKX_TYPE_LAMBDA = 9\n"
+         "} akx_type_t;\n"
+         "\n"
+         "typedef akx_cell_t* (*akx_builtin_fn)(akx_runtime_ctx_t*, "
+         "akx_cell_t*);\n"
+         "\n"
+         "extern akx_type_t akx_rt_cell_get_type(akx_cell_t *cell);\n"
+         "\n"
+         "extern akx_cell_t* akx_rt_alloc_cell(akx_runtime_ctx_t *rt, "
+         "akx_type_t type);\n"
+         "extern void akx_rt_free_cell(akx_runtime_ctx_t *rt, akx_cell_t "
+         "*cell);\n"
+         "\n"
+         "extern void akx_rt_set_symbol(akx_runtime_ctx_t *rt, akx_cell_t "
+         "*cell, const char *sym);\n"
+         "extern void akx_rt_set_int(akx_runtime_ctx_t *rt, akx_cell_t *cell, "
+         "int value);\n"
+         "extern void akx_rt_set_real(akx_runtime_ctx_t *rt, akx_cell_t *cell, "
+         "double value);\n"
+         "extern void akx_rt_set_string(akx_runtime_ctx_t *rt, akx_cell_t "
+         "*cell, const char *str);\n"
+         "extern void akx_rt_set_list(akx_runtime_ctx_t *rt, akx_cell_t *cell, "
+         "akx_cell_t *head);\n"
+         "extern void akx_rt_set_lambda(akx_runtime_ctx_t *rt, akx_cell_t "
+         "*cell, ak_lambda_t *lambda);\n"
+         "\n"
+         "extern int akx_rt_cell_is_type(akx_cell_t *cell, akx_type_t type);\n"
+         "extern const char* akx_rt_cell_as_symbol(akx_cell_t *cell);\n"
+         "extern int akx_rt_cell_as_int(akx_cell_t *cell);\n"
+         "extern double akx_rt_cell_as_real(akx_cell_t *cell);\n"
+         "extern const char* akx_rt_cell_as_string(akx_cell_t *cell);\n"
+         "extern akx_cell_t* akx_rt_cell_as_list(akx_cell_t *cell);\n"
+         "extern ak_lambda_t* akx_rt_cell_as_lambda(akx_cell_t *cell);\n"
+         "extern akx_cell_t* akx_rt_cell_next(akx_cell_t *cell);\n"
+         "\n"
+         "extern size_t akx_rt_list_length(akx_cell_t *list);\n"
+         "extern akx_cell_t* akx_rt_list_nth(akx_cell_t *list, size_t n);\n"
+         "extern akx_cell_t* akx_rt_list_append(akx_runtime_ctx_t *rt, "
+         "akx_cell_t *list, akx_cell_t *item);\n"
+         "\n"
+         "extern ak_context_t* akx_rt_get_scope(akx_runtime_ctx_t *rt);\n"
+         "extern int akx_rt_scope_set(akx_runtime_ctx_t *rt, const char *key, "
+         "void *value);\n"
+         "extern void* akx_rt_scope_get(akx_runtime_ctx_t *rt, const char "
+         "*key);\n"
+         "extern void akx_rt_push_scope(akx_runtime_ctx_t *rt);\n"
+         "extern void akx_rt_pop_scope(akx_runtime_ctx_t *rt);\n"
+         "\n"
+         "extern void akx_rt_error(akx_runtime_ctx_t *rt, const char "
+         "*message);\n"
+         "extern void akx_rt_error_fmt(akx_runtime_ctx_t *rt, const char *fmt, "
+         "...);\n"
+         "\n"
+         "extern akx_cell_t* akx_rt_eval(akx_runtime_ctx_t *rt, akx_cell_t "
+         "*expr);\n"
+         "extern akx_cell_t* akx_rt_eval_list(akx_runtime_ctx_t *rt, "
+         "akx_cell_t *list);\n"
+         "extern akx_cell_t* akx_rt_eval_and_assert(akx_runtime_ctx_t *rt, "
+         "akx_cell_t *expr, akx_type_t expected_type, const char *error_msg);\n"
+         "\n"
+         "extern akx_cell_t* akx_rt_invoke_lambda(akx_runtime_ctx_t *rt, "
+         "akx_cell_t *lambda_cell, akx_cell_t *args);\n"
+         "\n"
+         "extern char* akx_rt_expand_env_vars(const char *path);\n"
+         "\n"
+         "extern void akx_rt_module_set_data(akx_runtime_ctx_t *rt, void "
+         "*data);\n"
+         "extern void* akx_rt_module_get_data(akx_runtime_ctx_t *rt);\n"
+         "\n";
+}
+
+int akx_compiler_load_builtin_ex(akx_runtime_ctx_t *rt, const char *name,
+                                 const char *c_function_name,
+                                 const char *root_path,
+                                 const akx_builtin_compile_opts_t *opts) {
+  if (!rt || !name || !root_path) {
+    AK24_LOG_ERROR("Invalid arguments to akx_compiler_load_builtin_ex");
+    return -1;
+  }
+
+  AK24_LOG_DEBUG("Creating CJIT unit");
+  ak_cjit_unit_t *unit = ak_cjit_unit_new(NULL, NULL, NULL);
+  if (!unit) {
+    AK24_LOG_ERROR("Failed to create CJIT unit");
+    return -1;
+  }
+  AK24_LOG_DEBUG("CJIT unit created");
+
+  if (opts) {
+    for (size_t i = 0; i < opts->include_path_count; i++) {
+      AK24_LOG_DEBUG("Adding include path: %s", opts->include_paths[i]);
+      if (ak_cjit_add_include_path(unit, opts->include_paths[i]) !=
+          AK_CJIT_OK) {
+        AK24_LOG_ERROR("Failed to add include path: %s",
+                       opts->include_paths[i]);
+        ak_cjit_unit_free(unit);
+        return -1;
+      }
+    }
+
+    for (size_t i = 0; i < opts->library_path_count; i++) {
+      AK24_LOG_DEBUG("Adding library path: %s", opts->library_paths[i]);
+      if (ak_cjit_add_library_path(unit, opts->library_paths[i]) !=
+          AK_CJIT_OK) {
+        AK24_LOG_ERROR("Failed to add library path: %s",
+                       opts->library_paths[i]);
+        ak_cjit_unit_free(unit);
+        return -1;
+      }
+    }
+
+    for (size_t i = 0; i < opts->library_count; i++) {
+      AK24_LOG_DEBUG("Adding library: %s", opts->libraries[i]);
+      if (ak_cjit_add_library(unit, opts->libraries[i]) != AK_CJIT_OK) {
+        AK24_LOG_ERROR("Failed to add library: %s", opts->libraries[i]);
+        ak_cjit_unit_free(unit);
+        return -1;
+      }
+    }
+
+    for (size_t i = 0; i < opts->define_count; i++) {
+      AK24_LOG_DEBUG("Adding define: %s=%s", opts->define_names[i],
+                     opts->define_values[i]);
+      if (ak_cjit_define(unit, opts->define_names[i], opts->define_values[i]) !=
+          AK_CJIT_OK) {
+        AK24_LOG_ERROR("Failed to add define: %s", opts->define_names[i]);
+        ak_cjit_unit_free(unit);
+        return -1;
+      }
+    }
+  }
+
+  AK24_LOG_DEBUG("Reading root source file: %s", root_path);
+
+  char *expanded_path = expand_env_vars_in_path(root_path);
+  if (!expanded_path) {
+    AK24_LOG_ERROR("Failed to expand path: %s", root_path);
+    ak_cjit_unit_free(unit);
+    return -1;
+  }
+
+  AK24_LOG_DEBUG("Expanded path: %s", expanded_path);
+  ak_buffer_t *source_buf = ak_buffer_from_file(expanded_path);
+  AK24_FREE(expanded_path);
+
+  if (!source_buf) {
+    AK24_LOG_ERROR("Failed to read root source file: %s", root_path);
+    ak_cjit_unit_free(unit);
+    return -1;
+  }
+  AK24_LOG_DEBUG("Root source file read successfully (%zu bytes)",
+                 ak_buffer_count(source_buf));
+
+  AK24_LOG_DEBUG("Generating ABI header");
+  const char *abi_header = akx_compiler_generate_abi_header();
+  size_t abi_len = strlen(abi_header);
+  size_t source_len = ak_buffer_count(source_buf);
+  size_t total_len = abi_len + source_len + 1;
+
+  AK24_LOG_DEBUG("Allocating %zu bytes for combined source", total_len);
+  char *combined_source = AK24_ALLOC(total_len);
+  if (!combined_source) {
+    AK24_LOG_ERROR("Failed to allocate memory for combined source");
+    ak_buffer_free(source_buf);
+    ak_cjit_unit_free(unit);
+    return -1;
+  }
+
+  AK24_LOG_DEBUG("Combining ABI header and root source");
+  memcpy(combined_source, abi_header, abi_len);
+  memcpy(combined_source + abi_len, ak_buffer_data(source_buf), source_len);
+  combined_source[abi_len + source_len] = '\0';
+
+  ak_buffer_free(source_buf);
+
+  AK24_LOG_DEBUG("Adding symbols to CJIT unit");
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpedantic"
+
+  ak_cjit_add_symbol(unit, "printf", printf);
+  ak_cjit_add_symbol(unit, "malloc", malloc);
+  ak_cjit_add_symbol(unit, "free", free);
+  ak_cjit_add_symbol(unit, "akx_rt_alloc_cell", akx_rt_alloc_cell);
+  ak_cjit_add_symbol(unit, "akx_rt_free_cell", akx_rt_free_cell);
+  ak_cjit_add_symbol(unit, "akx_rt_set_symbol", akx_rt_set_symbol);
+  ak_cjit_add_symbol(unit, "akx_rt_set_int", akx_rt_set_int);
+  ak_cjit_add_symbol(unit, "akx_rt_set_real", akx_rt_set_real);
+  ak_cjit_add_symbol(unit, "akx_rt_set_string", akx_rt_set_string);
+  ak_cjit_add_symbol(unit, "akx_rt_set_list", akx_rt_set_list);
+  ak_cjit_add_symbol(unit, "akx_rt_set_lambda", akx_rt_set_lambda);
+  ak_cjit_add_symbol(unit, "akx_rt_cell_is_type", akx_rt_cell_is_type);
+  ak_cjit_add_symbol(unit, "akx_rt_cell_get_type", akx_rt_cell_get_type);
+  ak_cjit_add_symbol(unit, "akx_rt_cell_as_symbol", akx_rt_cell_as_symbol);
+  ak_cjit_add_symbol(unit, "akx_rt_cell_as_int", akx_rt_cell_as_int);
+  ak_cjit_add_symbol(unit, "akx_rt_cell_as_real", akx_rt_cell_as_real);
+  ak_cjit_add_symbol(unit, "akx_rt_cell_as_string", akx_rt_cell_as_string);
+  ak_cjit_add_symbol(unit, "akx_rt_cell_as_list", akx_rt_cell_as_list);
+  ak_cjit_add_symbol(unit, "akx_rt_cell_as_lambda", akx_rt_cell_as_lambda);
+  ak_cjit_add_symbol(unit, "akx_rt_cell_next", akx_rt_cell_next);
+  ak_cjit_add_symbol(unit, "akx_rt_list_length", akx_rt_list_length);
+  ak_cjit_add_symbol(unit, "akx_rt_list_nth", akx_rt_list_nth);
+  ak_cjit_add_symbol(unit, "akx_rt_list_append", akx_rt_list_append);
+  ak_cjit_add_symbol(unit, "akx_rt_get_scope", akx_rt_get_scope);
+  ak_cjit_add_symbol(unit, "akx_rt_scope_set", akx_rt_scope_set);
+  ak_cjit_add_symbol(unit, "akx_rt_scope_get", akx_rt_scope_get);
+  ak_cjit_add_symbol(unit, "akx_rt_push_scope", akx_rt_push_scope);
+  ak_cjit_add_symbol(unit, "akx_rt_pop_scope", akx_rt_pop_scope);
+  ak_cjit_add_symbol(unit, "akx_rt_error", akx_rt_error);
+  ak_cjit_add_symbol(unit, "akx_rt_error_fmt", akx_rt_error_fmt);
+  ak_cjit_add_symbol(unit, "akx_rt_eval", akx_rt_eval);
+  ak_cjit_add_symbol(unit, "akx_rt_eval_list", akx_rt_eval_list);
+  ak_cjit_add_symbol(unit, "akx_rt_eval_and_assert", akx_rt_eval_and_assert);
+  ak_cjit_add_symbol(unit, "akx_rt_invoke_lambda", akx_rt_invoke_lambda);
+  ak_cjit_add_symbol(unit, "akx_rt_expand_env_vars", akx_rt_expand_env_vars);
+  ak_cjit_add_symbol(unit, "akx_rt_module_set_data", akx_rt_module_set_data);
+  ak_cjit_add_symbol(unit, "akx_rt_module_get_data", akx_rt_module_get_data);
+
+#pragma clang diagnostic pop
+
+  AK24_LOG_DEBUG("All symbols added");
+
+  AK24_LOG_DEBUG("Adding root source to CJIT unit");
+  if (ak_cjit_add_source(unit, combined_source, root_path) != AK_CJIT_OK) {
+    AK24_LOG_ERROR("Failed to add root source to CJIT unit");
+    ak_cjit_unit_free(unit);
+    AK24_FREE(combined_source);
+    return -1;
+  }
+  AK24_LOG_DEBUG("Root source added successfully");
+
+  AK24_FREE(combined_source);
+
+  if (opts && opts->impl_file_count > 0) {
+    char root_dir[1024];
+    const char *last_slash = strrchr(root_path, '/');
+    if (last_slash) {
+      size_t dir_len = last_slash - root_path;
+      if (dir_len >= sizeof(root_dir)) {
+        AK24_LOG_ERROR("Root path too long");
+        ak_cjit_unit_free(unit);
+        return -1;
+      }
+      memcpy(root_dir, root_path, dir_len);
+      root_dir[dir_len] = '\0';
+    } else {
+      strcpy(root_dir, ".");
+    }
+
+    for (size_t i = 0; i < opts->impl_file_count; i++) {
+      char impl_path[2048];
+      snprintf(impl_path, sizeof(impl_path), "%s/%s", root_dir,
+               opts->impl_files[i]);
+
+      AK24_LOG_DEBUG("Reading implementation file: %s", impl_path);
+      ak_buffer_t *impl_buf = ak_buffer_from_file(impl_path);
+      if (!impl_buf) {
+        AK24_LOG_ERROR("Failed to read implementation file: %s", impl_path);
+        ak_cjit_unit_free(unit);
+        return -1;
+      }
+
+      const char *impl_source = (const char *)ak_buffer_data(impl_buf);
+      AK24_LOG_DEBUG("Adding implementation file to CJIT unit: %s", impl_path);
+      if (ak_cjit_add_source(unit, impl_source, impl_path) != AK_CJIT_OK) {
+        AK24_LOG_ERROR("Failed to add implementation file: %s", impl_path);
+        ak_buffer_free(impl_buf);
+        ak_cjit_unit_free(unit);
+        return -1;
+      }
+
+      ak_buffer_free(impl_buf);
+      AK24_LOG_DEBUG("Implementation file added: %s", impl_path);
+    }
+  }
+
+  AK24_LOG_DEBUG("Compiling builtin");
+  if (ak_cjit_relocate(unit) != AK_CJIT_OK) {
+    AK24_LOG_ERROR("Failed to compile builtin: %s", root_path);
+    ak_cjit_unit_free(unit);
+    return -1;
+  }
+  AK24_LOG_DEBUG("Compilation successful");
+
+  const char *lookup_name = c_function_name ? c_function_name : name;
+  AK24_LOG_DEBUG("Looking up symbol '%s'", lookup_name);
+  akx_builtin_fn function =
+      (akx_builtin_fn)ak_cjit_get_symbol(unit, lookup_name);
+  if (!function) {
+    AK24_LOG_ERROR("Failed to find symbol '%s' in compiled builtin",
+                   lookup_name);
+    ak_cjit_unit_free(unit);
+    return -1;
+  }
+  AK24_LOG_DEBUG("Symbol found");
+
+  char init_name[AKX_RT_META_STRING_SIZE_MAX];
+  char deinit_name[AKX_RT_META_STRING_SIZE_MAX];
+  char reload_name[AKX_RT_META_STRING_SIZE_MAX];
+  snprintf(init_name, sizeof(init_name), "%s_init", lookup_name);
+  snprintf(deinit_name, sizeof(deinit_name), "%s_deinit", lookup_name);
+  snprintf(reload_name, sizeof(reload_name), "%s_reload", lookup_name);
+
+  void (*init_fn)(akx_runtime_ctx_t *) =
+      (void (*)(akx_runtime_ctx_t *))ak_cjit_get_symbol(unit, init_name);
+  void (*deinit_fn)(akx_runtime_ctx_t *) =
+      (void (*)(akx_runtime_ctx_t *))ak_cjit_get_symbol(unit, deinit_name);
+  void (*reload_fn)(akx_runtime_ctx_t *, void *) =
+      (void (*)(akx_runtime_ctx_t *, void *))ak_cjit_get_symbol(unit,
+                                                                reload_name);
+
+  return akx_rt_register_builtin(rt, name, root_path, function, unit, init_fn,
+                                 deinit_fn, reload_fn);
 }

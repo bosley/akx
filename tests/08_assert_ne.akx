@@ -1,0 +1,13 @@
+(cjit-load-builtin println :root "nucleus/io/println.c")
+
+(let x 10)
+(let y 20)
+
+(assert-ne x y)
+(println "PASS: x != y")
+
+(assert-ne x 99)
+(println "PASS: x != 99")
+
+(assert-ne "Alice" "Bob")
+(println "PASS: Alice != Bob")

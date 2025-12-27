@@ -1,0 +1,40 @@
+{
+  "name": "akx-language",
+  "displayName": "AKX Language Support",
+  "description": "Syntax highlighting for AKX - A self-extending runtime language",
+  "version": "1.0.0",
+  "publisher": "akx",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "akx",
+        "aliases": [
+          "AKX",
+          "akx"
+        ],
+        "extensions": [
+          ".akx"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icon.png",
+          "dark": "./icon.png"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "akx",
+        "scopeName": "source.akx",
+        "path": "./akx.tmLanguage.json"
+      }
+    ]
+  }
+}
+

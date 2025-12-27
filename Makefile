@@ -1,4 +1,4 @@
-.PHONY: all clean configure build run
+.PHONY: all clean configure build run test
 
 BUILD_DIR := build
 BUILD_TYPE ?= Release
@@ -18,4 +18,15 @@ clean:
 
 run: build
 	@$(BUILD_DIR)/bin/akx
+
+test: build
+	@./tests/run.sh
+
+install:
+	@if [ -z "$$AKX_HOME" ]; then \
+		export AKX_HOME=~/.akx; \
+	fi; \
+	echo "Installing to $$AKX_HOME"; \
+	mkdir -p $$AKX_HOME; \
+	cd $(BUILD_DIR) && cmake -DAKX_HOME=$$AKX_HOME .. && cmake --install .
 

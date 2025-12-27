@@ -1,0 +1,22 @@
+(cjit-load-builtin println :root "examples/builtins/println.c")
+(cjit-load-builtin load_store :root "examples/builtins/load_store.c")
+
+(println "=== Testing load_store ===")
+(println "")
+
+(println "--- Basic Set/Get ---")
+(load_store x 42)
+(println "Set x to 42, result:" (load_store x))
+
+(println "")
+(println "--- Compare-and-Swap ---")
+(load_store y 10)
+(println "Set y to 10")
+(println "CAS y 20 10 (should succeed):" (load_store y 20 10))
+(println "y is now:" (load_store y))
+(println "CAS y 30 10 (should fail):" (load_store y 30 10))
+(println "y is still:" (load_store y))
+
+(println "")
+(println "--- Get non-existent variable ---")
+(println "Getting undefined var z:" (load_store z))

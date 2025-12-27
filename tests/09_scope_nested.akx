@@ -1,0 +1,16 @@
+(cjit-load-builtin println :root "nucleus/io/println.c")
+
+(let x 10)
+(println "outer x =" x)
+
+(let outer (lambda []
+  (let x 20)
+  x))
+
+(let result (outer))
+(println "inner x (from lambda) =" result)
+(println "outer x (after lambda) =" x)
+
+(assert-eq result 20)
+(assert-eq x 10)
+(println "PASS: scope shadowing works")

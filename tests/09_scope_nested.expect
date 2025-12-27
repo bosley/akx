@@ -1,0 +1,4 @@
+outer x = 10
+inner x (from lambda) = 20
+outer x (after lambda) = 10
+PASS: scope shadowing works

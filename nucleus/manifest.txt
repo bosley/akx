@@ -1,0 +1,46 @@
+# AKX Nucleus Manifest
+# Format: SYMBOL C_FUNCTION_NAME RELATIVE_PATH COMPILE_IN
+# COMPILE_IN: 1=always compile in, 0=load at runtime only
+
+# Core language primitives (always compiled in)
+if          if_impl         core/if.c           1
+lambda      lambda_impl     core/lambda.c       1
+let         let_impl        core/let.c          1
+set         set_impl        core/set.c          1
+import      import_impl     core/import.c       1
+
+# Assertions (compiled in for testing)
+assert-true  assert_true_impl   assert/assert_true.c    1
+assert-false assert_false_impl  assert/assert_false.c   1
+assert-eq    assert_eq_impl     assert/assert_eq.c      1
+assert-ne    assert_ne_impl     assert/assert_ne.c      1
+
+# Math operators (compiled in)
++           add             math/add.c          1
+-           sub             math/sub.c          1
+*           mul             math/mul.c          1
+/           akx_div         math/div.c          1
+%           akx_mod         math/mod.c          1
+=           akx_eq          math/eq.c           1
+
+# I/O (runtime loadable)
+print       akx_print       io/print.c          0
+println     println         io/println.c        0
+
+# Type introspection (compiled in)
+?nil        is_nil_impl     types/is_nil.c      1
+?int        is_int_impl     types/is_int.c      1
+?real       is_real_impl    types/is_real.c     1
+?lambda     is_lambda_impl  types/is_lambda.c   1
+?str        is_str_impl     types/is_str.c      1
+?quote      is_quote_impl   types/is_quote.c    1
+?sym        is_sym_impl     types/is_sym.c      1
+
+# Comparison operators (compiled in)
+eq          eq_impl         cmp/eq.c            1
+neq         neq_impl        cmp/neq.c           1
+gte         gte_impl        cmp/gte.c           1
+gt          gt_impl         cmp/gt.c            1
+lte         lte_impl        cmp/lte.c           1
+lt          lt_impl         cmp/lt.c            1
+

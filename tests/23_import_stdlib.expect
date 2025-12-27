@@ -1,0 +1,8 @@
+Testing import system
+Math: 1 + 2 + 3 = 6
+Math: 10 - 3 = 7
+Math: 4 * 5 = 20
+Math: 20 / 4 = 5
+Math: 10 % 3 = 1
+Equality: 5 = 5 = true
+Import test completed successfully

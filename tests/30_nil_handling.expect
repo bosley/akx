@@ -1,0 +1,7 @@
+=== Nil Handling Tests ===
+(?nil (return-nil)): 1
+(?int (return-nil)): 0
+(?real (return-nil)): 0
+(?str (return-nil)): 0
+(?lambda (return-nil)): 0
+=== Nil handling tests passed ===

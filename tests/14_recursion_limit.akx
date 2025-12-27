@@ -1,0 +1,9 @@
+(cjit-load-builtin println :root "nucleus/io/println.c")
+
+(println "Testing recursion limit protection...")
+
+(let infinite-loop (lambda []
+  (infinite-loop)))
+
+(infinite-loop)
+(println "This should never print")

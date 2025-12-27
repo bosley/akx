@@ -1,0 +1,12 @@
+=== Variadic Equality Tests ===
+(eq 1 1): 1
+(eq 1 2): 0
+(eq 1 1 1): 1
+(eq 1 1 2): 0
+(eq 5 5 5 5): 1
+(eq \"a\" \"a\"): 1
+(eq \"a\" \"b\"): 0
+(eq \"hello\" \"hello\" \"hello\"): 1
+(eq x y): 1
+(eq x z): 0
+=== Equality tests passed ===

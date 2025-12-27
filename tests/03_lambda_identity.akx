@@ -1,0 +1,8 @@
+(cjit-load-builtin println :root "nucleus/io/println.c")
+
+(let identity (lambda [x] x))
+(let result (identity 42))
+
+(println "identity(42) =" result)
+(assert-eq result 42)
+(println "PASS: identity function works")

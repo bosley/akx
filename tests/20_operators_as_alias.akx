@@ -1,0 +1,36 @@
+(cjit-load-builtin println :root "nucleus/io/println.c")
+
+(println "=== Testing Operator Symbols with :as Aliasing ===")
+(println "")
+
+(cjit-load-builtin + :root "nucleus/math/add.c" :as "add")
+(println "Loaded + (aliased to add)")
+(let sum (+ 1 2 3 4 5))
+(println "  + 1 2 3 4 5 =" sum)
+(assert-eq sum 15 "+ should sum all arguments")
+
+(cjit-load-builtin - :root "nucleus/math/sub.c" :as "sub")
+(println "Loaded - (aliased to sub)")
+(let diff (- 10 3))
+(println "  - 10 3 =" diff)
+(assert-eq diff 7 "- should subtract")
+
+(cjit-load-builtin * :root "nucleus/math/mul.c" :as "mul")
+(println "Loaded * (aliased to mul)")
+(let prod (* 2 3 4))
+(println "  * 2 3 4 =" prod)
+(assert-eq prod 24 "* should multiply all arguments")
+
+(println "")
+(println "=== Testing Operator Composition ===")
+(let expr1 (+ (* 2 3) (- 10 5)))
+(println "  + (* 2 3) (- 10 5) =" expr1)
+(assert-eq expr1 11 "composed expression should work")
+
+(let expr2 (- (+ 10 20) (* 2 3)))
+(println "  - (+ 10 20) (* 2 3) =" expr2)
+(assert-eq expr2 24 "nested operators should work")
+
+(println "")
+(println "All operator :as tests passed!")
+

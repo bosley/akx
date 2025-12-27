@@ -1,0 +1,12 @@
+(cjit-load-builtin println :root "tests/builtins/println.c")
+
+(println "=== Lambda Type Tests ===")
+
+(let f (lambda [x] x))
+(println "(?lambda f):" (?lambda f))
+(println "(?int f):" (?int f))
+(println "(?str f):" (?str f))
+(println "(?nil f):" (?nil f))
+
+(println "=== Lambda type tests passed ===")
+

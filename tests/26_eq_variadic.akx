@@ -1,0 +1,25 @@
+(import "$AKX_HOME/stdlib/io.akx")
+
+(println "=== Variadic Equality Tests ===")
+
+(println "(eq 1 1):" (eq 1 1))
+(println "(eq 1 2):" (eq 1 2))
+
+(println "(eq 1 1 1):" (eq 1 1 1))
+(println "(eq 1 1 2):" (eq 1 1 2))
+
+(println "(eq 5 5 5 5):" (eq 5 5 5 5))
+
+(println "(eq \"a\" \"a\"):" (eq "a" "a"))
+(println "(eq \"a\" \"b\"):" (eq "a" "b"))
+(println "(eq \"hello\" \"hello\" \"hello\"):" (eq "hello" "hello" "hello"))
+
+(let x 42)
+(let y 42)
+(let z 43)
+(println "(eq x y):" (eq x y))
+(println "(eq x z):" (eq x z))
+
+
+(println "=== Equality tests passed ===")
+

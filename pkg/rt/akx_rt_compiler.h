@@ -20,4 +20,11 @@ int akx_compiler_parse_linker_options(akx_runtime_ctx_t *rt,
 
 void akx_compiler_free_compile_opts(akx_builtin_compile_opts_t *opts);
 
+const char *akx_compiler_generate_abi_header(void);
+
+int akx_compiler_load_builtin_ex(akx_runtime_ctx_t *rt, const char *name,
+                                 const char *c_function_name,
+                                 const char *root_path,
+                                 const akx_builtin_compile_opts_t *opts);
+
 #endif

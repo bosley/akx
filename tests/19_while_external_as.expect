@@ -1,0 +1,6 @@
+Testing :as keyword with multiple builtins
+Loaded + with :as add
+  + 1 2 3 = 6
+Loaded if with :as builtin_if
+  if 1 yes no = yes
+All :as tests passed!

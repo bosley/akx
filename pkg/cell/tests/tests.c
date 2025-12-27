@@ -6,6 +6,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#define TEST_FILENAME_MAX_SIZE_MAX 256
+
 static int count_cells(akx_cell_t *cell) {
   int count = 0;
   while (cell) {
@@ -76,7 +78,7 @@ static akx_cell_t *parse_string_as_file(const char *content,
     return NULL;
   }
 
-  char filename[256];
+  char filename[TEST_FILENAME_MAX_SIZE_MAX];
   snprintf(filename, sizeof(filename), "akx_test_%s_%d.akx", test_name,
            (int)getpid());
 

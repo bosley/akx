@@ -1,0 +1,3 @@
+PASS: x != y
+PASS: x != 99
+PASS: Alice != Bob

@@ -1,0 +1,6 @@
+=== Lambda Type Tests ===
+(?lambda f): 1
+(?int f): 0
+(?str f): 0
+(?nil f): 0
+=== Lambda type tests passed ===

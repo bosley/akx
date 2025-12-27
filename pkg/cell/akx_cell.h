@@ -4,9 +4,12 @@
 #include <ak24/buffer.h>
 #include <ak24/intern.h>
 #include <ak24/kernel.h>
+#include <ak24/lambda.h>
 #include <ak24/list.h>
 #include <ak24/scanner.h>
 #include <ak24/sourceloc.h>
+
+#define AKX_CELL_MAX_ERROR_MESSAGE_SIZE_MAX 256
 
 typedef enum {
   AKX_TYPE_SYMBOL,
@@ -18,13 +21,14 @@ typedef enum {
   AKX_TYPE_LIST_CURLY,
   AKX_TYPE_LIST_TEMPLE,
   AKX_TYPE_QUOTED,
+  AKX_TYPE_LAMBDA,
 } akx_type_t;
 
 typedef struct akx_cell_t akx_cell_t;
 
 typedef struct akx_parse_error_t {
   ak_source_loc_t location;
-  char message[256];
+  char message[AKX_CELL_MAX_ERROR_MESSAGE_SIZE_MAX];
   struct akx_parse_error_t *next;
 } akx_parse_error_t;
 
@@ -45,6 +49,7 @@ struct akx_cell_t {
     ak_buffer_t *string_literal;
     akx_cell_t *list_head;
     ak_buffer_t *quoted_literal;
+    ak_lambda_t *lambda;
   } value;
 
   ak_source_range_t *sourceloc;
