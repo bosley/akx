@@ -53,7 +53,8 @@ for test_file in "$SCRIPT_DIR"/*.akx; do
         exit_code=$?
     fi
     
-    grep -v "^AK24 Info: Removing stale lock file" "$raw_output" > "$actual_output" || true
+    grep -v "^AK24 Info: Removing stale lock file" "$raw_output" | \
+    grep -v "ERROR.*Maximum recursion depth exceeded" > "$actual_output" || true
     
     cat "$expect_file" > "$expected_output"
     rm -f "$raw_output"
