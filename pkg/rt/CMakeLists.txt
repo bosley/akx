@@ -8,12 +8,14 @@ target_include_directories(akx_rt PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/pkg/cell
     ${CMAKE_SOURCE_DIR}/pkg/sv
+    ${CMAKE_BINARY_DIR}/generated
     ${AK24_INCLUDE_DIR}
 )
 
 target_link_libraries(akx_rt PUBLIC
     akx_cell
     akx_sv
+    akx_nucleus
     ${AK24_LIBRARIES}
     pthread
 )

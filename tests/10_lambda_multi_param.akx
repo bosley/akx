@@ -1,4 +1,4 @@
-(cjit-load-builtin println :root "tests/builtins/println.c")
+(cjit-load-builtin println :root "nucleus/io/println.c")
 
 (let first (lambda [a b c] a))
 (let second (lambda [a b c] b))

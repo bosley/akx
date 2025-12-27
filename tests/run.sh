@@ -47,7 +47,7 @@ for test_file in "$SCRIPT_DIR"/*.akx; do
     expected_output=$(mktemp)
     raw_output=$(mktemp)
     
-    if "$AKX_BINARY" "$test_file" > "$raw_output" 2>&1; then
+    if (cd "$PROJECT_ROOT" && "$AKX_BINARY" "$test_file") > "$raw_output" 2>&1; then
         exit_code=0
     else
         exit_code=$?

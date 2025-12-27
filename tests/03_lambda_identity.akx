@@ -1,4 +1,4 @@
-(cjit-load-builtin println :root "tests/builtins/println.c")
+(cjit-load-builtin println :root "nucleus/io/println.c")
 
 (let identity (lambda [x] x))
 (let result (identity 42))

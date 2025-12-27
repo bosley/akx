@@ -1,4 +1,6 @@
-akx_cell_t *builtin_if(akx_runtime_ctx_t *rt, akx_cell_t *args) {
+#include <stddef.h>
+
+akx_cell_t *if_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
   size_t arg_count = akx_rt_list_length(args);
   if (arg_count < 2 || arg_count > 3) {
     akx_rt_error(rt, "if: requires 2 or 3 arguments (condition then-branch "

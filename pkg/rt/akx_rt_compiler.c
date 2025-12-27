@@ -572,9 +572,11 @@ int akx_compiler_load_builtin_ex(akx_runtime_ctx_t *rt, const char *name,
 
   const char *lookup_name = c_function_name ? c_function_name : name;
   AK24_LOG_DEBUG("Looking up symbol '%s'", lookup_name);
-  akx_builtin_fn function = (akx_builtin_fn)ak_cjit_get_symbol(unit, lookup_name);
+  akx_builtin_fn function =
+      (akx_builtin_fn)ak_cjit_get_symbol(unit, lookup_name);
   if (!function) {
-    AK24_LOG_ERROR("Failed to find symbol '%s' in compiled builtin", lookup_name);
+    AK24_LOG_ERROR("Failed to find symbol '%s' in compiled builtin",
+                   lookup_name);
     ak_cjit_unit_free(unit);
     return -1;
   }

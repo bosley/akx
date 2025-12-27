@@ -1,5 +1,6 @@
 #include "akx_rt.h"
 #include "akx_rt_builtins.h"
+#include "builtin_registry.h"
 #include <ak24/intern.h>
 #include <ak24/lambda.h>
 #include <ak24/map.h>
@@ -60,6 +61,7 @@ akx_runtime_ctx_t *akx_runtime_init(void) {
   ctx->max_recursion_depth = AKX_MAX_RECURSION_DEPTH;
 
   akx_rt_register_bootstrap_builtins(ctx);
+  akx_rt_register_compiled_nuclei(ctx);
 
   AK24_LOG_TRACE("AKX runtime initialized");
 

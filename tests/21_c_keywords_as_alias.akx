@@ -1,9 +1,9 @@
-(cjit-load-builtin println :root "tests/builtins/println.c")
+(cjit-load-builtin println :root "nucleus/io/println.c")
 
 (println "=== Testing C Keywords with :as Aliasing ===")
 (println "")
 
-(cjit-load-builtin if :root "tests/builtins/if_impl.c" :as "builtin_if")
+(cjit-load-builtin if :root "nucleus/core/if.c" :as "builtin_if")
 (println "Loaded 'if' (C keyword, aliased to builtin_if)")
 
 (println "Test: if with true condition")
