@@ -1,4 +1,4 @@
-.PHONY: all clean configure build run
+.PHONY: all clean configure build run test
 
 BUILD_DIR := build
 BUILD_TYPE ?= Release
@@ -18,4 +18,7 @@ clean:
 
 run: build
 	@$(BUILD_DIR)/bin/akx
+
+test: build
+	@./tests/run.sh
 

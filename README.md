@@ -176,9 +176,29 @@ See: [`examples/test_mixed.akx`](examples/test_mixed.akx)
 
 </details>
 
+## Testing
+
+AKX includes a comprehensive test suite to ensure core language stability:
+
+```bash
+./tests/run.sh
+```
+
+The test suite uses expect-based assertions to validate:
+- Variable binding (`let`, `set`)
+- Lambda functions and closures
+- Scope management
+- Type system (integers, reals, strings)
+- Assertion builtins
+
+See **[tests/README.md](tests/README.md)** for detailed testing documentation.
+
 ## Documentation
 
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - Complete architecture overview with diagrams
+- **[LAMBDA_IMPLEMENTATION.md](LAMBDA_IMPLEMENTATION.md)** - Lambda and scope system implementation
+- **[ASSERTIONS.md](ASSERTIONS.md)** - Assertion builtins and signal handling
+- **[tests/README.md](tests/README.md)** - Test suite documentation and guidelines
 - **[pkg/rt/model.md](pkg/rt/model.md)** - Runtime model and API reference
 - **[pkg/cell/model.md](pkg/cell/model.md)** - Cell memory model documentation
 - **[examples/README.md](examples/README.md)** - Comprehensive examples and builtin API guide
