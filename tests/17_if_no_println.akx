@@ -1,0 +1,16 @@
+(assert-eq (if 1 10 20) 10 "if 1 should return then-branch")
+(assert-eq (if 0 10 20) 20 "if 0 should return else-branch")
+(assert-eq (if 2 10 20) 20 "if 2 should return else-branch")
+(assert-eq (if -1 10 20) 20 "if -1 should return else-branch")
+
+(let x 1)
+(assert-eq (if x 100 200) 100 "if with variable containing 1 should be true")
+
+(let y 0)
+(assert-eq (if y 100 200) 200 "if with variable containing 0 should be false")
+
+(let nil_result (if 0 42 99))
+(assert-eq nil_result 99 "if 0 with else should return else-branch")
+
+(assert-eq (if 1 "then" "else") "then" "if 1 with else-branch should return then-branch")
+

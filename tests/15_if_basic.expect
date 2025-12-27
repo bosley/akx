@@ -1,0 +1,13 @@
+Testing if builtin with integer 1 (true):
+  Result: then-branch
+Testing if builtin with integer 0 (false):
+  Result: else-branch
+Testing if builtin with integer 2 (false):
+  Result: else-branch
+Testing if builtin with no else branch (false condition):
+  Result: nil
+Testing if builtin with no else branch (true condition):
+  Result: then-branch
+Testing if builtin with expression evaluation:
+  Result: x is 1
+All if tests completed

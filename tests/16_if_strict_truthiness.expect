@@ -1,0 +1,16 @@
+Testing strict truthiness - only integer 1 is true
+Test with integer -1 (should be false):
+   false
+Test with integer 100 (should be false):
+   false
+Test with string (should be false):
+   false
+Test with symbol t (should be false):
+   false
+Test with symbol nil (should be false):
+   false
+Test with exactly 1 (should be true):
+   true
+Test with expression that evaluates to 1 (should be true):
+   true
+Strict truthiness tests completed

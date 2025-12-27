@@ -1,0 +1,29 @@
+(cjit-load-builtin println :root "tests/builtins/println.c")
+
+(println "Testing if builtin with integer 1 (true):")
+(let result1 (if 1 "then-branch" "else-branch"))
+(println "  Result:" result1)
+
+(println "Testing if builtin with integer 0 (false):")
+(let result2 (if 0 "then-branch" "else-branch"))
+(println "  Result:" result2)
+
+(println "Testing if builtin with integer 2 (false):")
+(let result3 (if 2 "then-branch" "else-branch"))
+(println "  Result:" result3)
+
+(println "Testing if builtin with no else branch (false condition):")
+(let result4 (if 0 "then-branch"))
+(println "  Result:" result4)
+
+(println "Testing if builtin with no else branch (true condition):")
+(let result5 (if 1 "then-branch"))
+(println "  Result:" result5)
+
+(println "Testing if builtin with expression evaluation:")
+(let x 1)
+(let result6 (if x "x is 1" "x is not 1"))
+(println "  Result:" result6)
+
+(println "All if tests completed")
+
