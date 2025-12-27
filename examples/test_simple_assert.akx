@@ -1,0 +1,10 @@
+(let x 10)
+(let y 20)
+
+(assert-true x "x should be truthy")
+(assert-true 1 "1 should be truthy")
+(assert-true "hello" "strings should be truthy")
+
+(assert-false 0 "0 should be falsy")
+
+(assert-eq x 10 "x should equal 10")

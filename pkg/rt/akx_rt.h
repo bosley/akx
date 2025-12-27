@@ -69,6 +69,8 @@ void akx_rt_set_real(akx_runtime_ctx_t *rt, akx_cell_t *cell, double value);
 void akx_rt_set_string(akx_runtime_ctx_t *rt, akx_cell_t *cell,
                        const char *str);
 void akx_rt_set_list(akx_runtime_ctx_t *rt, akx_cell_t *cell, akx_cell_t *head);
+void akx_rt_set_lambda(akx_runtime_ctx_t *rt, akx_cell_t *cell,
+                       ak_lambda_t *lambda);
 
 int akx_rt_cell_is_type(akx_cell_t *cell, akx_type_t type);
 const char *akx_rt_cell_as_symbol(akx_cell_t *cell);
@@ -76,6 +78,7 @@ int akx_rt_cell_as_int(akx_cell_t *cell);
 double akx_rt_cell_as_real(akx_cell_t *cell);
 const char *akx_rt_cell_as_string(akx_cell_t *cell);
 akx_cell_t *akx_rt_cell_as_list(akx_cell_t *cell);
+ak_lambda_t *akx_rt_cell_as_lambda(akx_cell_t *cell);
 akx_cell_t *akx_rt_cell_next(akx_cell_t *cell);
 
 size_t akx_rt_list_length(akx_cell_t *list);
@@ -86,6 +89,9 @@ akx_cell_t *akx_rt_list_append(akx_runtime_ctx_t *rt, akx_cell_t *list,
 ak_context_t *akx_rt_get_scope(akx_runtime_ctx_t *rt);
 int akx_rt_scope_set(akx_runtime_ctx_t *rt, const char *key, void *value);
 void *akx_rt_scope_get(akx_runtime_ctx_t *rt, const char *key);
+
+void akx_rt_push_scope(akx_runtime_ctx_t *rt);
+void akx_rt_pop_scope(akx_runtime_ctx_t *rt);
 
 void akx_rt_error(akx_runtime_ctx_t *rt, const char *message);
 void akx_rt_error_at(akx_runtime_ctx_t *rt, akx_cell_t *cell,
@@ -100,5 +106,18 @@ akx_cell_t *akx_rt_eval_and_assert(akx_runtime_ctx_t *rt, akx_cell_t *expr,
 
 void akx_rt_module_set_data(akx_runtime_ctx_t *rt, void *data);
 void *akx_rt_module_get_data(akx_runtime_ctx_t *rt);
+
+akx_cell_t *akx_rt_invoke_lambda(akx_runtime_ctx_t *rt, akx_cell_t *lambda_cell,
+                                 akx_cell_t *args);
+
+void akx_rt_add_builtin(akx_runtime_ctx_t *rt, const char *name,
+                        akx_builtin_info_t *info);
+
+int akx_rt_register_builtin(akx_runtime_ctx_t *rt, const char *name,
+                            const char *root_path, akx_builtin_fn function,
+                            ak_cjit_unit_t *unit,
+                            void (*init_fn)(akx_runtime_ctx_t *),
+                            void (*deinit_fn)(akx_runtime_ctx_t *),
+                            void (*reload_fn)(akx_runtime_ctx_t *, void *));
 
 #endif

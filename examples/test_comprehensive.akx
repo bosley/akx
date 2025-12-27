@@ -1,0 +1,11 @@
+(let x 10)
+(set x 20)
+
+(let identity (lambda [a] a))
+(let result1 (identity x))
+
+(let make-identity (lambda []
+  (lambda [y] y)))
+
+(let my-identity (make-identity))
+(let result3 (my-identity 100))

@@ -1,0 +1,5 @@
+(let x 10)
+(let y 20)
+
+(assert-eq x 99 "This assertion should fail: x should NOT equal 99")
+

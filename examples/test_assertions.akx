@@ -1,0 +1,22 @@
+(let x 10)
+(let y 20)
+
+(assert-true x "x should be truthy")
+(assert-true 1 "1 should be truthy")
+(assert-true "hello" "strings should be truthy")
+
+(assert-false 0 "0 should be falsy")
+
+(assert-eq x 10 "x should equal 10")
+(assert-eq y 20 "y should equal 20")
+
+(assert-ne x y "x and y should not be equal")
+(assert-ne x 99 "x should not equal 99")
+
+(let identity (lambda [a] a))
+(let result (identity 42))
+(assert-eq result 42 "identity should return 42")
+
+(let str-test "hello")
+(assert-eq str-test "hello" "string equality should work")
+

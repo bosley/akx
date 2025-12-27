@@ -4,6 +4,7 @@
 #include <ak24/buffer.h>
 #include <ak24/intern.h>
 #include <ak24/kernel.h>
+#include <ak24/lambda.h>
 #include <ak24/list.h>
 #include <ak24/scanner.h>
 #include <ak24/sourceloc.h>
@@ -18,6 +19,7 @@ typedef enum {
   AKX_TYPE_LIST_CURLY,
   AKX_TYPE_LIST_TEMPLE,
   AKX_TYPE_QUOTED,
+  AKX_TYPE_LAMBDA,
 } akx_type_t;
 
 typedef struct akx_cell_t akx_cell_t;
@@ -45,6 +47,7 @@ struct akx_cell_t {
     ak_buffer_t *string_literal;
     akx_cell_t *list_head;
     ak_buffer_t *quoted_literal;
+    ak_lambda_t *lambda;
   } value;
 
   ak_source_range_t *sourceloc;
