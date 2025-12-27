@@ -1,0 +1,4 @@
+PASS: x == 10
+PASS: y == 20
+PASS: name == Alice
+PASS: 3.14 == 3.14

@@ -1,0 +1,14 @@
+(cjit-load-builtin println :root "tests/builtins/println.c")
+
+(let pi 3.14159)
+(let e 2.71828)
+(let zero 0.0)
+
+(println "pi =" pi)
+(println "e =" e)
+(println "zero =" zero)
+
+(assert-eq pi 3.14159)
+(assert-eq e 2.71828)
+(assert-eq zero 0.0)
+(println "PASS: real types work")

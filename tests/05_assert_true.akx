@@ -1,0 +1,14 @@
+(cjit-load-builtin println :root "tests/builtins/println.c")
+
+(assert-true 1)
+(println "PASS: assert-true 1")
+
+(assert-true 42)
+(println "PASS: assert-true 42")
+
+(assert-true "hello")
+(println "PASS: assert-true string")
+
+(let x 10)
+(assert-true x)
+(println "PASS: assert-true variable")

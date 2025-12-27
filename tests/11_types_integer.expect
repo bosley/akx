@@ -1,0 +1,4 @@
+zero = 0
+positive = 42
+negative = -10
+PASS: integer types work

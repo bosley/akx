@@ -1,0 +1,14 @@
+(cjit-load-builtin println :root "tests/builtins/println.c")
+
+(let zero 0)
+(let positive 42)
+(let negative -10)
+
+(println "zero =" zero)
+(println "positive =" positive)
+(println "negative =" negative)
+
+(assert-eq zero 0)
+(assert-eq positive 42)
+(assert-eq negative -10)
+(println "PASS: integer types work")

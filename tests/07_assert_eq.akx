@@ -1,0 +1,17 @@
+(cjit-load-builtin println :root "tests/builtins/println.c")
+
+(let x 10)
+(let y 20)
+(let name "Alice")
+
+(assert-eq x 10)
+(println "PASS: x == 10")
+
+(assert-eq y 20)
+(println "PASS: y == 20")
+
+(assert-eq name "Alice")
+(println "PASS: name == Alice")
+
+(assert-eq 3.14 3.14)
+(println "PASS: 3.14 == 3.14")

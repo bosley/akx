@@ -1,0 +1,4 @@
+empty = 
+hello = hello
+world = world
+PASS: string types work

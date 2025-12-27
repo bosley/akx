@@ -1,0 +1,2 @@
+make-identity()() returned: 100
+PASS: higher-order lambdas work

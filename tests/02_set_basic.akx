@@ -1,0 +1,10 @@
+(cjit-load-builtin println :root "tests/builtins/println.c")
+
+(let x 10)
+(println "x initially =" x)
+
+(set x 20)
+(println "x after first set =" x)
+
+(set x 30)
+(println "x after second set =" x)

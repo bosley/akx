@@ -1,0 +1,4 @@
+pi = 3.141590
+e = 2.718280
+zero = 0.000000
+PASS: real types work
