@@ -1,0 +1,21 @@
+(import "$AKX_HOME/stdlib/io.akx")
+
+(println "=== Pairwise Inequality Tests ===")
+
+(println "(neq 1 2):" (neq 1 2))
+(println "(neq 1 1):" (neq 1 1))
+
+(println "(neq 1 2 3):" (neq 1 2 3))
+(println "(neq 1 2 1):" (neq 1 2 1))
+(println "(neq 1 1 2):" (neq 1 1 2))
+
+(println "(neq 1 2 3 4):" (neq 1 2 3 4))
+(println "(neq 1 2 3 2):" (neq 1 2 3 2))
+
+(println "(neq \"a\" \"b\"):" (neq "a" "b"))
+(println "(neq \"a\" \"a\"):" (neq "a" "a"))
+(println "(neq \"a\" \"b\" \"c\"):" (neq "a" "b" "c"))
+
+
+(println "=== Inequality tests passed ===")
+

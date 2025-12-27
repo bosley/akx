@@ -1,0 +1,23 @@
+=== Numeric Comparison Tests ===
+--- Greater Than ---
+(gt 5 3): 1
+(gt 3 5): 0
+(gt 5 5): 0
+--- Greater Than or Equal ---
+(gte 5 3): 1
+(gte 3 5): 0
+(gte 5 5): 1
+--- Less Than ---
+(lt 3 5): 1
+(lt 5 3): 0
+(lt 5 5): 0
+--- Less Than or Equal ---
+(lte 3 5): 1
+(lte 5 3): 0
+(lte 5 5): 1
+--- Real Numbers ---
+(gt 3.5 2.1): 1
+(lt 2.1 3.5): 1
+(gte 3.5 3.5): 1
+(lte 3.5 3.5): 1
+=== Numeric comparison tests passed ===

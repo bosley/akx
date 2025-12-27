@@ -1,0 +1,23 @@
+(import "$AKX_HOME/stdlib/io.akx")
+
+(println "=== Type Predicate Tests ===")
+
+(let x 42)
+(println "(?int 42):" (?int x))
+(println "(?real 42):" (?real x))
+(println "(?str 42):" (?str x))
+
+(let y 3.14)
+(println "(?real 3.14):" (?real y))
+(println "(?int 3.14):" (?int y))
+
+(let s "hello")
+(println "(?str \"hello\"):" (?str s))
+(println "(?int \"hello\"):" (?int s))
+
+(let f (lambda [x] x))
+(println "(?lambda f):" (?lambda f))
+(println "(?int f):" (?int f))
+
+(println "=== All type predicates passed ===")
+
