@@ -20,7 +20,8 @@ akx_cell_t *assert_false_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
     akx_cell_t *message_cell = akx_rt_list_nth(args, 1);
     if (message_cell) {
       akx_cell_t *msg_evaled = akx_rt_eval(rt, message_cell);
-      if (msg_evaled && akx_rt_cell_get_type(msg_evaled) == AKX_TYPE_STRING_LITERAL) {
+      if (msg_evaled &&
+          akx_rt_cell_get_type(msg_evaled) == AKX_TYPE_STRING_LITERAL) {
         const char *msg = akx_rt_cell_as_string(msg_evaled);
         AK24_LOG_ERROR("Assertion failed: %s", msg);
         akx_cell_free(msg_evaled);

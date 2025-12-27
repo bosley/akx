@@ -9,6 +9,8 @@
 #include <ak24/list.h>
 #include <stdarg.h>
 
+#define AKX_RT_META_STRING_SIZE_MAX 256
+
 typedef struct akx_rt_error_ctx_t akx_rt_error_ctx_t;
 
 typedef struct akx_runtime_ctx_t akx_runtime_ctx_t;
@@ -110,6 +112,8 @@ void *akx_rt_module_get_data(akx_runtime_ctx_t *rt);
 
 akx_cell_t *akx_rt_invoke_lambda(akx_runtime_ctx_t *rt, akx_cell_t *lambda_cell,
                                  akx_cell_t *args);
+
+char *akx_rt_expand_env_vars(const char *path);
 
 void akx_rt_add_builtin(akx_runtime_ctx_t *rt, const char *name,
                         akx_builtin_info_t *info);

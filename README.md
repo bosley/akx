@@ -13,14 +13,20 @@
 
 ## What is AKX?
 
-AKX is a dynamic runtime that extends itself through JIT compilation. Unlike traditional languages that ship with a fixed set of built-in functions, AKX ships with exactly **one native builtin**: `cjit-load-builtin`. This single function serves as the bootstrap mechanism for the entire runtime.
+AKX is a dynamic runtime that extends itself through JIT compilation. The philosophy is simple: **you provide the function, we provide the environment**. Write your logic in C, and AKX handles compilation, linking, memory management, and integration—all at runtime.
 
-All other functionality—arithmetic operations, I/O, data structures, and more—is loaded dynamically at runtime by compiling C source files on-the-fly. This means:
+By default, AKX ships with exactly **one native builtin**: `cjit-load-builtin`. This single function bootstraps the entire system by JIT-compiling C source files on-the-fly. Everything else—arithmetic, I/O, control flow—can be loaded dynamically or compiled in via the nucleus system.
 
-- **Minimal core**: The runtime is tiny, containing only the essential evaluation engine
+### The Nucleus System
+
+AKX includes a **nucleus** directory containing core language features as standalone C files. At build time, you choose which nuclei to compile into the binary (for speed) and which to load at runtime (for flexibility). The same C file works both ways—no code duplication.
+
+This means:
+
+- **Minimal core**: The runtime is tiny, containing only the evaluation engine and bootstrap loader
 - **Maximum extensibility**: Add new language features without recompiling the runtime
-- **Hot reloading**: Update builtins while the runtime is running, preserving state across reloads
-- **Self-extending**: The language defines itself, repeatedly, at runtime
+- **Hot reloading**: Update builtins while running, preserving state across reloads
+- **Your code, our runtime**: Focus on logic; we handle the environment
 
 ## Architecture Overview
 
@@ -31,26 +37,81 @@ AKX follows a unique bootstrap architecture where the runtime grows itself:
 3. **Dynamic Linking**: Links compiled functions into the running process
 4. **Registration**: Registers new functions as callable builtins from AKX code
 
+### The Nucleus System
+
+At build time, `nucleus/manifest.txt` defines which language features to compile in versus load at runtime:
+
+- **Compiled-in nuclei** (fast): `if`, `lambda`, `let`, `set`, `assert-*`
+- **Runtime-loadable nuclei** (flexible): `+`, `-`, `*`, `/`, `%`, `=`, `print`, `println`
+
+The same C file works both ways. Change the manifest to rebalance speed vs. flexibility without touching any code.
+
+### Cell Memory Model
+
 The runtime uses a **cell memory model** where expressions are represented as linked cells. Each cell can be a symbol, integer, real number, string, or list. Lists are formed by linking cells horizontally (`next`) and vertically (`list_head`).
 
 For detailed architecture diagrams, data flows, and implementation details, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Quick Start
 
-Load a builtin and use it:
-
-```akx
-(cjit-load-builtin println :root "examples/builtins/println.c")
-(cjit-load-builtin add :root "examples/builtins/add.c")
-
-(println "Hello from JIT!")
-(println "Sum:" (add 1 2 3 4 5))
-```
-
-Run an AKX file:
+### Installation
 
 ```bash
-./build/bin/akx examples/load_builtins.akx
+# Build and install to ~/.akx
+make
+make install
+
+# Add to your shell rc file
+export PATH="$HOME/.akx/bin:$PATH"
+export AKX_HOME="$HOME/.akx"
+```
+
+### Hello World
+
+Create `hello.akx`:
+
+```akx
+(import "$AKX_HOME/stdlib/io.akx")
+(println "Hello, World!")
+```
+
+Run it:
+
+```bash
+akx hello.akx
+```
+
+### Using the Standard Library
+
+The stdlib provides common operations via the nucleus system:
+
+```akx
+(import "$AKX_HOME/stdlib/stdlib.akx")
+
+(println "Math:" (+ 10 20 30))
+(println "Result:" (* (+ 5 3) (- 10 2)))
+(println "Equal?" (= 42 42))
+```
+
+### Loading Your Own Functions
+
+Write your logic in C, AKX provides the environment:
+
+```c
+// my_function.c
+akx_cell_t *my_function(akx_runtime_ctx_t *rt, akx_cell_t *args) {
+    akx_cell_t *result = akx_rt_alloc_cell(rt, AKX_TYPE_STRING_LITERAL);
+    akx_rt_set_string(rt, result, "Hello from my C code!");
+    return result;
+}
+```
+
+Load and use it:
+
+```akx
+(cjit-load-builtin greet :root "my_function.c" :as "my_function")
+(import "$AKX_HOME/stdlib/io.akx")
+(println (greet))
 ```
 
 ## Examples
@@ -208,15 +269,41 @@ See **[tests/README.md](tests/README.md)** for detailed testing documentation.
 AKX automatically fetches and installs AK24 if not found. No manual installation required.
 
 ```bash
-mkdir build && cd build
-cmake ..
-make
+make          # Build the project
+make test     # Run test suite
+make install  # Install to ~/.akx (or $AKX_HOME if set)
 ```
 
 The build system will:
 - Check for AK24 at `$AK24_HOME` or `~/.ak24`
 - If not found, automatically clone, build, and install AK24
-- Configure and build AKX
+- Configure and build AKX with the nucleus system
+- Generate builtin registration code from `nucleus/manifest.txt`
+
+### Installation
+
+By default, `make install` installs to `~/.akx`:
+
+```
+~/.akx/
+├── bin/akx              # The runtime binary
+├── nucleus/             # C source files for all nuclei
+│   ├── core/           # if, lambda, let, set
+│   ├── math/           # +, -, *, /, %, =
+│   ├── io/             # print, println
+│   └── assert/         # assert-true, assert-false, assert-eq, assert-ne
+└── stdlib/             # AKX import files
+    ├── stdlib.akx      # Load all common operations
+    ├── math.akx        # Math operations only
+    └── io.akx          # I/O operations only
+```
+
+To install elsewhere:
+
+```bash
+export AKX_HOME=/opt/akx
+make install
+```
 
 ### Build Options
 

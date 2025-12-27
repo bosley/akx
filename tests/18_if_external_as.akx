@@ -1,5 +1,5 @@
 (cjit-load-builtin println :root "nucleus/io/println.c")
-(cjit-load-builtin if :root "nucleus/core/if.c" :as "builtin_if")
+(cjit-load-builtin if :root "nucleus/core/if.c" :as "if_impl")
 
 (println "Testing external if builtin loaded with :as keyword")
 

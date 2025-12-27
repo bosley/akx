@@ -23,7 +23,15 @@ akx_cell_t *import_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
     return NULL;
   }
 
-  akx_parse_result_t result = akx_cell_parse_file(file_path);
+  char *expanded_path = akx_rt_expand_env_vars(file_path);
+  if (!expanded_path) {
+    akx_rt_error(rt, "import: failed to expand path");
+    akx_cell_free(evaled_path);
+    return NULL;
+  }
+
+  akx_parse_result_t result = akx_cell_parse_file(expanded_path);
+  AK24_FREE(expanded_path);
 
   if (result.errors) {
     akx_parse_error_t *err = result.errors;
@@ -76,4 +84,3 @@ akx_cell_t *import_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
 
   return last_result;
 }
-

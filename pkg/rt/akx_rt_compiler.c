@@ -1,6 +1,8 @@
 #include "akx_rt_compiler.h"
 #include <ak24/buffer.h>
 #include <ak24/cjit.h>
+#include <ak24/filepath.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -282,6 +284,118 @@ void akx_compiler_free_compile_opts(akx_builtin_compile_opts_t *opts) {
   }
 }
 
+static char *expand_env_vars_in_path(const char *path) {
+  if (!path) {
+    return NULL;
+  }
+
+  const char *dollar = strchr(path, '$');
+  if (!dollar) {
+    size_t len = strlen(path);
+    char *result = AK24_ALLOC(len + 1);
+    if (result) {
+      memcpy(result, path, len + 1);
+    }
+    return result;
+  }
+
+  size_t estimated_len = strlen(path) + AKX_RT_META_STRING_SIZE_MAX;
+  char *result = AK24_ALLOC(estimated_len);
+  if (!result) {
+    return NULL;
+  }
+
+  const char *current = path;
+  size_t result_pos = 0;
+  ak_buffer_t *temp_default_path = NULL;
+
+  while (*current) {
+    if (*current == '$') {
+      const char *var_start = current + 1;
+      const char *var_end = var_start;
+
+      while (*var_end && (isalnum(*var_end) || *var_end == '_')) {
+        var_end++;
+      }
+
+      if (var_end > var_start) {
+        size_t var_len = var_end - var_start;
+        char *var_name = AK24_ALLOC(var_len + 1);
+        if (!var_name) {
+          AK24_FREE(result);
+          if (temp_default_path) {
+            ak_buffer_free(temp_default_path);
+          }
+          return NULL;
+        }
+        memcpy(var_name, var_start, var_len);
+        var_name[var_len] = '\0';
+
+        const char *var_value = getenv(var_name);
+        if (!var_value && strcmp(var_name, "AKX_HOME") == 0) {
+          const char *home = getenv("HOME");
+          if (home) {
+            temp_default_path = ak_filepath_join(2, home, ".akx");
+            if (temp_default_path) {
+              var_value = (const char *)ak_buffer_data(temp_default_path);
+            }
+          }
+        }
+
+        if (var_value) {
+          size_t val_len = strlen(var_value);
+          if (result_pos + val_len >= estimated_len) {
+            estimated_len = result_pos + val_len + AKX_RT_META_STRING_SIZE_MAX;
+            char *new_result = AK24_ALLOC(estimated_len);
+            if (!new_result) {
+              AK24_FREE(result);
+              AK24_FREE(var_name);
+              if (temp_default_path) {
+                ak_buffer_free(temp_default_path);
+              }
+              return NULL;
+            }
+            memcpy(new_result, result, result_pos);
+            AK24_FREE(result);
+            result = new_result;
+          }
+          memcpy(result + result_pos, var_value, val_len);
+          result_pos += val_len;
+        }
+
+        AK24_FREE(var_name);
+        current = var_end;
+        continue;
+      }
+    }
+
+    if (result_pos + 1 >= estimated_len) {
+      estimated_len = result_pos + AKX_RT_META_STRING_SIZE_MAX;
+      char *new_result = AK24_ALLOC(estimated_len);
+      if (!new_result) {
+        AK24_FREE(result);
+        if (temp_default_path) {
+          ak_buffer_free(temp_default_path);
+        }
+        return NULL;
+      }
+      memcpy(new_result, result, result_pos);
+      AK24_FREE(result);
+      result = new_result;
+    }
+    result[result_pos++] = *current;
+    current++;
+  }
+
+  result[result_pos] = '\0';
+
+  if (temp_default_path) {
+    ak_buffer_free(temp_default_path);
+  }
+
+  return result;
+}
+
 const char *akx_compiler_generate_abi_header(void) {
   return "#include <stddef.h>\n"
          "#include <stdint.h>\n"
@@ -367,6 +481,8 @@ const char *akx_compiler_generate_abi_header(void) {
          "extern akx_cell_t* akx_rt_invoke_lambda(akx_runtime_ctx_t *rt, "
          "akx_cell_t *lambda_cell, akx_cell_t *args);\n"
          "\n"
+         "extern char* akx_rt_expand_env_vars(const char *path);\n"
+         "\n"
          "extern void akx_rt_module_set_data(akx_runtime_ctx_t *rt, void "
          "*data);\n"
          "extern void* akx_rt_module_get_data(akx_runtime_ctx_t *rt);\n"
@@ -435,7 +551,18 @@ int akx_compiler_load_builtin_ex(akx_runtime_ctx_t *rt, const char *name,
   }
 
   AK24_LOG_DEBUG("Reading root source file: %s", root_path);
-  ak_buffer_t *source_buf = ak_buffer_from_file(root_path);
+
+  char *expanded_path = expand_env_vars_in_path(root_path);
+  if (!expanded_path) {
+    AK24_LOG_ERROR("Failed to expand path: %s", root_path);
+    ak_cjit_unit_free(unit);
+    return -1;
+  }
+
+  AK24_LOG_DEBUG("Expanded path: %s", expanded_path);
+  ak_buffer_t *source_buf = ak_buffer_from_file(expanded_path);
+  AK24_FREE(expanded_path);
+
   if (!source_buf) {
     AK24_LOG_ERROR("Failed to read root source file: %s", root_path);
     ak_cjit_unit_free(unit);
@@ -505,6 +632,7 @@ int akx_compiler_load_builtin_ex(akx_runtime_ctx_t *rt, const char *name,
   ak_cjit_add_symbol(unit, "akx_rt_eval_list", akx_rt_eval_list);
   ak_cjit_add_symbol(unit, "akx_rt_eval_and_assert", akx_rt_eval_and_assert);
   ak_cjit_add_symbol(unit, "akx_rt_invoke_lambda", akx_rt_invoke_lambda);
+  ak_cjit_add_symbol(unit, "akx_rt_expand_env_vars", akx_rt_expand_env_vars);
   ak_cjit_add_symbol(unit, "akx_rt_module_set_data", akx_rt_module_set_data);
   ak_cjit_add_symbol(unit, "akx_rt_module_get_data", akx_rt_module_get_data);
 
@@ -586,9 +714,9 @@ int akx_compiler_load_builtin_ex(akx_runtime_ctx_t *rt, const char *name,
   }
   AK24_LOG_DEBUG("Symbol found");
 
-  char init_name[256];
-  char deinit_name[256];
-  char reload_name[256];
+  char init_name[AKX_RT_META_STRING_SIZE_MAX];
+  char deinit_name[AKX_RT_META_STRING_SIZE_MAX];
+  char reload_name[AKX_RT_META_STRING_SIZE_MAX];
   snprintf(init_name, sizeof(init_name), "%s_init", lookup_name);
   snprintf(deinit_name, sizeof(deinit_name), "%s_deinit", lookup_name);
   snprintf(reload_name, sizeof(reload_name), "%s_reload", lookup_name);

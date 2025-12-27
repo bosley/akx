@@ -1,9 +1,12 @@
 #include "akx_rt.h"
 #include "akx_rt_builtins.h"
 #include "builtin_registry.h"
+#include <ak24/buffer.h>
+#include <ak24/filepath.h>
 #include <ak24/intern.h>
 #include <ak24/lambda.h>
 #include <ak24/map.h>
+#include <ctype.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -795,4 +798,116 @@ int akx_rt_register_builtin(akx_runtime_ctx_t *rt, const char *name,
 
   AK24_LOG_TRACE("Successfully registered builtin '%s'", name);
   return 0;
+}
+
+char *akx_rt_expand_env_vars(const char *path) {
+  if (!path) {
+    return NULL;
+  }
+
+  const char *dollar = strchr(path, '$');
+  if (!dollar) {
+    size_t len = strlen(path);
+    char *result = AK24_ALLOC(len + 1);
+    if (result) {
+      memcpy(result, path, len + 1);
+    }
+    return result;
+  }
+
+  size_t estimated_len = strlen(path) + 256;
+  char *result = AK24_ALLOC(estimated_len);
+  if (!result) {
+    return NULL;
+  }
+
+  const char *current = path;
+  size_t result_pos = 0;
+  ak_buffer_t *temp_default_path = NULL;
+
+  while (*current) {
+    if (*current == '$') {
+      const char *var_start = current + 1;
+      const char *var_end = var_start;
+
+      while (*var_end && (isalnum(*var_end) || *var_end == '_')) {
+        var_end++;
+      }
+
+      if (var_end > var_start) {
+        size_t var_len = var_end - var_start;
+        char *var_name = AK24_ALLOC(var_len + 1);
+        if (!var_name) {
+          AK24_FREE(result);
+          if (temp_default_path) {
+            ak_buffer_free(temp_default_path);
+          }
+          return NULL;
+        }
+        memcpy(var_name, var_start, var_len);
+        var_name[var_len] = '\0';
+
+        const char *var_value = getenv(var_name);
+        if (!var_value && strcmp(var_name, "AKX_HOME") == 0) {
+          const char *home = getenv("HOME");
+          if (home) {
+            temp_default_path = ak_filepath_join(2, home, ".akx");
+            if (temp_default_path) {
+              var_value = (const char *)ak_buffer_data(temp_default_path);
+            }
+          }
+        }
+
+        if (var_value) {
+          size_t val_len = strlen(var_value);
+          if (result_pos + val_len >= estimated_len) {
+            estimated_len = result_pos + val_len + 256;
+            char *new_result = AK24_ALLOC(estimated_len);
+            if (!new_result) {
+              AK24_FREE(result);
+              AK24_FREE(var_name);
+              if (temp_default_path) {
+                ak_buffer_free(temp_default_path);
+              }
+              return NULL;
+            }
+            memcpy(new_result, result, result_pos);
+            AK24_FREE(result);
+            result = new_result;
+          }
+          memcpy(result + result_pos, var_value, val_len);
+          result_pos += val_len;
+        }
+
+        AK24_FREE(var_name);
+        current = var_end;
+        continue;
+      }
+    }
+
+    if (result_pos + 1 >= estimated_len) {
+      estimated_len = result_pos + 256;
+      char *new_result = AK24_ALLOC(estimated_len);
+      if (!new_result) {
+        AK24_FREE(result);
+        if (temp_default_path) {
+          ak_buffer_free(temp_default_path);
+        }
+        return NULL;
+      }
+      memcpy(new_result, result, result_pos);
+      AK24_FREE(result);
+      result = new_result;
+    }
+    result[result_pos++] = *current;
+    current++;
+  }
+
+  result[result_pos] = '\0';
+
+  if (temp_default_path) {
+    ak_buffer_free(temp_default_path);
+  }
+
+  return result;
 }

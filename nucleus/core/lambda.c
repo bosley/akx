@@ -57,7 +57,8 @@ static void akx_lambda_invoke_impl(void *captured_ctx, void *invoke_args) {
 
 akx_cell_t *lambda_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
   akx_cell_t *params_cell = akx_rt_list_nth(args, 0);
-  if (!params_cell || akx_rt_cell_get_type(params_cell) != AKX_TYPE_LIST_SQUARE) {
+  if (!params_cell ||
+      akx_rt_cell_get_type(params_cell) != AKX_TYPE_LIST_SQUARE) {
     akx_rt_error(rt, "lambda: first argument must be a square-bracket list of "
                      "parameter names");
     return NULL;

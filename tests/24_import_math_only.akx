@@ -1,5 +1,7 @@
-(import "nucleus/imports/math.akx")
-(import "nucleus/imports/io.akx")
+(cjit-load-builtin + :root "nucleus/math/add.c" :as "add")
+(cjit-load-builtin * :root "nucleus/math/mul.c" :as "mul")
+(cjit-load-builtin - :root "nucleus/math/sub.c" :as "sub")
+(cjit-load-builtin println :root "nucleus/io/println.c" :as "println")
 
 (println "Testing separate imports")
 (println "Result:" (+ (* 2 3) (- 10 5)))

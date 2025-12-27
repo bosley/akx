@@ -235,7 +235,7 @@ static akx_cell_t *parse_explicit_list_generic(
 
     ak_source_loc_t error_loc =
         ak_source_loc_from_offset(source_file, last_open_pos + origin_offset);
-    char error_msg[128];
+    char error_msg[AKX_CELL_MAX_ERROR_MESSAGE_SIZE_MAX];
     snprintf(error_msg, sizeof(error_msg),
              "unterminated list - missing closing '%c'", close_delim);
     add_parse_error(ctx, &error_loc, error_msg);

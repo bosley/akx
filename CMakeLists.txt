@@ -2,6 +2,14 @@ cmake_minimum_required(VERSION 3.20)
 
 project(akx VERSION 0.1.0 LANGUAGES C)
 
+if(DEFINED ENV{AKX_HOME})
+    set(AKX_HOME $ENV{AKX_HOME} CACHE PATH "AKX installation directory")
+else()
+    set(AKX_HOME "$ENV{HOME}/.akx" CACHE PATH "AKX installation directory")
+endif()
+
+message(STATUS "AKX_HOME: ${AKX_HOME}")
+
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -68,4 +76,22 @@ add_subdirectory(pkg/cell)
 add_subdirectory(nucleus)
 add_subdirectory(pkg/rt)
 add_subdirectory(cmd/akx)
+
+install(TARGETS akx
+    RUNTIME DESTINATION ${AKX_HOME}/bin
+)
+
+install(DIRECTORY nucleus/
+    DESTINATION ${AKX_HOME}/nucleus
+    FILES_MATCHING 
+    PATTERN "*.c"
+    PATTERN "*.h"
+    PATTERN "*.txt"
+    PATTERN "*.md"
+)
+
+install(DIRECTORY stdlib/
+    DESTINATION ${AKX_HOME}/stdlib
+    FILES_MATCHING PATTERN "*.akx"
+)
 

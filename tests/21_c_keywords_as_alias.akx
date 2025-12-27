@@ -3,7 +3,7 @@
 (println "=== Testing C Keywords with :as Aliasing ===")
 (println "")
 
-(cjit-load-builtin if :root "nucleus/core/if.c" :as "builtin_if")
+(cjit-load-builtin if :root "nucleus/core/if.c" :as "if_impl")
 (println "Loaded 'if' (C keyword, aliased to builtin_if)")
 
 (println "Test: if with true condition")

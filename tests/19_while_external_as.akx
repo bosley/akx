@@ -8,7 +8,7 @@
 (println "  + 1 2 3 =" sum1)
 (assert-eq sum1 6 "+ should work with :as")
 
-(cjit-load-builtin if :root "nucleus/core/if.c" :as "builtin_if")
+(cjit-load-builtin if :root "nucleus/core/if.c" :as "if_impl")
 (println "Loaded if with :as builtin_if")
 (let result (if 1 "yes" "no"))
 (println "  if 1 yes no =" result)

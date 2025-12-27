@@ -9,6 +9,8 @@
 #include <ak24/scanner.h>
 #include <ak24/sourceloc.h>
 
+#define AKX_CELL_MAX_ERROR_MESSAGE_SIZE_MAX 256
+
 typedef enum {
   AKX_TYPE_SYMBOL,
   AKX_TYPE_STRING_LITERAL,
@@ -26,7 +28,7 @@ typedef struct akx_cell_t akx_cell_t;
 
 typedef struct akx_parse_error_t {
   ak_source_loc_t location;
-  char message[256];
+  char message[AKX_CELL_MAX_ERROR_MESSAGE_SIZE_MAX];
   struct akx_parse_error_t *next;
 } akx_parse_error_t;
 
