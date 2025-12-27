@@ -34,9 +34,9 @@ akx_cell_t *lte_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
     akx_rt_error(rt, "lte: operands must be integer or real");
   }
 
-  int has_error = (result == 0 && (left_type != right_type || 
-                   (left_type != AKX_TYPE_INTEGER_LITERAL && 
-                    left_type != AKX_TYPE_REAL_LITERAL)));
+  int has_error = (result == 0 && (left_type != right_type ||
+                                   (left_type != AKX_TYPE_INTEGER_LITERAL &&
+                                    left_type != AKX_TYPE_REAL_LITERAL)));
 
   if (akx_rt_cell_get_type(left) != AKX_TYPE_LAMBDA) {
     akx_rt_free_cell(rt, left);
@@ -53,4 +53,3 @@ akx_cell_t *lte_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
   akx_rt_set_int(rt, ret, result);
   return ret;
 }
-

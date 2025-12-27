@@ -1,0 +1,11 @@
+=== Testing loop ===
+Counting to 5:
+  counter: 0
+  counter: 1
+  counter: 2
+  counter: 3
+  counter: 4
+Final counter: 5
+Sum 1 to 10:
+  sum: 55
+=== All loop tests passed ===

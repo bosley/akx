@@ -1,0 +1,25 @@
+(import "$AKX_HOME/stdlib/io.akx")
+(import "$AKX_HOME/stdlib/math.akx")
+
+(println "=== Testing loop ===")
+
+(let counter 0)
+(println "Counting to 5:")
+(loop (lt counter 5)
+  (begin
+    (println "  counter:" counter)
+    (set counter (+ counter 1))))
+
+(println "Final counter:" counter)
+
+(let sum 0)
+(let i 1)
+(println "Sum 1 to 10:")
+(loop (lte i 10)
+  (begin
+    (set sum (+ sum i))
+    (set i (+ i 1))))
+(println "  sum:" sum)
+
+(println "=== All loop tests passed ===")
+

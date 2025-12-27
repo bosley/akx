@@ -1,0 +1,25 @@
+(import "$AKX_HOME/stdlib/io.akx")
+
+(println "=== Testing logic operators ===")
+
+(println "Testing not:")
+(println "  (not 1):" (not 1))
+(println "  (not 0):" (not 0))
+(println "  (not 42):" (not 42))
+
+(println "Testing and:")
+(println "  (and 1 1):" (and 1 1))
+(println "  (and 1 0):" (and 1 0))
+(println "  (and 0 1):" (and 0 1))
+(println "  (and 1 1 1):" (and 1 1 1))
+(println "  (and 1 1 0):" (and 1 1 0))
+
+(println "Testing or:")
+(println "  (or 0 0):" (or 0 0))
+(println "  (or 0 1):" (or 0 1))
+(println "  (or 1 0):" (or 1 0))
+(println "  (or 0 0 1):" (or 0 0 1))
+(println "  (or 0 0 0):" (or 0 0 0))
+
+(println "=== All logic tests passed ===")
+

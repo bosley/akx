@@ -27,4 +27,3 @@ akx_cell_t *is_nil_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
   akx_rt_set_int(rt, ret, result);
   return ret;
 }
-

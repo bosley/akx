@@ -89,4 +89,3 @@ akx_cell_t *eq_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
   akx_rt_set_int(rt, result, all_equal);
   return result;
 }
-

@@ -71,4 +71,3 @@ akx_cell_t *neq_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
   akx_rt_set_int(rt, result, all_different);
   return result;
 }
-

@@ -1,0 +1,8 @@
+=== Testing begin ===
+Begin returns last value:
+  result: 11
+Begin with side effects:
+  x after operations: 30
+Empty begin returns nil:
+  empty-result: nil
+=== All begin tests passed ===

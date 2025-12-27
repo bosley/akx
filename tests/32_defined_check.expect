@@ -1,0 +1,9 @@
+=== Testing ?defined ===
+Checking undefined symbol:
+  (?defined undefined-var): 0
+After (let x 42):
+  (?defined x): 1
+After (let y \"hello\"):
+  (?defined y): 1
+  (?defined z): 0
+=== All ?defined tests passed ===

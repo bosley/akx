@@ -6,7 +6,7 @@ akx_cell_t *is_real_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
 
   akx_cell_t *arg = akx_rt_list_nth(args, 0);
   akx_cell_t *evaled = akx_rt_eval(rt, arg);
-  
+
   int result = 0;
   if (evaled) {
     result = (akx_rt_cell_get_type(evaled) == AKX_TYPE_REAL_LITERAL);
@@ -20,4 +20,3 @@ akx_cell_t *is_real_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
   akx_rt_set_int(rt, ret, result);
   return ret;
 }
-

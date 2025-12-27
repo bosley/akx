@@ -44,3 +44,13 @@ gt          gt_impl         cmp/gt.c            1
 lte         lte_impl        cmp/lte.c           1
 lt          lt_impl         cmp/lt.c            1
 
+# Logic operators (compiled in)
+not         not_impl        logic/not.c         1
+and         and_impl        logic/and.c         1
+or          or_impl         logic/or.c          1
+
+# Control flow (compiled in)
+?defined    defined_impl    core/defined.c      1
+loop        loop_impl       core/loop.c         1
+begin       begin_impl      core/begin.c        1
+

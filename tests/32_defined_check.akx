@@ -1,0 +1,18 @@
+(import "$AKX_HOME/stdlib/io.akx")
+
+(println "=== Testing ?defined ===")
+
+(println "Checking undefined symbol:")
+(println "  (?defined undefined-var):" (?defined undefined-var))
+
+(let x 42)
+(println "After (let x 42):")
+(println "  (?defined x):" (?defined x))
+
+(let y "hello")
+(println "After (let y \"hello\"):")
+(println "  (?defined y):" (?defined y))
+(println "  (?defined z):" (?defined z))
+
+(println "=== All ?defined tests passed ===")
+
