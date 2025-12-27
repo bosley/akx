@@ -287,6 +287,7 @@ const char *akx_compiler_generate_abi_header(void) {
          "#include <stdint.h>\n"
          "#include <stdio.h>\n"
          "#include <stdlib.h>\n"
+         "#include <string.h>\n"
          "\n"
          "typedef struct akx_runtime_ctx_t akx_runtime_ctx_t;\n"
          "typedef struct akx_cell_t akx_cell_t;\n"
@@ -308,6 +309,8 @@ const char *akx_compiler_generate_abi_header(void) {
          "\n"
          "typedef akx_cell_t* (*akx_builtin_fn)(akx_runtime_ctx_t*, "
          "akx_cell_t*);\n"
+         "\n"
+         "extern akx_type_t akx_rt_cell_get_type(akx_cell_t *cell);\n"
          "\n"
          "extern akx_cell_t* akx_rt_alloc_cell(akx_runtime_ctx_t *rt, "
          "akx_type_t type);\n"
@@ -480,6 +483,7 @@ int akx_compiler_load_builtin_ex(akx_runtime_ctx_t *rt, const char *name,
   ak_cjit_add_symbol(unit, "akx_rt_set_list", akx_rt_set_list);
   ak_cjit_add_symbol(unit, "akx_rt_set_lambda", akx_rt_set_lambda);
   ak_cjit_add_symbol(unit, "akx_rt_cell_is_type", akx_rt_cell_is_type);
+  ak_cjit_add_symbol(unit, "akx_rt_cell_get_type", akx_rt_cell_get_type);
   ak_cjit_add_symbol(unit, "akx_rt_cell_as_symbol", akx_rt_cell_as_symbol);
   ak_cjit_add_symbol(unit, "akx_rt_cell_as_int", akx_rt_cell_as_int);
   ak_cjit_add_symbol(unit, "akx_rt_cell_as_real", akx_rt_cell_as_real);

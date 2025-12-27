@@ -1,0 +1,10 @@
+(import "nucleus/imports/stdlib.akx")
+
+(println "Testing import system")
+(println "Math: 1 + 2 + 3 =" (+ 1 2 3))
+(println "Math: 10 - 3 =" (- 10 3))
+(println "Math: 4 * 5 =" (* 4 5))
+(println "Math: 20 / 4 =" (/ 20 4))
+(println "Math: 10 % 3 =" (% 10 3))
+(println "Equality: 5 = 5 =" (= 5 5))
+(println "Import test completed successfully")

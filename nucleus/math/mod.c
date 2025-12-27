@@ -1,4 +1,4 @@
-akx_cell_t *mod(akx_runtime_ctx_t *rt, akx_cell_t *args) {
+akx_cell_t *akx_mod(akx_runtime_ctx_t *rt, akx_cell_t *args) {
   if (akx_rt_list_length(args) != 2) {
     akx_rt_error(rt, "% requires exactly 2 arguments");
     return NULL;

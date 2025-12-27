@@ -7,6 +7,7 @@ if          if_impl         core/if.c           1
 lambda      lambda_impl     core/lambda.c       1
 let         let_impl        core/let.c          1
 set         set_impl        core/set.c          1
+import      import_impl     core/import.c       1
 
 # Assertions (compiled in for testing)
 assert-true  assert_true_impl   assert/assert_true.c    1
@@ -18,11 +19,11 @@ assert-ne    assert_ne_impl     assert/assert_ne.c      1
 +           add             math/add.c          0
 -           sub             math/sub.c          0
 *           mul             math/mul.c          0
-/           div             math/div.c          0
-%           mod             math/mod.c          0
-=           eq              math/eq.c           0
+/           akx_div         math/div.c          0
+%           akx_mod         math/mod.c          0
+=           akx_eq          math/eq.c           0
 
 # I/O (runtime loadable)
-print       print           io/print.c          0
+print       akx_print       io/print.c          0
 println     println         io/println.c        0
 

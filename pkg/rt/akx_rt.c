@@ -254,6 +254,13 @@ int akx_rt_cell_is_type(akx_cell_t *cell, akx_type_t type) {
   return cell->type == type;
 }
 
+akx_type_t akx_rt_cell_get_type(akx_cell_t *cell) {
+  if (!cell) {
+    return AKX_TYPE_SYMBOL;
+  }
+  return cell->type;
+}
+
 const char *akx_rt_cell_as_symbol(akx_cell_t *cell) {
   if (!cell || cell->type != AKX_TYPE_SYMBOL) {
     return NULL;

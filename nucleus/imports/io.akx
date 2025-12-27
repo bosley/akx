@@ -1,0 +1,3 @@
+(cjit-load-builtin print :root "nucleus/io/print.c" :as "akx_print")
+(cjit-load-builtin println :root "nucleus/io/println.c" :as "println")
+

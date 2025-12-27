@@ -1,0 +1,6 @@
+(import "nucleus/imports/math.akx")
+(import "nucleus/imports/io.akx")
+
+(println "Testing separate imports")
+(println "Result:" (+ (* 2 3) (- 10 5)))
+

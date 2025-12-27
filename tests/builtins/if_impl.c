@@ -16,12 +16,12 @@ akx_cell_t *builtin_if(akx_runtime_ctx_t *rt, akx_cell_t *args) {
   }
 
   int is_true = 0;
-  if (condition->type == AKX_TYPE_INTEGER_LITERAL &&
+  if (akx_rt_cell_get_type(condition) == AKX_TYPE_INTEGER_LITERAL &&
       condition->value.integer_literal == 1) {
     is_true = 1;
   }
 
-  if (condition->type != AKX_TYPE_LAMBDA) {
+  if (akx_rt_cell_get_type(condition) != AKX_TYPE_LAMBDA) {
     akx_rt_free_cell(rt, condition);
   }
 

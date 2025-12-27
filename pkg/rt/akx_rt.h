@@ -73,6 +73,7 @@ void akx_rt_set_lambda(akx_runtime_ctx_t *rt, akx_cell_t *cell,
                        ak_lambda_t *lambda);
 
 int akx_rt_cell_is_type(akx_cell_t *cell, akx_type_t type);
+akx_type_t akx_rt_cell_get_type(akx_cell_t *cell);
 const char *akx_rt_cell_as_symbol(akx_cell_t *cell);
 int akx_rt_cell_as_int(akx_cell_t *cell);
 double akx_rt_cell_as_real(akx_cell_t *cell);

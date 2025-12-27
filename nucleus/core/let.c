@@ -1,6 +1,6 @@
 akx_cell_t *let_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
   akx_cell_t *symbol_cell = akx_rt_list_nth(args, 0);
-  if (!symbol_cell || symbol_cell->type != AKX_TYPE_SYMBOL) {
+  if (!symbol_cell || akx_rt_cell_get_type(symbol_cell) != AKX_TYPE_SYMBOL) {
     akx_rt_error(rt, "let: first argument must be a symbol");
     return NULL;
   }

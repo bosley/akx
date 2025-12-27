@@ -1,0 +1,2 @@
+(cjit-load-builtin test-div :root "nucleus/math/div.c" :as "div")
+

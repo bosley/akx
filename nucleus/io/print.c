@@ -1,4 +1,4 @@
-akx_cell_t *print(akx_runtime_ctx_t *rt, akx_cell_t *args) {
+akx_cell_t *akx_print(akx_runtime_ctx_t *rt, akx_cell_t *args) {
   akx_cell_t *current = args;
 
   while (current) {
@@ -18,7 +18,7 @@ akx_cell_t *print(akx_runtime_ctx_t *rt, akx_cell_t *args) {
       printf("<lambda>");
     }
 
-    if (evaled->type != AKX_TYPE_LAMBDA) {
+    if (akx_rt_cell_get_type(evaled) != AKX_TYPE_LAMBDA) {
       akx_rt_free_cell(rt, evaled);
     }
 
