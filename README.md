@@ -191,4 +191,6 @@ By default, AKX uses the `akx.dev.0` branch of AK24. To use a different branch:
 cmake -DAK24_GIT_BRANCH=main ..
 ```
 
+# Limitations
 
+- Lambda Recursion is hard-limited until we get tail call optimization
