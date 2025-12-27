@@ -1,0 +1,26 @@
+(cjit-load-builtin println :root "tests/builtins/println.c")
+(cjit-load-builtin if :root "tests/builtins/if_impl.c" :as "builtin_if")
+
+(println "Testing external if builtin loaded with :as keyword")
+
+(println "Test 1: if with true condition (1)")
+(let result1 (if 1 "then-branch" "else-branch"))
+(println "  Result:" result1)
+(assert-eq result1 "then-branch" "if 1 should return then-branch")
+
+(println "Test 2: if with false condition (0)")
+(let result2 (if 0 "then-branch" "else-branch"))
+(println "  Result:" result2)
+(assert-eq result2 "else-branch" "if 0 should return else-branch")
+
+(println "Test 3: if with no else branch (true)")
+(let result3 (if 1 "then-only"))
+(println "  Result:" result3)
+(assert-eq result3 "then-only" "if 1 with no else should return then-branch")
+
+(println "Test 4: if with no else branch (false)")
+(let result4 (if 0 "then-only"))
+(println "  Result:" result4)
+
+(println "All external if tests passed!")
+

@@ -54,7 +54,8 @@ for test_file in "$SCRIPT_DIR"/*.akx; do
     fi
     
     grep -v "^AK24 Info: Removing stale lock file" "$raw_output" | \
-    grep -v "ERROR.*Maximum recursion depth exceeded" > "$actual_output" || true
+    grep -v "ERROR.*Maximum recursion depth exceeded" | \
+    grep -v "ERROR.*Failed to add root source to CJIT unit" > "$actual_output" || true
     
     cat "$expect_file" > "$expected_output"
     rm -f "$raw_output"

@@ -1,0 +1,13 @@
+=== Testing :as Alias Edge Cases ===
+
+Test 1: Loading same builtin with different symbols
+  add 1 2 = 3
+  + 3 4 = 7
+Test 2: Reloading builtin with :as
+  + 5 6 (reloaded) = 11
+Test 3: Using :as with regular names
+  Custom aliased println works!
+Test 4: Mixing aliased and non-aliased builtins
+  - 20 (add 3 4) = 13
+
+All edge case tests passed!

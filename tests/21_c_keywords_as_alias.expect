@@ -1,0 +1,15 @@
+=== Testing C Keywords with :as Aliasing ===
+
+Loaded 'if' (C keyword, aliased to builtin_if)
+Test: if with true condition
+  if 1 true-branch false-branch = true-branch
+Test: if with false condition
+  if 0 true-branch false-branch = false-branch
+Test: if without else branch (true)
+  if 1 only-then = only-then
+Test: if without else branch (false)
+  if 0 only-then = nil
+Test: nested if expressions
+  nested if = nested-true
+
+All C keyword :as tests passed!

@@ -1,0 +1,14 @@
+=== Testing Operator Symbols with :as Aliasing ===
+
+Loaded + (aliased to add)
+  + 1 2 3 4 5 = 15
+Loaded - (aliased to sub)
+  - 10 3 = 7
+Loaded * (aliased to mul)
+  * 2 3 4 = 24
+
+=== Testing Operator Composition ===
+  + (* 2 3) (- 10 5) = 11
+  - (+ 10 20) (* 2 3) = 24
+
+All operator :as tests passed!

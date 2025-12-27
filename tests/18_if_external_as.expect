@@ -1,0 +1,10 @@
+Testing external if builtin loaded with :as keyword
+Test 1: if with true condition (1)
+  Result: then-branch
+Test 2: if with false condition (0)
+  Result: else-branch
+Test 3: if with no else branch (true)
+  Result: then-only
+Test 4: if with no else branch (false)
+  Result: nil
+All external if tests passed!

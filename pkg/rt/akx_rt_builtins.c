@@ -264,6 +264,7 @@ static akx_cell_t *builtin_cjit_load_builtin(akx_runtime_ctx_t *rt,
   memset(&opts, 0, sizeof(opts));
 
   const char *root_path = NULL;
+  const char *c_function_name = NULL;
 
   akx_cell_t *current = akx_rt_list_nth(args, 1);
   while (current) {
@@ -301,6 +302,23 @@ static akx_cell_t *builtin_cjit_load_builtin(akx_runtime_ctx_t *rt,
       strcpy(root_dup, root_str);
       root_path = root_dup;
       akx_rt_free_cell(rt, root_evaled);
+    } else if (strcmp(keyword, ":as") == 0) {
+      akx_cell_t *as_evaled = akx_rt_eval_and_assert(
+          rt, current, AKX_TYPE_STRING_LITERAL, ":as value must be a string");
+      if (!as_evaled) {
+        goto cleanup_error;
+      }
+      const char *as_str = akx_rt_cell_as_string(as_evaled);
+      size_t as_len = strlen(as_str);
+      char *as_dup = AK24_ALLOC(as_len + 1);
+      if (!as_dup) {
+        akx_rt_free_cell(rt, as_evaled);
+        akx_rt_error(rt, "failed to allocate C function name");
+        goto cleanup_error;
+      }
+      strcpy(as_dup, as_str);
+      c_function_name = as_dup;
+      akx_rt_free_cell(rt, as_evaled);
     } else if (strcmp(keyword, ":include-paths") == 0) {
       if (akx_compiler_extract_string_list(rt, current, &opts.include_paths,
                                            &opts.include_path_count) != 0) {
@@ -328,10 +346,12 @@ static akx_cell_t *builtin_cjit_load_builtin(akx_runtime_ctx_t *rt,
     goto cleanup_error;
   }
 
-  int result = akx_compiler_load_builtin_ex(rt, name, root_path, &opts);
+  int result = akx_compiler_load_builtin_ex(rt, name, c_function_name, root_path, &opts);
 
   if (root_path)
     AK24_FREE((void *)root_path);
+  if (c_function_name)
+    AK24_FREE((void *)c_function_name);
   akx_compiler_free_compile_opts(&opts);
 
   akx_cell_t *ret = akx_rt_alloc_cell(rt, AKX_TYPE_SYMBOL);
@@ -345,6 +365,8 @@ static akx_cell_t *builtin_cjit_load_builtin(akx_runtime_ctx_t *rt,
 cleanup_error:
   if (root_path)
     AK24_FREE((void *)root_path);
+  if (c_function_name)
+    AK24_FREE((void *)c_function_name);
   akx_compiler_free_compile_opts(&opts);
   return NULL;
 }

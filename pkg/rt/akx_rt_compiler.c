@@ -371,6 +371,7 @@ const char *akx_compiler_generate_abi_header(void) {
 }
 
 int akx_compiler_load_builtin_ex(akx_runtime_ctx_t *rt, const char *name,
+                                 const char *c_function_name,
                                  const char *root_path,
                                  const akx_builtin_compile_opts_t *opts) {
   if (!rt || !name || !root_path) {
@@ -569,10 +570,11 @@ int akx_compiler_load_builtin_ex(akx_runtime_ctx_t *rt, const char *name,
   }
   AK24_LOG_DEBUG("Compilation successful");
 
-  AK24_LOG_DEBUG("Looking up symbol '%s'", name);
-  akx_builtin_fn function = (akx_builtin_fn)ak_cjit_get_symbol(unit, name);
+  const char *lookup_name = c_function_name ? c_function_name : name;
+  AK24_LOG_DEBUG("Looking up symbol '%s'", lookup_name);
+  akx_builtin_fn function = (akx_builtin_fn)ak_cjit_get_symbol(unit, lookup_name);
   if (!function) {
-    AK24_LOG_ERROR("Failed to find symbol '%s' in compiled builtin", name);
+    AK24_LOG_ERROR("Failed to find symbol '%s' in compiled builtin", lookup_name);
     ak_cjit_unit_free(unit);
     return -1;
   }
@@ -581,9 +583,9 @@ int akx_compiler_load_builtin_ex(akx_runtime_ctx_t *rt, const char *name,
   char init_name[256];
   char deinit_name[256];
   char reload_name[256];
-  snprintf(init_name, sizeof(init_name), "%s_init", name);
-  snprintf(deinit_name, sizeof(deinit_name), "%s_deinit", name);
-  snprintf(reload_name, sizeof(reload_name), "%s_reload", name);
+  snprintf(init_name, sizeof(init_name), "%s_init", lookup_name);
+  snprintf(deinit_name, sizeof(deinit_name), "%s_deinit", lookup_name);
+  snprintf(reload_name, sizeof(reload_name), "%s_reload", lookup_name);
 
   void (*init_fn)(akx_runtime_ctx_t *) =
       (void (*)(akx_runtime_ctx_t *))ak_cjit_get_symbol(unit, init_name);

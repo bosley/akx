@@ -1,0 +1,35 @@
+(cjit-load-builtin println :root "tests/builtins/println.c")
+
+(println "=== Testing C Keywords with :as Aliasing ===")
+(println "")
+
+(cjit-load-builtin if :root "tests/builtins/if_impl.c" :as "builtin_if")
+(println "Loaded 'if' (C keyword, aliased to builtin_if)")
+
+(println "Test: if with true condition")
+(let result1 (if 1 "true-branch" "false-branch"))
+(println "  if 1 true-branch false-branch =" result1)
+(assert-eq result1 "true-branch" "if 1 should take true branch")
+
+(println "Test: if with false condition")
+(let result2 (if 0 "true-branch" "false-branch"))
+(println "  if 0 true-branch false-branch =" result2)
+(assert-eq result2 "false-branch" "if 0 should take false branch")
+
+(println "Test: if without else branch (true)")
+(let result3 (if 1 "only-then"))
+(println "  if 1 only-then =" result3)
+(assert-eq result3 "only-then" "if 1 without else should return then")
+
+(println "Test: if without else branch (false)")
+(let result4 (if 0 "only-then"))
+(println "  if 0 only-then =" result4)
+
+(println "Test: nested if expressions")
+(let result5 (if 1 (if 1 "nested-true" "nested-false") "outer-false"))
+(println "  nested if =" result5)
+(assert-eq result5 "nested-true" "nested if should work")
+
+(println "")
+(println "All C keyword :as tests passed!")
+
