@@ -1,0 +1,21 @@
+Testing path operations
+
+Test 1: path-join with 2 components
+  Result: /home/user/documents
+
+Test 2: path-join with 3 components
+  Result: /var/log/app.log
+
+Test 3: basename extraction
+  Input: /home/user/documents/file.txt
+  Basename: file.txt
+
+Test 4: dirname extraction
+  Input: /home/user/documents/file.txt
+  Dirname: /home/user/documents
+
+Test 5: basename of simple filename
+  Input: file.txt
+  Basename: file.txt
+
+Path operations test complete.

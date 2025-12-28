@@ -1,0 +1,30 @@
+(let test-file "/tmp/akx_test_file_ops.txt")
+
+(io/putf "Testing file operations\n\n")
+
+(io/putf "Test 1: Check non-existent file\n")
+(let exists1 (fs/?exists test-file))
+(io/putf "  File exists: %v\n\n" exists1)
+
+(io/putf "Test 2: Create file\n")
+(let bytes (fs/write-file test-file "Test content for file operations"))
+(io/putf "  Wrote %d bytes\n" bytes)
+(let exists2 (fs/?exists test-file))
+(io/putf "  File exists now: %v\n\n" exists2)
+
+(io/putf "Test 3: Read file content\n")
+(let content (fs/read-file test-file))
+(io/putf "  Content: %s\n\n" content)
+
+(io/putf "Test 4: Delete file\n")
+(let deleted (fs/delete test-file))
+(io/putf "  Delete successful: %v\n" deleted)
+(let exists3 (fs/?exists test-file))
+(io/putf "  File exists after delete: %v\n\n" exists3)
+
+(io/putf "Test 5: Try to delete non-existent file\n")
+(let deleted2 (fs/delete test-file))
+(io/putf "  Delete result: %v\n\n" deleted2)
+
+(io/putf "File operations test complete.\n")
+

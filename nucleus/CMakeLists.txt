@@ -48,9 +48,12 @@ file(WRITE ${REGISTRY_C} "#include \"builtin_registry.h\"
 #include <ak24/intern.h>
 #include <ak24/context.h>
 #include <ak24/lambda.h>
+#include <ak24/buffer.h>
+#include <ak24/filepath.h>
 #include <signal.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 ")
 

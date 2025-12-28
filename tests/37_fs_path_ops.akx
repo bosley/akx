@@ -1,0 +1,27 @@
+(io/putf "Testing path operations\n\n")
+
+(io/putf "Test 1: path-join with 2 components\n")
+(let path1 (fs/path-join "/home/user" "documents"))
+(io/putf "  Result: %s\n\n" path1)
+
+(io/putf "Test 2: path-join with 3 components\n")
+(let path2 (fs/path-join "/var" "log" "app.log"))
+(io/putf "  Result: %s\n\n" path2)
+
+(io/putf "Test 3: basename extraction\n")
+(let base1 (fs/basename "/home/user/documents/file.txt"))
+(io/putf "  Input: /home/user/documents/file.txt\n")
+(io/putf "  Basename: %s\n\n" base1)
+
+(io/putf "Test 4: dirname extraction\n")
+(let dir1 (fs/dirname "/home/user/documents/file.txt"))
+(io/putf "  Input: /home/user/documents/file.txt\n")
+(io/putf "  Dirname: %s\n\n" dir1)
+
+(io/putf "Test 5: basename of simple filename\n")
+(let base2 (fs/basename "file.txt"))
+(io/putf "  Input: file.txt\n")
+(io/putf "  Basename: %s\n\n" base2)
+
+(io/putf "Path operations test complete.\n")
+

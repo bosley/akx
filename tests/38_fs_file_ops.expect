@@ -1,0 +1,20 @@
+Testing file operations
+
+Test 1: Check non-existent file
+  File exists: false
+
+Test 2: Create file
+  Wrote 32 bytes
+  File exists now: true
+
+Test 3: Read file content
+  Content: Test content for file operations
+
+Test 4: Delete file
+  Delete successful: true
+  File exists after delete: false
+
+Test 5: Try to delete non-existent file
+  Delete result: false
+
+File operations test complete.

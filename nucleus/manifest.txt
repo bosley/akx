@@ -54,6 +54,15 @@ or          or_impl         logic/or.c          1
 loop        loop_impl       core/loop.c         1
 begin       begin_impl      core/begin.c        1
 
+# Filesystem operations (compiled in)
+fs/read-file    read_file_impl      fs/read_file.c      1
+fs/write-file   write_file_impl     fs/write_file.c     1
+fs/?exists      exists_impl         fs/exists.c         1
+fs/delete       delete_impl         fs/delete.c         1
+fs/path-join    path_join_impl      fs/path_join.c      1
+fs/basename     basename_impl       fs/basename.c       1
+fs/dirname      dirname_impl        fs/dirname.c        1
+
 #
 #  As new nucleus files are created we will have them not directly in-built
 #  but we've been developing core functionality so all are included by-chance for now
