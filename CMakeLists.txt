@@ -74,6 +74,7 @@ add_subdirectory(pkg/core)
 add_subdirectory(pkg/sv)
 add_subdirectory(pkg/cell)
 add_subdirectory(nucleus)
+add_subdirectory(pkg/repl)
 add_subdirectory(pkg/rt)
 add_subdirectory(cmd/akx)
 

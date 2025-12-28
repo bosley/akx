@@ -99,7 +99,9 @@ APP_MAIN(app_main) {
   size_t argc = list_count(&ctx->args);
 
   if (argc == 1) {
-    return akx_repl_start(g_core, g_runtime);
+    akx_repl_signal_ctx_t signal_ctx = {.keep_running = &keep_running,
+                                        .signal_count = &signal_count};
+    return akx_repl_start(g_core, g_runtime, &signal_ctx);
   }
 
   char **argv = AK24_ALLOC(sizeof(char *) * argc);

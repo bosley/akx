@@ -1,5 +1,5 @@
 #include "repl.h"
-#include "akx.h"
+#include "akx_cell.h"
 #include "akx_sv.h"
 #include "repl_buffer.h"
 #include "repl_display.h"
@@ -8,9 +8,11 @@
 #include <ak24/filepath.h>
 #include <ak24/kernel.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-int akx_repl_start(akx_core_t *core, akx_runtime_ctx_t *runtime) {
+int akx_repl_start(akx_core_t *core, akx_runtime_ctx_t *runtime,
+                   akx_repl_signal_ctx_t *signal_ctx) {
   if (!core || !runtime) {
     printf("Error: Invalid core or runtime\n");
     return 1;
@@ -19,8 +21,23 @@ int akx_repl_start(akx_core_t *core, akx_runtime_ctx_t *runtime) {
   printf("\nAKX REPL v0.1.0\n");
   printf("Type expressions or press Ctrl+D to exit\n\n");
 
-  signal_count = 0;
-  keep_running = 1;
+  volatile int local_keep_running = 1;
+  volatile int local_signal_count = 0;
+
+  volatile int *keep_running = &local_keep_running;
+  volatile int *signal_count = &local_signal_count;
+
+  if (signal_ctx) {
+    keep_running = signal_ctx->keep_running;
+    signal_count = signal_ctx->signal_count;
+  }
+
+  if (signal_count) {
+    *signal_count = 0;
+  }
+  if (keep_running) {
+    *keep_running = 1;
+  }
 
   repl_input_ctx_t *input_ctx = repl_input_init();
   if (!input_ctx) {
@@ -43,22 +60,35 @@ int akx_repl_start(akx_core_t *core, akx_runtime_ctx_t *runtime) {
     return 1;
   }
 
-  ak_buffer_t *home = ak_filepath_home();
-  if (home) {
-    ak_buffer_t *history_path =
-        ak_filepath_join(2, (const char *)ak_buffer_data(home), ".akx/history");
+  ak_buffer_t *akx_home_buf = NULL;
+  const char *akx_home = getenv("AKX_HOME");
+  if (!akx_home) {
+    const char *home = getenv("HOME");
+    if (home) {
+      akx_home_buf = ak_filepath_join(2, home, ".akx");
+      if (akx_home_buf) {
+        akx_home = (const char *)ak_buffer_data(akx_home_buf);
+      }
+    }
+  }
+
+  if (akx_home) {
+    ak_buffer_t *history_path = ak_filepath_join(2, akx_home, "repl_history");
     if (history_path) {
       repl_history_load(history, (const char *)ak_buffer_data(history_path));
       ak_buffer_free(history_path);
     }
-    ak_buffer_free(home);
   }
 
-  while (keep_running) {
+  if (akx_home_buf) {
+    ak_buffer_free(akx_home_buf);
+  }
+
+  while (*keep_running) {
     const char *prompt = repl_buffer_is_empty(buffer) ? "akx> " : "...> ";
     char *line = repl_input_read_line(input_ctx, prompt);
 
-    if (!line || !keep_running) {
+    if (!line || !*keep_running) {
       if (line) {
         AK24_FREE(line);
       }
@@ -117,15 +147,28 @@ int akx_repl_start(akx_core_t *core, akx_runtime_ctx_t *runtime) {
     repl_buffer_clear(buffer);
   }
 
-  home = ak_filepath_home();
-  if (home) {
-    ak_buffer_t *history_path =
-        ak_filepath_join(2, (const char *)ak_buffer_data(home), ".akx/history");
+  akx_home_buf = NULL;
+  akx_home = getenv("AKX_HOME");
+  if (!akx_home) {
+    const char *home = getenv("HOME");
+    if (home) {
+      akx_home_buf = ak_filepath_join(2, home, ".akx");
+      if (akx_home_buf) {
+        akx_home = (const char *)ak_buffer_data(akx_home_buf);
+      }
+    }
+  }
+
+  if (akx_home) {
+    ak_buffer_t *history_path = ak_filepath_join(2, akx_home, "repl_history");
     if (history_path) {
       repl_history_save(history, (const char *)ak_buffer_data(history_path));
       ak_buffer_free(history_path);
     }
-    ak_buffer_free(home);
+  }
+
+  if (akx_home_buf) {
+    ak_buffer_free(akx_home_buf);
   }
 
   repl_history_free(history);
