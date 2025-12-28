@@ -911,3 +911,10 @@ char *akx_rt_expand_env_vars(const char *path) {
 
   return result;
 }
+
+map_void_t *akx_rt_get_builtins(akx_runtime_ctx_t *rt) {
+  if (!rt) {
+    return NULL;
+  }
+  return &rt->builtins;
+}

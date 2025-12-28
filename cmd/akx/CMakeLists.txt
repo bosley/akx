@@ -1,6 +1,11 @@
 add_executable(akx
     main.c
     akx.c
+    commands.c
+    repl.c
+    nucleus_info.c
+    nucleus_list.c
+    help.c
 )
 
 target_include_directories(akx PRIVATE

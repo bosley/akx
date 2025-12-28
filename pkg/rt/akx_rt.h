@@ -125,4 +125,6 @@ int akx_rt_register_builtin(akx_runtime_ctx_t *rt, const char *name,
                             void (*deinit_fn)(akx_runtime_ctx_t *),
                             void (*reload_fn)(akx_runtime_ctx_t *, void *));
 
+map_void_t *akx_rt_get_builtins(akx_runtime_ctx_t *rt);
+
 #endif
