@@ -6,8 +6,8 @@
 #include <string.h>
 #include <unistd.h>
 
-static volatile int keep_running = 1;
-static volatile int signal_count = 0;
+volatile int keep_running = 1;
+volatile int signal_count = 0;
 static akx_core_t *g_core = NULL;
 static akx_runtime_ctx_t *g_runtime = NULL;
 
@@ -99,7 +99,7 @@ APP_MAIN(app_main) {
   size_t argc = list_count(&ctx->args);
 
   if (argc == 1) {
-    return akx_repl_start();
+    return akx_repl_start(g_core, g_runtime);
   }
 
   char **argv = AK24_ALLOC(sizeof(char *) * argc);

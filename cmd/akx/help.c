@@ -6,7 +6,7 @@ void akx_print_help(void) {
   printf("AKX - A self-extending Lisp runtime\n");
   printf("\n");
   printf("USAGE:\n");
-  printf("  akx                     Start REPL mode (not yet implemented)\n");
+  printf("  akx                     Start REPL mode\n");
   printf("  akx <file.akx>          Execute an AKX file\n");
   printf("  akx nucleus info        List compiled-in builtins\n");
   printf("  akx nucleus list        List available nuclei in ~/.akx/nucleus\n");
