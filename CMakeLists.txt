@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.20)
 
+if(POLICY CMP0169)
+    cmake_policy(SET CMP0169 OLD)
+endif()
+
 project(akx VERSION 0.1.0 LANGUAGES C)
 
 if(DEFINED ENV{AKX_HOME})
@@ -26,6 +30,24 @@ endif()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(ak24)
 ensure_ak24_installed()
+
+include(FetchContent)
+
+FetchContent_Declare(
+    linenoise
+    GIT_REPOSITORY https://github.com/antirez/linenoise.git
+    GIT_TAG master
+)
+
+FetchContent_GetProperties(linenoise)
+if(NOT linenoise_POPULATED)
+    FetchContent_Populate(linenoise)
+    add_library(linenoise STATIC ${linenoise_SOURCE_DIR}/linenoise.c)
+    target_include_directories(linenoise PUBLIC ${linenoise_SOURCE_DIR})
+    if(CMAKE_C_COMPILER_ID MATCHES "Clang" OR CMAKE_C_COMPILER_ID MATCHES "GNU")
+        target_compile_options(linenoise PRIVATE -w)
+    endif()
+endif()
 
 find_library(AK24_LIBRARY
     NAMES ak24_kernel

@@ -3,10 +3,9 @@
 #include "akx_sv.h"
 #include "repl_buffer.h"
 #include "repl_display.h"
-#include "repl_history.h"
-#include "repl_input.h"
 #include <ak24/filepath.h>
 #include <ak24/kernel.h>
+#include <linenoise.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,26 +38,13 @@ int akx_repl_start(akx_core_t *core, akx_runtime_ctx_t *runtime,
     *keep_running = 1;
   }
 
-  repl_input_ctx_t *input_ctx = repl_input_init();
-  if (!input_ctx) {
-    printf("Error: Failed to initialize input\n");
-    return 1;
-  }
-
   repl_buffer_t *buffer = repl_buffer_new();
   if (!buffer) {
     printf("Error: Failed to initialize buffer\n");
-    repl_input_deinit(input_ctx);
     return 1;
   }
 
-  repl_history_t *history = repl_history_new(1000);
-  if (!history) {
-    printf("Error: Failed to initialize history\n");
-    repl_buffer_free(buffer);
-    repl_input_deinit(input_ctx);
-    return 1;
-  }
+  linenoiseHistorySetMaxLen(1000);
 
   ak_buffer_t *akx_home_buf = NULL;
   const char *akx_home = getenv("AKX_HOME");
@@ -75,7 +61,7 @@ int akx_repl_start(akx_core_t *core, akx_runtime_ctx_t *runtime,
   if (akx_home) {
     ak_buffer_t *history_path = ak_filepath_join(2, akx_home, "repl_history");
     if (history_path) {
-      repl_history_load(history, (const char *)ak_buffer_data(history_path));
+      linenoiseHistoryLoad((const char *)ak_buffer_data(history_path));
       ak_buffer_free(history_path);
     }
   }
@@ -86,24 +72,25 @@ int akx_repl_start(akx_core_t *core, akx_runtime_ctx_t *runtime,
 
   while (*keep_running) {
     const char *prompt = repl_buffer_is_empty(buffer) ? "akx> " : "...> ";
-    char *line = repl_input_read_line(input_ctx, prompt);
+    char *line = linenoise(prompt);
 
     if (!line || !*keep_running) {
       if (line) {
-        AK24_FREE(line);
+        linenoiseFree(line);
       }
       break;
     }
 
     if (strlen(line) == 0) {
-      AK24_FREE(line);
       if (repl_buffer_is_empty(buffer)) {
+        linenoiseFree(line);
         continue;
       }
     } else {
       repl_buffer_append_line(buffer, line);
-      AK24_FREE(line);
     }
+
+    linenoiseFree(line);
 
     if (!repl_buffer_is_balanced(buffer)) {
       continue;
@@ -113,6 +100,19 @@ int akx_repl_start(akx_core_t *core, akx_runtime_ctx_t *runtime,
     if (!code_buf || ak_buffer_count(code_buf) == 0) {
       repl_buffer_clear(buffer);
       continue;
+    }
+
+    const char *code_str = (const char *)ak_buffer_data(code_buf);
+
+    char *history_entry = AK24_ALLOC(strlen(code_str) + 1);
+    if (history_entry) {
+      strcpy(history_entry, code_str);
+      for (char *p = history_entry; *p; p++) {
+        if (*p == '\n')
+          *p = ' ';
+      }
+      linenoiseHistoryAdd(history_entry);
+      AK24_FREE(history_entry);
     }
 
     akx_parse_result_t result = akx_cell_parse_buffer(code_buf, "<repl>");
@@ -162,7 +162,7 @@ int akx_repl_start(akx_core_t *core, akx_runtime_ctx_t *runtime,
   if (akx_home) {
     ak_buffer_t *history_path = ak_filepath_join(2, akx_home, "repl_history");
     if (history_path) {
-      repl_history_save(history, (const char *)ak_buffer_data(history_path));
+      linenoiseHistorySave((const char *)ak_buffer_data(history_path));
       ak_buffer_free(history_path);
     }
   }
@@ -171,9 +171,7 @@ int akx_repl_start(akx_core_t *core, akx_runtime_ctx_t *runtime,
     ak_buffer_free(akx_home_buf);
   }
 
-  repl_history_free(history);
   repl_buffer_free(buffer);
-  repl_input_deinit(input_ctx);
 
   printf("\nGoodbye!\n");
   return 0;

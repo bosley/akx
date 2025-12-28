@@ -2,8 +2,6 @@ add_library(akx_repl STATIC
     repl.c
     repl_buffer.c
     repl_display.c
-    repl_history.c
-    repl_input.c
 )
 
 target_include_directories(akx_repl PUBLIC
@@ -20,6 +18,7 @@ target_link_libraries(akx_repl PUBLIC
     akx_cell
     akx_rt
     akx_sv
+    linenoise
     ${AK24_LIBRARIES}
     pthread
 )
