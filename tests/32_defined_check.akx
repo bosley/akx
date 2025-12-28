@@ -1,18 +1,16 @@
-(import "$AKX_HOME/stdlib/io.akx")
+(io/putf "=== Testing ?defined ===\n")
 
-(println "=== Testing ?defined ===")
-
-(println "Checking undefined symbol:")
-(println "  (?defined undefined-var):" (?defined undefined-var))
+(io/putf "Checking undefined symbol:\n")
+(io/putf "  (?defined undefined-var): %d\n" (?defined undefined-var))
 
 (let x 42)
-(println "After (let x 42):")
-(println "  (?defined x):" (?defined x))
+(io/putf "After (let x 42):\n")
+(io/putf "  (?defined x): %d\n" (?defined x))
 
 (let y "hello")
-(println "After (let y \"hello\"):")
-(println "  (?defined y):" (?defined y))
-(println "  (?defined z):" (?defined z))
+(io/putf "After (let y \"hello\"):\n")
+(io/putf "  (?defined y): %d\n" (?defined y))
+(io/putf "  (?defined z): %d\n" (?defined z))
 
-(println "=== All ?defined tests passed ===")
+(io/putf "=== All ?defined tests passed ===\n")
 

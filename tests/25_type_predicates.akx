@@ -1,23 +1,21 @@
-(import "$AKX_HOME/stdlib/io.akx")
-
-(println "=== Type Predicate Tests ===")
+(io/putf "=== Type Predicate Tests ===\n")
 
 (let x 42)
-(println "(?int 42):" (?int x))
-(println "(?real 42):" (?real x))
-(println "(?str 42):" (?str x))
+(io/putf "(?int 42): %d\n" (?int x))
+(io/putf "(?real 42): %d\n" (?real x))
+(io/putf "(?str 42): %d\n" (?str x))
 
 (let y 3.14)
-(println "(?real 3.14):" (?real y))
-(println "(?int 3.14):" (?int y))
+(io/putf "(?real 3.14): %d\n" (?real y))
+(io/putf "(?int 3.14): %d\n" (?int y))
 
 (let s "hello")
-(println "(?str \"hello\"):" (?str s))
-(println "(?int \"hello\"):" (?int s))
+(io/putf "(?str \"hello\"): %d\n" (?str s))
+(io/putf "(?int \"hello\"): %d\n" (?int s))
 
 (let f (lambda [x] x))
-(println "(?lambda f):" (?lambda f))
-(println "(?int f):" (?int f))
+(io/putf "(?lambda f): %d\n" (?lambda f))
+(io/putf "(?int f): %d\n" (?int f))
 
-(println "=== All type predicates passed ===")
+(io/putf "=== All type predicates passed ===\n")
 

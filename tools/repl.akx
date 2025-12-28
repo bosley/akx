@@ -1,6 +1,5 @@
-; The default core wraps up most of nucleus, but not IO
-; So we need to import the IO nucleus to get print and println
-import "$AKX_HOME/stdlib/io.akx"
+; The default core wraps up most of nucleus, including IO
+; io/putf is compiled in by default
 
 ; Other functionality and customizations to the REPL can be made
 ; by defininf functions here and perfoming and pre-jit loading of system-specific 
@@ -10,4 +9,4 @@ import "$AKX_HOME/stdlib/io.akx"
 ;
 ;
 let welcome (lambda []
-  (println "Custom REPL environment loaded!"))
+  (io/putf "Custom REPL environment loaded!\n"))

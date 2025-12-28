@@ -1,25 +1,23 @@
-(import "$AKX_HOME/stdlib/io.akx")
+(io/putf "=== Variadic Equality Tests ===\n")
 
-(println "=== Variadic Equality Tests ===")
+(io/putf "(eq 1 1): %d\n" (eq 1 1))
+(io/putf "(eq 1 2): %d\n" (eq 1 2))
 
-(println "(eq 1 1):" (eq 1 1))
-(println "(eq 1 2):" (eq 1 2))
+(io/putf "(eq 1 1 1): %d\n" (eq 1 1 1))
+(io/putf "(eq 1 1 2): %d\n" (eq 1 1 2))
 
-(println "(eq 1 1 1):" (eq 1 1 1))
-(println "(eq 1 1 2):" (eq 1 1 2))
+(io/putf "(eq 5 5 5 5): %d\n" (eq 5 5 5 5))
 
-(println "(eq 5 5 5 5):" (eq 5 5 5 5))
-
-(println "(eq \"a\" \"a\"):" (eq "a" "a"))
-(println "(eq \"a\" \"b\"):" (eq "a" "b"))
-(println "(eq \"hello\" \"hello\" \"hello\"):" (eq "hello" "hello" "hello"))
+(io/putf "(eq \"a\" \"a\"): %d\n" (eq "a" "a"))
+(io/putf "(eq \"a\" \"b\"): %d\n" (eq "a" "b"))
+(io/putf "(eq \"hello\" \"hello\" \"hello\"): %d\n" (eq "hello" "hello" "hello"))
 
 (let x 42)
 (let y 42)
 (let z 43)
-(println "(eq x y):" (eq x y))
-(println "(eq x z):" (eq x z))
+(io/putf "(eq x y): %d\n" (eq x y))
+(io/putf "(eq x z): %d\n" (eq x z))
 
 
-(println "=== Equality tests passed ===")
+(io/putf "=== Equality tests passed ===\n")
 

@@ -1,26 +1,25 @@
-(cjit-load-builtin println :root "nucleus/io/println.c")
 (cjit-load-builtin if :root "nucleus/core/if.c" :as "if_impl")
 
-(println "Testing external if builtin loaded with :as keyword")
+(io/putf "Testing external if builtin loaded with :as keyword\n")
 
-(println "Test 1: if with true condition (1)")
+(io/putf "Test 1: if with true condition (1)\n")
 (let result1 (if 1 "then-branch" "else-branch"))
-(println "  Result:" result1)
+(io/putf "  Result: %s\n" result1)
 (assert-eq result1 "then-branch" "if 1 should return then-branch")
 
-(println "Test 2: if with false condition (0)")
+(io/putf "Test 2: if with false condition (0)\n")
 (let result2 (if 0 "then-branch" "else-branch"))
-(println "  Result:" result2)
+(io/putf "  Result: %s\n" result2)
 (assert-eq result2 "else-branch" "if 0 should return else-branch")
 
-(println "Test 3: if with no else branch (true)")
+(io/putf "Test 3: if with no else branch (true)\n")
 (let result3 (if 1 "then-only"))
-(println "  Result:" result3)
+(io/putf "  Result: %s\n" result3)
 (assert-eq result3 "then-only" "if 1 with no else should return then-branch")
 
-(println "Test 4: if with no else branch (false)")
+(io/putf "Test 4: if with no else branch (false)\n")
 (let result4 (if 0 "then-only"))
-(println "  Result:" result4)
+(io/putf "  Result: %v\n" result4)
 
-(println "All external if tests passed!")
+(io/putf "All external if tests passed!\n")
 

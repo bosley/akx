@@ -1,13 +1,12 @@
 (cjit-load-builtin return-nil :root "tests/builtins/return_nil.c" :as "return_nil")
-(cjit-load-builtin println :root "tests/builtins/println.c")
 
-(println "=== Nil Handling Tests ===")
+(io/putf "=== Nil Handling Tests ===\n")
 
-(println "(?nil (return-nil)):" (?nil (return-nil)))
-(println "(?int (return-nil)):" (?int (return-nil)))
-(println "(?real (return-nil)):" (?real (return-nil)))
-(println "(?str (return-nil)):" (?str (return-nil)))
-(println "(?lambda (return-nil)):" (?lambda (return-nil)))
+(io/putf "(?nil (return-nil)): %d\n" (?nil (return-nil)))
+(io/putf "(?int (return-nil)): %d\n" (?int (return-nil)))
+(io/putf "(?real (return-nil)): %d\n" (?real (return-nil)))
+(io/putf "(?str (return-nil)): %d\n" (?str (return-nil)))
+(io/putf "(?lambda (return-nil)): %d\n" (?lambda (return-nil)))
 
-(println "=== Nil handling tests passed ===")
+(io/putf "=== Nil handling tests passed ===\n")
 

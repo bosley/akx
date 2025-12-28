@@ -23,9 +23,8 @@ assert-ne    assert_ne_impl     assert/assert_ne.c      1
 %           akx_mod         math/mod.c          1
 =           akx_eq          math/eq.c           1
 
-# I/O (runtime loadable)
-print       akx_print       io/print.c          0
-println     println         io/println.c        0
+# I/O (compiled in)
+io/putf     putf_impl       io/putf.c           1
 
 # Type introspection (compiled in)
 ?nil        is_nil_impl     types/is_nil.c      1
