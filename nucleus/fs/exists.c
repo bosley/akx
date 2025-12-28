@@ -18,11 +18,11 @@ akx_cell_t *exists_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
 
   FILE *file = fopen(actual_path, "r");
   int exists = (file != NULL);
-  
+
   if (file) {
     fclose(file);
   }
-  
+
   if (expanded_path) {
     free(expanded_path);
   }
@@ -33,4 +33,3 @@ akx_cell_t *exists_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
   akx_rt_set_symbol(rt, result, exists ? "true" : "false");
   return result;
 }
-

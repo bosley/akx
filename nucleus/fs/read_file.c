@@ -17,7 +17,7 @@ akx_cell_t *read_file_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
   const char *actual_path = expanded_path ? expanded_path : path;
 
   ak_buffer_t *buffer = ak_buffer_from_file(actual_path);
-  
+
   if (expanded_path) {
     free(expanded_path);
   }
@@ -32,7 +32,7 @@ akx_cell_t *read_file_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
   size_t size = ak_buffer_count(buffer);
 
   akx_cell_t *result = akx_rt_alloc_cell(rt, AKX_TYPE_STRING_LITERAL);
-  
+
   char *content = (char *)malloc(size + 1);
   if (!content) {
     akx_rt_error(rt, "fs/read-file: memory allocation failed");
@@ -41,16 +41,15 @@ akx_cell_t *read_file_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
     akx_rt_free_cell(rt, result);
     return NULL;
   }
-  
+
   memcpy(content, data, size);
   content[size] = '\0';
-  
+
   akx_rt_set_string(rt, result, content);
   free(content);
-  
+
   ak_buffer_free(buffer);
   akx_rt_free_cell(rt, path_cell);
-  
+
   return result;
 }
-

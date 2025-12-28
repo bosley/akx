@@ -1,0 +1,17 @@
+(io/putf "Testing akx/exec return value usage\n")
+
+(let computed (akx/exec "tests/helpers/use_stdlib.akx"))
+(io/putf "Computed value: %d\n" computed)
+
+(io/putf "Using returned value in calculations\n")
+(let doubled (* computed 2))
+(io/putf "Doubled: %d\n" doubled)
+
+(let added (+ computed 8))
+(io/putf "Added 8: %d\n" added)
+
+(assert-eq computed 30)
+(assert-eq doubled 60)
+(assert-eq added 38)
+(io/putf "All assertions passed\n")
+

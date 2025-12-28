@@ -17,7 +17,7 @@ akx_cell_t *delete_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
   const char *actual_path = expanded_path ? expanded_path : path;
 
   int result_code = unlink(actual_path);
-  
+
   if (expanded_path) {
     free(expanded_path);
   }
@@ -28,4 +28,3 @@ akx_cell_t *delete_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
   akx_rt_set_symbol(rt, result, (result_code == 0) ? "true" : "false");
   return result;
 }
-

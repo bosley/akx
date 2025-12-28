@@ -1,0 +1,6 @@
+Testing akx/exec return value usage
+Computed value: 30
+Using returned value in calculations
+Doubled: 60
+Added 8: 38
+All assertions passed

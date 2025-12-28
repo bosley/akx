@@ -1,0 +1,12 @@
+(io/putf "Testing akx/exec with $AKX_HOME path expansion\n")
+
+(let result (akx/exec "$AKX_HOME/stdlib/math.akx"))
+(io/putf "Loaded stdlib/math.akx: %t\n" result)
+
+(io/putf "Testing math operations from loaded stdlib\n")
+(let sum (+ 5 10 15))
+(io/putf "Sum: %d\n" sum)
+
+(let product (* 3 4))
+(io/putf "Product: %d\n" product)
+
