@@ -1,0 +1,48 @@
+(io/putf "Testing tail call optimization\n")
+
+(io/putf "\nTest 1: Simple countdown\n")
+(let countdown (lambda [n]
+  (if (eq n 0)
+    0
+    (countdown (- n 1)))))
+
+(let result1 (countdown 5000))
+(io/putf "  Countdown from 5000 completed: %d\n" result1)
+
+(io/putf "\nTest 2: Accumulator with branching\n")
+(let sum-to-n (lambda [n acc]
+  (if (eq n 0)
+    acc
+    (if (gt n 100)
+      (sum-to-n (- n 1) (+ acc n))
+      (if (gt n 50)
+        (sum-to-n (- n 2) (+ acc (* n 2)))
+        (sum-to-n (- n 1) (+ acc n)))))))
+
+(let result2 (sum-to-n 1000 0))
+(io/putf "  Sum with branching: %d\n" result2)
+
+(io/putf "\nTest 3: Collatz conjecture (3n+1 problem)\n")
+(let collatz-steps (lambda [n steps]
+  (if (eq n 1)
+    steps
+    (if (eq (% n 2) 0)
+      (collatz-steps (/ n 2) (+ steps 1))
+      (collatz-steps (+ (* 3 n) 1) (+ steps 1))))))
+
+(let result3 (collatz-steps 9999 0))
+(io/putf "  Steps to reach 1 from 9999: %d\n" result3)
+
+(io/putf "\nTest 4: Fibonacci with accumulator\n")
+(let fib-tail (lambda [n a b]
+  (if (eq n 0)
+    a
+    (if (eq n 1)
+      b
+      (fib-tail (- n 1) b (+ a b))))))
+
+(let result5 (fib-tail 1000 0 1))
+(io/putf "  fib(1000) computed (result too large to display)\n")
+
+(io/putf "\nPASS: All tail call optimization tests completed\n")
+

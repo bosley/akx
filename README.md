@@ -191,6 +191,19 @@ By default, AKX uses the `akx.dev.0` branch of AK24. To use a different branch:
 cmake -DAK24_GIT_BRANCH=main ..
 ```
 
-# Limitations
+## Features
 
-- Lambda Recursion is hard-limited until we get tail call optimization
+### Tail Call Optimization
+
+AKX implements trampoline-based tail call optimization, allowing unbounded recursion for tail-recursive functions:
+
+```akx
+(let countdown (lambda [n]
+  (if (eq n 0)
+    0
+    (countdown (- n 1)))))
+
+(countdown 5000)  # No stack overflow!
+```
+
+The runtime automatically detects tail calls and converts them to iterative loops, eliminating C stack recursion.

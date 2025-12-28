@@ -72,6 +72,15 @@ void akx_cell_free(akx_cell_t *cell) {
       ak_buffer_free(cell->value.quoted_literal);
     } else if (cell->type == AKX_TYPE_LAMBDA && cell->value.lambda) {
       ak_lambda_free(cell->value.lambda);
+    } else if (cell->type == AKX_TYPE_CONTINUATION &&
+               cell->value.continuation) {
+      if (cell->value.continuation->lambda_cell) {
+        akx_cell_free(cell->value.continuation->lambda_cell);
+      }
+      if (cell->value.continuation->args) {
+        akx_cell_free(cell->value.continuation->args);
+      }
+      AK24_FREE(cell->value.continuation);
     }
 
     if (cell->sourceloc) {
@@ -720,6 +729,20 @@ akx_cell_t *akx_cell_clone(akx_cell_t *cell) {
     if (!cloned->value.lambda && cell->value.lambda) {
       akx_cell_free(cloned);
       return NULL;
+    }
+    break;
+
+  case AKX_TYPE_CONTINUATION:
+    if (cell->value.continuation) {
+      cloned->value.continuation = AK24_ALLOC(sizeof(akx_continuation_t));
+      if (!cloned->value.continuation) {
+        akx_cell_free(cloned);
+        return NULL;
+      }
+      cloned->value.continuation->lambda_cell =
+          akx_cell_clone(cell->value.continuation->lambda_cell);
+      cloned->value.continuation->args =
+          akx_cell_clone(cell->value.continuation->args);
     }
     break;
   }

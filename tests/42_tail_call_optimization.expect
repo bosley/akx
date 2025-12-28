@@ -1,0 +1,15 @@
+Testing tail call optimization
+
+Test 1: Simple countdown
+  Countdown from 5000 completed: 0
+
+Test 2: Accumulator with branching
+  Sum with branching: 499475
+
+Test 3: Collatz conjecture (3n+1 problem)
+  Steps to reach 1 from 9999: 91
+
+Test 4: Fibonacci with accumulator
+  fib(1000) computed (result too large to display)
+
+PASS: All tail call optimization tests completed

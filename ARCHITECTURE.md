@@ -378,6 +378,46 @@ graph LR
 
 **The language defines itself. At runtime. Repeatedly.**
 
+## Tail Call Optimization
+
+AKX implements a trampoline-based tail call optimization system that eliminates recursion depth limits:
+
+```mermaid
+flowchart TD
+    Start[Lambda Invocation] --> EvalBody[Evaluate Lambda Body]
+    EvalBody --> CheckTail{Last Expression?}
+    CheckTail -->|Yes| TailEval[Use Tail Evaluation]
+    CheckTail -->|No| RegEval[Regular Evaluation]
+    
+    TailEval --> CheckResult{Result is Lambda Call?}
+    CheckResult -->|Yes| CreateCont[Create Continuation]
+    CheckResult -->|No| Return[Return Value]
+    
+    CreateCont --> Trampoline[Trampoline Loop]
+    Trampoline --> PopScope[Pop Current Scope]
+    PopScope --> PushScope[Push New Scope]
+    PushScope --> BindArgs[Bind Arguments]
+    BindArgs --> EvalBody
+    
+    RegEval --> Return
+    
+    style TailEval fill:#ff6b6b
+    style CreateCont fill:#4ecdc4
+    style Trampoline fill:#ffeaa7
+    style Return fill:#96ceb4
+```
+
+### How It Works
+
+1. **Continuation Detection**: When evaluating the last expression in a lambda body, the runtime uses `akx_rt_eval_tail()` instead of regular evaluation
+2. **Continuation Creation**: If the tail expression is a lambda call, a continuation cell is created instead of invoking the lambda
+3. **Trampoline Loop**: The `akx_rt_invoke_lambda()` function runs an iterative loop that:
+   - Invokes the lambda and gets the result
+   - If the result is a continuation, extracts the next lambda and arguments
+   - Pops the old scope and pushes a new scope
+   - Repeats until a non-continuation result is obtained
+4. **No C Stack Recursion**: All tail calls are handled iteratively, eliminating stack overflow
+
 ## Creating a New Nucleus
 
 Adding a new builtin to AKX is simple:

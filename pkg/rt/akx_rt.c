@@ -13,8 +13,6 @@
 #include <string.h>
 #include <time.h>
 
-#define AKX_MAX_RECURSION_DEPTH 1000
-
 struct akx_rt_error_ctx_t {
   int error_count;
   akx_parse_error_t *errors;
@@ -27,8 +25,7 @@ struct akx_runtime_ctx_t {
   map_void_t builtins;
   list_t(ak_cjit_unit_t *) cjit_units;
   const char *current_module_name;
-  size_t recursion_depth;
-  size_t max_recursion_depth;
+  int in_tail_position;
 };
 
 akx_runtime_ctx_t *akx_runtime_init(void) {
@@ -60,8 +57,7 @@ akx_runtime_ctx_t *akx_runtime_init(void) {
   map_init_generic(&ctx->builtins, sizeof(char *), map_hash_str, map_cmp_str);
   list_init(&ctx->cjit_units);
   ctx->current_module_name = NULL;
-  ctx->recursion_depth = 0;
-  ctx->max_recursion_depth = AKX_MAX_RECURSION_DEPTH;
+  ctx->in_tail_position = 0;
 
   akx_rt_register_bootstrap_builtins(ctx);
   akx_rt_register_compiled_nuclei(ctx);
@@ -572,6 +568,106 @@ akx_cell_t *akx_rt_eval(akx_runtime_ctx_t *rt, akx_cell_t *expr) {
   }
 }
 
+akx_cell_t *akx_rt_eval_tail(akx_runtime_ctx_t *rt, akx_cell_t *expr) {
+  if (!rt || !expr) {
+    return NULL;
+  }
+
+  int saved_tail_flag = rt->in_tail_position;
+  rt->in_tail_position = 1;
+
+  akx_cell_t *result = NULL;
+  switch (expr->type) {
+  case AKX_TYPE_INTEGER_LITERAL:
+  case AKX_TYPE_REAL_LITERAL:
+  case AKX_TYPE_STRING_LITERAL:
+    result = akx_cell_clone(expr);
+    break;
+
+  case AKX_TYPE_SYMBOL: {
+    const char *sym = expr->value.symbol;
+    void *value = akx_rt_scope_get(rt, sym);
+    if (value) {
+      akx_cell_t *stored = (akx_cell_t *)value;
+      if (stored->type == AKX_TYPE_LAMBDA) {
+        result = stored;
+      } else {
+        result = akx_cell_clone(stored);
+      }
+    } else {
+      char error_msg[256];
+      snprintf(error_msg, sizeof(error_msg), "undefined symbol: %s", sym);
+      akx_rt_error_at(rt, expr, error_msg);
+    }
+    break;
+  }
+
+  case AKX_TYPE_LIST:
+  case AKX_TYPE_LIST_SQUARE:
+  case AKX_TYPE_LIST_CURLY:
+  case AKX_TYPE_LIST_TEMPLE: {
+    akx_cell_t *head = expr->value.list_head;
+    if (!head) {
+      akx_cell_t *nil = akx_rt_alloc_cell(rt, AKX_TYPE_SYMBOL);
+      akx_rt_set_symbol(rt, nil, "nil");
+      result = nil;
+      break;
+    }
+
+    if (head->type == AKX_TYPE_SYMBOL) {
+      const char *func_name = head->value.symbol;
+
+      void **builtin_ptr = map_get_generic(&rt->builtins, &func_name);
+      if (builtin_ptr && *builtin_ptr) {
+        akx_builtin_info_t *info = (akx_builtin_info_t *)*builtin_ptr;
+        akx_cell_t *args = head->next;
+        rt->current_module_name = info->module_name;
+        result = info->function(rt, args);
+        rt->current_module_name = NULL;
+        break;
+      }
+
+      void *value = akx_rt_scope_get(rt, func_name);
+      if (value) {
+        akx_cell_t *func_cell = (akx_cell_t *)value;
+        if (func_cell->type == AKX_TYPE_LAMBDA) {
+          result = akx_rt_alloc_continuation(rt, func_cell, head->next);
+          break;
+        }
+      }
+
+      char error_msg[256];
+      snprintf(error_msg, sizeof(error_msg), "undefined function: %s",
+               func_name);
+      akx_rt_error_at(rt, head, error_msg);
+      break;
+    }
+
+    akx_cell_t *evaled_head = akx_rt_eval(rt, head);
+    if (evaled_head && evaled_head->type == AKX_TYPE_LAMBDA) {
+      result = akx_rt_alloc_continuation(rt, evaled_head, head->next);
+    } else {
+      if (evaled_head) {
+        akx_cell_free(evaled_head);
+      }
+      akx_rt_error_at(rt, expr, "cannot evaluate list - not a function call");
+    }
+    break;
+  }
+
+  case AKX_TYPE_QUOTED:
+    result = akx_cell_unwrap_quoted(expr);
+    break;
+
+  default:
+    akx_rt_error(rt, "unknown cell type in eval");
+    break;
+  }
+
+  rt->in_tail_position = saved_tail_flag;
+  return result;
+}
+
 akx_cell_t *akx_rt_eval_list(akx_runtime_ctx_t *rt, akx_cell_t *list) {
   if (!rt || !list) {
     return NULL;
@@ -627,42 +723,94 @@ akx_cell_t *akx_rt_eval_and_assert(akx_runtime_ctx_t *rt, akx_cell_t *expr,
   return result;
 }
 
+akx_cell_t *akx_rt_alloc_continuation(akx_runtime_ctx_t *rt,
+                                      akx_cell_t *lambda_cell,
+                                      akx_cell_t *args) {
+  (void)rt;
+  akx_cell_t *cont_cell = akx_rt_alloc_cell(rt, AKX_TYPE_CONTINUATION);
+  if (!cont_cell) {
+    return NULL;
+  }
+
+  akx_continuation_t *cont = AK24_ALLOC(sizeof(akx_continuation_t));
+  if (!cont) {
+    akx_cell_free(cont_cell);
+    return NULL;
+  }
+
+  cont->lambda_cell = lambda_cell;
+  cont->args = args;
+  cont_cell->value.continuation = cont;
+
+  return cont_cell;
+}
+
+int akx_rt_is_continuation(akx_cell_t *cell) {
+  return cell && cell->type == AKX_TYPE_CONTINUATION;
+}
+
 akx_cell_t *akx_rt_invoke_lambda(akx_runtime_ctx_t *rt, akx_cell_t *lambda_cell,
                                  akx_cell_t *args) {
   if (!rt || !lambda_cell || lambda_cell->type != AKX_TYPE_LAMBDA) {
     return NULL;
   }
 
-  if (rt->recursion_depth >= rt->max_recursion_depth) {
-    AK24_LOG_ERROR("Maximum recursion depth exceeded (%zu)",
-                   rt->max_recursion_depth);
-    raise(SIGABRT);
+  akx_cell_t *current_lambda = lambda_cell;
+  akx_cell_t *current_args = args;
+  akx_cell_t *result = NULL;
+
+  while (1) {
+    if (!current_lambda || current_lambda->type != AKX_TYPE_LAMBDA) {
+      if (result) {
+        akx_cell_free(result);
+      }
+      akx_rt_error(rt, "invalid lambda cell in trampoline");
+      return NULL;
+    }
+
+    ak_lambda_t *lambda = current_lambda->value.lambda;
+    if (!lambda) {
+      if (result) {
+        akx_cell_free(result);
+      }
+      akx_rt_error(rt, "invalid lambda cell - no lambda data");
+      return NULL;
+    }
+
+    akx_rt_push_scope(rt);
+    ak_lambda_invoke(lambda, current_args);
+
+    akx_lambda_context_t *lambda_ctx =
+        (akx_lambda_context_t *)ak_lambda_get_context(lambda);
+    result = lambda_ctx ? lambda_ctx->result : NULL;
+
+    akx_rt_pop_scope(rt);
+
+    if (!result) {
+      result = akx_rt_alloc_cell(rt, AKX_TYPE_SYMBOL);
+      akx_rt_set_symbol(rt, result, "nil");
+      return result;
+    }
+
+    if (result->type != AKX_TYPE_CONTINUATION) {
+      return result;
+    }
+
+    akx_continuation_t *cont = result->value.continuation;
+    if (!cont) {
+      akx_cell_free(result);
+      akx_rt_error(rt, "invalid continuation - no data");
+      return NULL;
+    }
+
+    current_lambda = cont->lambda_cell;
+    current_args = cont->args;
+
+    cont->lambda_cell = NULL;
+    cont->args = NULL;
+    akx_cell_free(result);
+    result = NULL;
   }
-
-  ak_lambda_t *lambda = lambda_cell->value.lambda;
-  if (!lambda) {
-    akx_rt_error(rt, "invalid lambda cell - no lambda data");
-    return NULL;
-  }
-
-  rt->recursion_depth++;
-  akx_rt_push_scope(rt);
-
-  ak_lambda_invoke(lambda, args);
-
-  akx_lambda_context_t *lambda_ctx =
-      (akx_lambda_context_t *)ak_lambda_get_context(lambda);
-  akx_cell_t *result = lambda_ctx ? lambda_ctx->result : NULL;
-
-  akx_rt_pop_scope(rt);
-  rt->recursion_depth--;
-
-  if (!result) {
-    result = akx_rt_alloc_cell(rt, AKX_TYPE_SYMBOL);
-    akx_rt_set_symbol(rt, result, "nil");
-  }
-
-  return result;
 }
 
 void akx_rt_module_set_data(akx_runtime_ctx_t *rt, void *data) {

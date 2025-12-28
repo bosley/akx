@@ -102,6 +102,7 @@ void akx_rt_error_at(akx_runtime_ctx_t *rt, akx_cell_t *cell,
 void akx_rt_error_fmt(akx_runtime_ctx_t *rt, const char *fmt, ...);
 
 akx_cell_t *akx_rt_eval(akx_runtime_ctx_t *rt, akx_cell_t *expr);
+akx_cell_t *akx_rt_eval_tail(akx_runtime_ctx_t *rt, akx_cell_t *expr);
 akx_cell_t *akx_rt_eval_list(akx_runtime_ctx_t *rt, akx_cell_t *list);
 akx_cell_t *akx_rt_eval_and_assert(akx_runtime_ctx_t *rt, akx_cell_t *expr,
                                    akx_type_t expected_type,
@@ -112,6 +113,12 @@ void *akx_rt_module_get_data(akx_runtime_ctx_t *rt);
 
 akx_cell_t *akx_rt_invoke_lambda(akx_runtime_ctx_t *rt, akx_cell_t *lambda_cell,
                                  akx_cell_t *args);
+
+akx_cell_t *akx_rt_alloc_continuation(akx_runtime_ctx_t *rt,
+                                      akx_cell_t *lambda_cell,
+                                      akx_cell_t *args);
+
+int akx_rt_is_continuation(akx_cell_t *cell);
 
 char *akx_rt_expand_env_vars(const char *path);
 
