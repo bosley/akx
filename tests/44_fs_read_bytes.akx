@@ -1,0 +1,33 @@
+(io/putf "Test: Byte-based file reading\n\n")
+
+(let test-file "/tmp/akx_test_read_bytes.txt")
+(let test-content "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+(fs/write-file test-file test-content)
+
+(io/putf "Test 1: Read first 10 bytes\n")
+(let fid1 (fs/open :path test-file :mode "r"))
+(let content1 (fs/read :fid fid1 :bytes 10))
+(io/putf "  Content: %s\n" content1)
+(fs/close :fid fid1)
+
+(io/putf "\nTest 2: Read 5 bytes from offset 10\n")
+(let fid2 (fs/open :path test-file :mode "r"))
+(let content2 (fs/read :fid fid2 :offset 10 :bytes 5))
+(io/putf "  Content: %s\n" content2)
+(fs/close :fid fid2)
+
+(io/putf "\nTest 3: Read entire file\n")
+(let fid3 (fs/open :path test-file :mode "r"))
+(let content3 (fs/read :fid fid3))
+(io/putf "  Content: %s\n" content3)
+(fs/close :fid fid3)
+
+(io/putf "\nTest 4: Read from middle of file\n")
+(let fid4 (fs/open :path test-file :mode "r"))
+(let content4 (fs/read :fid fid4 :offset 20 :bytes 8))
+(io/putf "  Content: %s\n" content4)
+(fs/close :fid fid4)
+
+(fs/delete test-file)
+(io/putf "\nTest complete.\n")
+

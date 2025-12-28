@@ -62,6 +62,12 @@ fs/delete       delete_impl         fs/delete.c         1
 fs/path-join    path_join_impl      fs/path_join.c      1
 fs/basename     basename_impl       fs/basename.c       1
 fs/dirname      dirname_impl        fs/dirname.c        1
+fs/open         open_impl           fs/open.c           1
+fs/close        close_impl          fs/close.c          1
+fs/read         file_read_impl      fs/read.c           1
+fs/write        file_write_impl     fs/write.c          1
+fs/seek         seek_impl           fs/seek.c           1
+fs/tell         tell_impl           fs/tell.c           1
 
 # AKX runtime operations (compiled in)
 akx/exec       exec_impl           akx/exec.c          1

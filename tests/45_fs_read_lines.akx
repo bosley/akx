@@ -1,0 +1,33 @@
+(io/putf "Test: Line-based file reading\n\n")
+
+(let test-file "/tmp/akx_test_read_lines.txt")
+(let test-content "Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6\nLine 7\n")
+(fs/write-file test-file test-content)
+
+(io/putf "Test 1: Read first 3 lines\n")
+(let fid1 (fs/open :path test-file :mode "r"))
+(let content1 (fs/read :fid fid1 :lines 3))
+(io/putf "Content:\n%s\n" content1)
+(fs/close :fid fid1)
+
+(io/putf "Test 2: Read lines 2-4 (line-start 1, line-end 3)\n")
+(let fid2 (fs/open :path test-file :mode "r"))
+(let content2 (fs/read :fid fid2 :line-start 1 :line-end 3))
+(io/putf "Content:\n%s\n" content2)
+(fs/close :fid fid2)
+
+(io/putf "Test 3: Read lines 5-7 (line-start 4, line-end 6)\n")
+(let fid3 (fs/open :path test-file :mode "r"))
+(let content3 (fs/read :fid fid3 :line-start 4 :line-end 6))
+(io/putf "Content:\n%s\n" content3)
+(fs/close :fid fid3)
+
+(io/putf "Test 4: Read single line (line 3)\n")
+(let fid4 (fs/open :path test-file :mode "r"))
+(let content4 (fs/read :fid fid4 :line-start 2 :line-end 2))
+(io/putf "Content:\n%s\n" content4)
+(fs/close :fid fid4)
+
+(fs/delete test-file)
+(io/putf "Test complete.\n")
+

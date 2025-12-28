@@ -1,0 +1,15 @@
+Test: Byte-based file reading
+
+Test 1: Read first 10 bytes
+  Content: 0123456789
+
+Test 2: Read 5 bytes from offset 10
+  Content: ABCDE
+
+Test 3: Read entire file
+  Content: 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ
+
+Test 4: Read from middle of file
+  Content: KLMNOPQR
+
+Test complete.
