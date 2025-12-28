@@ -162,6 +162,7 @@ target_include_directories(akx_nucleus PUBLIC
     ${CMAKE_SOURCE_DIR}/pkg/rt
     ${CMAKE_BINARY_DIR}/generated
     ${CMAKE_CURRENT_SOURCE_DIR}/fs
+    ${CMAKE_CURRENT_SOURCE_DIR}/os
     ${AK24_INCLUDE_DIR}
 )
 target_link_libraries(akx_nucleus PUBLIC

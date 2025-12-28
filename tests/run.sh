@@ -57,10 +57,25 @@ for test_file in "$SCRIPT_DIR"/*.akx; do
     grep -v "ERROR.*Maximum recursion depth exceeded" | \
     grep -v "ERROR.*Failed to add root source to CJIT unit" > "$actual_output" || true
     
-    cat "$expect_file" > "$expected_output"
+    sed 's/<any>/.*/' "$expect_file" > "$expected_output"
+    
     rm -f "$raw_output"
     
-    if diff -u "$expected_output" "$actual_output" > /dev/null 2>&1; then
+    if grep -q '<any>' "$expect_file"; then
+        if grep -Ezq "$(cat "$expected_output")" "$actual_output"; then
+            match=true
+        else
+            match=false
+        fi
+    else
+        if diff -u "$expected_output" "$actual_output" > /dev/null 2>&1; then
+            match=true
+        else
+            match=false
+        fi
+    fi
+    
+    if [ "$match" = "true" ]; then
         echo -e "${GREEN}✓ PASS${NC}"
         ((TESTS_PASSED++))
     else

@@ -117,13 +117,14 @@ APP_MAIN(app_main) {
     argv[i++] = *arg;
   }
 
-  if (argc == 2) {
+  if (argc >= 2) {
     if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
       akx_print_help();
       AK24_FREE(argv);
       return 0;
     }
     if (strcmp(argv[1], "nucleus") != 0) {
+      akx_runtime_set_script_args(g_runtime, (int)argc - 1, argv + 1);
       int result = akx_interpret_file(argv[1], g_core, g_runtime);
       AK24_FREE(argv);
       return result;

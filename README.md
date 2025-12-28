@@ -93,6 +93,31 @@ The stdlib provides common operations via the nucleus system:
 (println "Equal?" (= 42 42))
 ```
 
+### OS Module - System Interaction
+
+Access command-line arguments, environment variables, and system information:
+
+```akx
+(import "$AKX_HOME/stdlib/io.akx")
+
+(let args (os/args))
+(println "Script arguments:" args)
+
+(let cwd (os/cwd))
+(println "Current directory:" cwd)
+
+(let home (os/env :get "HOME"))
+(println "Home directory:" home)
+
+(os/env :set "MY_VAR" "my_value")
+(println "Set variable:" (os/env :get "MY_VAR"))
+```
+
+Run with arguments:
+```bash
+akx myscript.akx arg1 arg2 arg3
+```
+
 ### Loading Your Own Functions
 
 Write your logic in C, AKX provides the environment:
@@ -192,6 +217,15 @@ cmake -DAK24_GIT_BRANCH=main ..
 ```
 
 ## Features
+
+### OS Integration
+
+Built-in OS module provides system-level access:
+
+- **`os/args`** - Access command-line arguments as a list
+- **`os/cwd`** - Get current working directory
+- **`os/env :get "VAR"`** - Read environment variables (returns `nil` if not found)
+- **`os/env :set "VAR" "VALUE"`** - Set environment variables
 
 ### Tail Call Optimization
 

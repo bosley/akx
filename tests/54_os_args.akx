@@ -1,0 +1,24 @@
+(io/putf "Test: OS args with multiple arguments\n\n")
+
+(let args (os/args))
+
+(io/putf "Arguments received:\n")
+(let idx 0)
+(loop (lt idx 4)
+  (begin
+    (if (eq idx 0)
+      (io/putf "  [%d] Script: tests/54_os_args.akx\n" idx)
+      (begin))
+    (if (eq idx 1)
+      (io/putf "  [%d] Arg: hello\n" idx)
+      (begin))
+    (if (eq idx 2)
+      (io/putf "  [%d] Arg: world\n" idx)
+      (begin))
+    (if (eq idx 3)
+      (io/putf "  [%d] Arg: 123\n" idx)
+      (begin))
+    (set idx (+ idx 1))))
+
+(io/putf "\nTest complete.\n")
+

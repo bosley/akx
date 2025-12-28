@@ -26,6 +26,8 @@ struct akx_runtime_ctx_t {
   list_t(ak_cjit_unit_t *) cjit_units;
   const char *current_module_name;
   int in_tail_position;
+  int script_argc;
+  char **script_argv;
 };
 
 akx_runtime_ctx_t *akx_runtime_init(void) {
@@ -58,6 +60,8 @@ akx_runtime_ctx_t *akx_runtime_init(void) {
   list_init(&ctx->cjit_units);
   ctx->current_module_name = NULL;
   ctx->in_tail_position = 0;
+  ctx->script_argc = 0;
+  ctx->script_argv = NULL;
 
   akx_rt_register_bootstrap_builtins(ctx);
   akx_rt_register_compiled_nuclei(ctx);
@@ -1065,4 +1069,26 @@ map_void_t *akx_rt_get_builtins(akx_runtime_ctx_t *rt) {
     return NULL;
   }
   return &rt->builtins;
+}
+
+void akx_runtime_set_script_args(akx_runtime_ctx_t *ctx, int argc, char **argv) {
+  if (!ctx) {
+    return;
+  }
+  ctx->script_argc = argc;
+  ctx->script_argv = argv;
+}
+
+int akx_rt_get_script_argc(akx_runtime_ctx_t *rt) {
+  if (!rt) {
+    return 0;
+  }
+  return rt->script_argc;
+}
+
+char **akx_rt_get_script_argv(akx_runtime_ctx_t *rt) {
+  if (!rt) {
+    return NULL;
+  }
+  return rt->script_argv;
 }

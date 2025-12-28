@@ -79,6 +79,11 @@ fs/?is-file     is_file_impl        fs/is_file.c        1
 # AKX runtime operations (compiled in)
 akx/exec       exec_impl           akx/exec.c          1
 
+# OS operations (compiled in)
+os/args        os_args_impl        os/args.c           1
+os/cwd         os_cwd_impl         os/cwd.c            1
+os/env         os_env_impl         os/env.c            1
+
 #
 #  As new nucleus files are created we will have them not directly in-built
 #  but we've been developing core functionality so all are included by-chance for now

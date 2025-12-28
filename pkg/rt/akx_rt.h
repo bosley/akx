@@ -51,6 +51,11 @@ akx_runtime_ctx_t *akx_runtime_init(void);
 
 void akx_runtime_deinit(akx_runtime_ctx_t *ctx);
 
+void akx_runtime_set_script_args(akx_runtime_ctx_t *ctx, int argc, char **argv);
+
+int akx_rt_get_script_argc(akx_runtime_ctx_t *rt);
+char **akx_rt_get_script_argv(akx_runtime_ctx_t *rt);
+
 int akx_runtime_start(akx_runtime_ctx_t *ctx, akx_cell_list_t *cells);
 
 ak_context_t *akx_runtime_get_current_scope(akx_runtime_ctx_t *ctx);
