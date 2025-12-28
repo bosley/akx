@@ -118,3 +118,8 @@ install(DIRECTORY stdlib/
     FILES_MATCHING PATTERN "*.akx"
 )
 
+install(FILES tools/repl.akx
+    DESTINATION ${AKX_HOME}
+    OPTIONAL
+)
+

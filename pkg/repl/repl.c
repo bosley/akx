@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 int akx_repl_start(akx_core_t *core, akx_runtime_ctx_t *runtime,
                    akx_repl_signal_ctx_t *signal_ctx) {
@@ -17,8 +19,7 @@ int akx_repl_start(akx_core_t *core, akx_runtime_ctx_t *runtime,
     return 1;
   }
 
-  printf("\nAKX REPL v0.1.0\n");
-  printf("Type expressions or press Ctrl+D to exit\n\n");
+  (void)core;
 
   volatile int local_keep_running = 1;
   volatile int local_signal_count = 0;
@@ -66,8 +67,56 @@ int akx_repl_start(akx_core_t *core, akx_runtime_ctx_t *runtime,
     }
   }
 
+  akx_parse_result_t prelude_result = {0};
+
+  if (akx_home) {
+    ak_buffer_t *prelude_path = ak_filepath_join(2, akx_home, "repl.akx");
+    if (prelude_path) {
+      const char *path_str = (const char *)ak_buffer_data(prelude_path);
+      struct stat st;
+      if (stat(path_str, &st) == 0 && S_ISREG(st.st_mode)) {
+        prelude_result = akx_cell_parse_file(path_str);
+        if (prelude_result.errors) {
+          printf("Error loading repl.akx:\n");
+          akx_parse_error_t *err = prelude_result.errors;
+          while (err) {
+            akx_sv_show_location(&err->location, AKX_ERROR_LEVEL_ERROR,
+                                 err->message);
+            err = err->next;
+          }
+        } else if (list_count(&prelude_result.cells) > 0) {
+          list_iter_t iter = list_iter(&prelude_result.cells);
+          akx_cell_t **cell_ptr;
+          int expr_count = 0;
+          while ((cell_ptr = list_next(&prelude_result.cells, &iter))) {
+            expr_count++;
+            akx_cell_t *evaled = akx_rt_eval(runtime, *cell_ptr);
+            if (!evaled) {
+              printf("Error executing repl.akx (expression %d):\n", expr_count);
+              akx_parse_error_t *err = akx_runtime_get_errors(runtime);
+              while (err) {
+                akx_sv_show_location(&err->location, AKX_ERROR_LEVEL_ERROR,
+                                     err->message);
+                err = err->next;
+              }
+              break;
+            }
+          }
+          if (expr_count > 0) {
+            printf("Loaded %d expressions from repl.akx\n", expr_count);
+          }
+        }
+      }
+      ak_buffer_free(prelude_path);
+    }
+  }
+
+  printf("\nAKX REPL v0.1.0\n");
+  printf("Type expressions or press Ctrl+D to exit\n\n");
+
   if (akx_home_buf) {
     ak_buffer_free(akx_home_buf);
+    akx_home_buf = NULL;
   }
 
   while (*keep_running) {
@@ -138,7 +187,6 @@ int akx_repl_start(akx_core_t *core, akx_runtime_ctx_t *runtime,
           }
         } else {
           repl_display_cell(evaled);
-          akx_cell_free(evaled);
         }
       }
     }

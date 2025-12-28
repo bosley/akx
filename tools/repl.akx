@@ -1,0 +1,13 @@
+; The default core wraps up most of nucleus, but not IO
+; So we need to import the IO nucleus to get print and println
+import "$AKX_HOME/stdlib/io.akx"
+
+; Other functionality and customizations to the REPL can be made
+; by defininf functions here and perfoming and pre-jit loading of system-specific 
+; module extensions
+
+; A simple welcome to show that we have loaded prelude repl.akx
+;
+;
+let welcome (lambda []
+  (println "Custom REPL environment loaded!"))
