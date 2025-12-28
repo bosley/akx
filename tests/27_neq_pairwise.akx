@@ -1,21 +1,19 @@
-(import "$AKX_HOME/stdlib/io.akx")
+(io/putf "=== Pairwise Inequality Tests ===\n")
 
-(println "=== Pairwise Inequality Tests ===")
+(io/putf "(neq 1 2): %d\n" (neq 1 2))
+(io/putf "(neq 1 1): %d\n" (neq 1 1))
 
-(println "(neq 1 2):" (neq 1 2))
-(println "(neq 1 1):" (neq 1 1))
+(io/putf "(neq 1 2 3): %d\n" (neq 1 2 3))
+(io/putf "(neq 1 2 1): %d\n" (neq 1 2 1))
+(io/putf "(neq 1 1 2): %d\n" (neq 1 1 2))
 
-(println "(neq 1 2 3):" (neq 1 2 3))
-(println "(neq 1 2 1):" (neq 1 2 1))
-(println "(neq 1 1 2):" (neq 1 1 2))
+(io/putf "(neq 1 2 3 4): %d\n" (neq 1 2 3 4))
+(io/putf "(neq 1 2 3 2): %d\n" (neq 1 2 3 2))
 
-(println "(neq 1 2 3 4):" (neq 1 2 3 4))
-(println "(neq 1 2 3 2):" (neq 1 2 3 2))
-
-(println "(neq \"a\" \"b\"):" (neq "a" "b"))
-(println "(neq \"a\" \"a\"):" (neq "a" "a"))
-(println "(neq \"a\" \"b\" \"c\"):" (neq "a" "b" "c"))
+(io/putf "(neq \"a\" \"b\"): %d\n" (neq "a" "b"))
+(io/putf "(neq \"a\" \"a\"): %d\n" (neq "a" "a"))
+(io/putf "(neq \"a\" \"b\" \"c\"): %d\n" (neq "a" "b" "c"))
 
 
-(println "=== Inequality tests passed ===")
+(io/putf "=== Inequality tests passed ===\n")
 

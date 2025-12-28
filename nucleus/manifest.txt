@@ -23,9 +23,9 @@ assert-ne    assert_ne_impl     assert/assert_ne.c      1
 %           akx_mod         math/mod.c          1
 =           akx_eq          math/eq.c           1
 
-# I/O (runtime loadable)
-print       akx_print       io/print.c          0
-println     println         io/println.c        0
+# I/O (compiled in)
+io/putf     putf_impl       io/putf.c           1
+io/scanf    scanf_impl      io/scanf.c          1
 
 # Type introspection (compiled in)
 ?nil        is_nil_impl     types/is_nil.c      1
@@ -54,3 +54,7 @@ or          or_impl         logic/or.c          1
 loop        loop_impl       core/loop.c         1
 begin       begin_impl      core/begin.c        1
 
+#
+#  As new nucleus files are created we will have them not directly in-built
+#  but we've been developing core functionality so all are included by-chance for now
+#

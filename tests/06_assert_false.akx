@@ -1,4 +1,2 @@
-(cjit-load-builtin println :root "nucleus/io/println.c")
-
 (assert-false 0)
-(println "PASS: assert-false 0")
+(io/putf "PASS: assert-false 0\n")

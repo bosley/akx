@@ -1,30 +1,28 @@
-(cjit-load-builtin println :root "nucleus/io/println.c")
+(io/putf "Testing strict truthiness - only integer 1 is true\n")
 
-(println "Testing strict truthiness - only integer 1 is true")
+(io/putf "Test with integer -1 (should be false):\n")
+(io/putf "  %s\n" (if -1 "true" "false"))
 
-(println "Test with integer -1 (should be false):")
-(println "  " (if -1 "true" "false"))
+(io/putf "Test with integer 100 (should be false):\n")
+(io/putf "  %s\n" (if 100 "true" "false"))
 
-(println "Test with integer 100 (should be false):")
-(println "  " (if 100 "true" "false"))
+(io/putf "Test with string (should be false):\n")
+(io/putf "  %s\n" (if "hello" "true" "false"))
 
-(println "Test with string (should be false):")
-(println "  " (if "hello" "true" "false"))
-
-(println "Test with symbol t (should be false):")
+(io/putf "Test with symbol t (should be false):\n")
 (let sym 't)
-(println "  " (if sym "true" "false"))
+(io/putf "  %s\n" (if sym "true" "false"))
 
-(println "Test with symbol nil (should be false):")
+(io/putf "Test with symbol nil (should be false):\n")
 (let nilsym 'nil)
-(println "  " (if nilsym "true" "false"))
+(io/putf "  %s\n" (if nilsym "true" "false"))
 
-(println "Test with exactly 1 (should be true):")
-(println "  " (if 1 "true" "false"))
+(io/putf "Test with exactly 1 (should be true):\n")
+(io/putf "  %s\n" (if 1 "true" "false"))
 
-(println "Test with expression that evaluates to 1 (should be true):")
+(io/putf "Test with expression that evaluates to 1 (should be true):\n")
 (let one 1)
-(println "  " (if one "true" "false"))
+(io/putf "  %s\n" (if one "true" "false"))
 
-(println "Strict truthiness tests completed")
+(io/putf "Strict truthiness tests completed\n")
 

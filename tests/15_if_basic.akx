@@ -1,29 +1,27 @@
-(cjit-load-builtin println :root "nucleus/io/println.c")
-
-(println "Testing if builtin with integer 1 (true):")
+(io/putf "Testing if builtin with integer 1 (true):\n")
 (let result1 (if 1 "then-branch" "else-branch"))
-(println "  Result:" result1)
+(io/putf "  Result: %s\n" result1)
 
-(println "Testing if builtin with integer 0 (false):")
+(io/putf "Testing if builtin with integer 0 (false):\n")
 (let result2 (if 0 "then-branch" "else-branch"))
-(println "  Result:" result2)
+(io/putf "  Result: %s\n" result2)
 
-(println "Testing if builtin with integer 2 (false):")
+(io/putf "Testing if builtin with integer 2 (false):\n")
 (let result3 (if 2 "then-branch" "else-branch"))
-(println "  Result:" result3)
+(io/putf "  Result: %s\n" result3)
 
-(println "Testing if builtin with no else branch (false condition):")
+(io/putf "Testing if builtin with no else branch (false condition):\n")
 (let result4 (if 0 "then-branch"))
-(println "  Result:" result4)
+(io/putf "  Result: %v\n" result4)
 
-(println "Testing if builtin with no else branch (true condition):")
+(io/putf "Testing if builtin with no else branch (true condition):\n")
 (let result5 (if 1 "then-branch"))
-(println "  Result:" result5)
+(io/putf "  Result: %s\n" result5)
 
-(println "Testing if builtin with expression evaluation:")
+(io/putf "Testing if builtin with expression evaluation:\n")
 (let x 1)
 (let result6 (if x "x is 1" "x is not 1"))
-(println "  Result:" result6)
+(io/putf "  Result: %s\n" result6)
 
-(println "All if tests completed")
+(io/putf "All if tests completed\n")
 

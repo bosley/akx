@@ -1,14 +1,12 @@
-(cjit-load-builtin println :root "nucleus/io/println.c")
-
 (assert-true 1)
-(println "PASS: assert-true 1")
+(io/putf "PASS: assert-true 1\n")
 
 (assert-true 42)
-(println "PASS: assert-true 42")
+(io/putf "PASS: assert-true 42\n")
 
 (assert-true "hello")
-(println "PASS: assert-true string")
+(io/putf "PASS: assert-true string\n")
 
 (let x 10)
 (assert-true x)
-(println "PASS: assert-true variable")
+(io/putf "PASS: assert-true variable\n")

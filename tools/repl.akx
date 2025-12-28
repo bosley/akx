@@ -1,0 +1,12 @@
+; The default core wraps up most of nucleus, including IO
+; io/putf is compiled in by default
+
+; Other functionality and customizations to the REPL can be made
+; by defininf functions here and perfoming and pre-jit loading of system-specific 
+; module extensions
+
+; A simple welcome to show that we have loaded prelude repl.akx
+;
+;
+let welcome (lambda []
+  (io/putf "Custom REPL environment loaded!\n"))

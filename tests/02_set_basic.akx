@@ -1,10 +1,8 @@
-(cjit-load-builtin println :root "nucleus/io/println.c")
-
 (let x 10)
-(println "x initially =" x)
+(io/putf "x initially = %d\n" x)
 
 (set x 20)
-(println "x after first set =" x)
+(io/putf "x after first set = %d\n" x)
 
 (set x 30)
-(println "x after second set =" x)
+(io/putf "x after second set = %d\n" x)

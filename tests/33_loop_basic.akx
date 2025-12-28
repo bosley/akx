@@ -1,25 +1,24 @@
-(import "$AKX_HOME/stdlib/io.akx")
 (import "$AKX_HOME/stdlib/math.akx")
 
-(println "=== Testing loop ===")
+(io/putf "=== Testing loop ===\n")
 
 (let counter 0)
-(println "Counting to 5:")
+(io/putf "Counting to 5:\n")
 (loop (lt counter 5)
   (begin
-    (println "  counter:" counter)
+    (io/putf "  counter: %d\n" counter)
     (set counter (+ counter 1))))
 
-(println "Final counter:" counter)
+(io/putf "Final counter: %d\n" counter)
 
 (let sum 0)
 (let i 1)
-(println "Sum 1 to 10:")
+(io/putf "Sum 1 to 10:\n")
 (loop (lte i 10)
   (begin
     (set sum (+ sum i))
     (set i (+ i 1))))
-(println "  sum:" sum)
+(io/putf "  sum: %d\n" sum)
 
-(println "=== All loop tests passed ===")
+(io/putf "=== All loop tests passed ===\n")
 

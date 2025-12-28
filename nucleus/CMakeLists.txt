@@ -1,6 +1,7 @@
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/manifest.txt" MANIFEST_CONTENT)
 
 set(COMPILED_NUCLEI "")
+set(ALL_NUCLEI "")
 set(NUCLEUS_SOURCES "")
 
 string(REGEX REPLACE "\n" ";" MANIFEST_LINES "${MANIFEST_CONTENT}")
@@ -15,6 +16,8 @@ foreach(LINE ${MANIFEST_LINES})
     set(REL_PATH ${CMAKE_MATCH_3})
     set(COMPILE_IN ${CMAKE_MATCH_4})
     
+    list(APPEND ALL_NUCLEI "${SYMBOL}:${C_FUNCTION}:${REL_PATH}:${COMPILE_IN}")
+    
     if(COMPILE_IN EQUAL 1)
         list(APPEND COMPILED_NUCLEI "${SYMBOL}:${C_FUNCTION}")
         list(APPEND NUCLEUS_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/${REL_PATH}")
@@ -23,6 +26,7 @@ endforeach()
 
 set(REGISTRY_H "${CMAKE_BINARY_DIR}/generated/builtin_registry.h")
 set(REGISTRY_C "${CMAKE_BINARY_DIR}/generated/builtin_registry.c")
+set(METADATA_H "${CMAKE_BINARY_DIR}/generated/builtin_metadata.h")
 
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/generated")
 
@@ -106,7 +110,50 @@ endforeach()
 file(APPEND ${REGISTRY_C} "}
 ")
 
-add_library(akx_nucleus STATIC ${REGISTRY_C})
+file(WRITE ${METADATA_H} "#ifndef BUILTIN_METADATA_H
+#define BUILTIN_METADATA_H
+
+#include <stddef.h>
+
+typedef struct {
+    const char *symbol;
+    const char *c_function;
+    const char *source_path;
+    int compiled_in;
+} akx_nucleus_metadata_t;
+
+")
+
+list(LENGTH ALL_NUCLEI NUCLEUS_COUNT)
+file(APPEND ${METADATA_H} "extern const akx_nucleus_metadata_t akx_nucleus_metadata[${NUCLEUS_COUNT}];
+extern const size_t akx_nucleus_metadata_count;
+
+#endif
+")
+
+set(METADATA_C "${CMAKE_BINARY_DIR}/generated/builtin_metadata.c")
+file(WRITE ${METADATA_C} "#include \"builtin_metadata.h\"
+
+const akx_nucleus_metadata_t akx_nucleus_metadata[] = {
+")
+
+foreach(NUCLEUS ${ALL_NUCLEI})
+    string(REPLACE ":" ";" NUCLEUS_PARTS ${NUCLEUS})
+    list(GET NUCLEUS_PARTS 0 SYMBOL)
+    list(GET NUCLEUS_PARTS 1 C_FUNCTION)
+    list(GET NUCLEUS_PARTS 2 REL_PATH)
+    list(GET NUCLEUS_PARTS 3 COMPILE_IN)
+    
+    file(APPEND ${METADATA_C} "    {\"${SYMBOL}\", \"${C_FUNCTION}\", \"${REL_PATH}\", ${COMPILE_IN}},
+")
+endforeach()
+
+file(APPEND ${METADATA_C} "};
+
+const size_t akx_nucleus_metadata_count = ${NUCLEUS_COUNT};
+")
+
+add_library(akx_nucleus STATIC ${REGISTRY_C} ${METADATA_C})
 target_include_directories(akx_nucleus PUBLIC
     ${CMAKE_SOURCE_DIR}/pkg/cell
     ${CMAKE_SOURCE_DIR}/pkg/rt

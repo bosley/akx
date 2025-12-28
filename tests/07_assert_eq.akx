@@ -1,17 +1,15 @@
-(cjit-load-builtin println :root "nucleus/io/println.c")
-
 (let x 10)
 (let y 20)
 (let name "Alice")
 
 (assert-eq x 10)
-(println "PASS: x == 10")
+(io/putf "PASS: x == 10\n")
 
 (assert-eq y 20)
-(println "PASS: y == 20")
+(io/putf "PASS: y == 20\n")
 
 (assert-eq name "Alice")
-(println "PASS: name == Alice")
+(io/putf "PASS: name == Alice\n")
 
 (assert-eq 3.14 3.14)
-(println "PASS: 3.14 == 3.14")
+(io/putf "PASS: 3.14 == 3.14\n")

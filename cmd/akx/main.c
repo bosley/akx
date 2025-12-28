@@ -1,13 +1,13 @@
 #include "akx.h"
-#include "akx_core.h"
-#include "akx_rt.h"
-#include "akx_sv.h"
-#include <ak24/application.h>
+#include "commands.h"
+#include "help.h"
+#include "repl.h"
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
-static volatile int keep_running = 1;
-static volatile int signal_count = 0;
+volatile int keep_running = 1;
+volatile int signal_count = 0;
 static akx_core_t *g_core = NULL;
 static akx_runtime_ctx_t *g_runtime = NULL;
 
@@ -96,48 +96,43 @@ APP_MAIN(app_main) {
   AK24_LOG_TRACE("All signal handlers registered successfully");
   AK24_LOG_TRACE("AKX core initialized and ready");
 
-  if (list_count(&ctx->args) > 1) {
-    list_iter_t iter = list_iter(&ctx->args);
-    char **arg;
-    int arg_index = 0;
-    while ((arg = list_next(&ctx->args, &iter))) {
-      if (arg_index == 0) {
-        arg_index++;
-        continue;
-      }
+  size_t argc = list_count(&ctx->args);
 
-      akx_parse_result_t result = akx_cell_parse_file(*arg);
-
-      if (result.errors) {
-        akx_parse_error_t *err = result.errors;
-        while (err) {
-          akx_sv_show_location(&err->location, AKX_ERROR_LEVEL_ERROR,
-                               err->message);
-          err = err->next;
-        }
-        akx_parse_result_free(&result);
-        arg_index++;
-        continue;
-      }
-
-      if (list_count(&result.cells) > 0) {
-        if (akx_runtime_start(g_runtime, (akx_cell_list_t *)&result.cells) !=
-            0) {
-          akx_parse_error_t *err = akx_runtime_get_errors(g_runtime);
-          while (err) {
-            akx_sv_show_location(&err->location, AKX_ERROR_LEVEL_ERROR,
-                                 err->message);
-            err = err->next;
-          }
-        }
-      }
-
-      akx_parse_result_free(&result);
-      arg_index++;
-    }
-  } else {
-    printf("\nNo files provided. Usage: akx <file1> [file2] ...\n");
+  if (argc == 1) {
+    akx_repl_signal_ctx_t signal_ctx = {.keep_running = &keep_running,
+                                        .signal_count = &signal_count};
+    return akx_repl_start(g_core, g_runtime, &signal_ctx);
   }
+
+  char **argv = AK24_ALLOC(sizeof(char *) * argc);
+  if (!argv) {
+    AK24_LOG_ERROR("Failed to allocate argv array");
+    return 1;
+  }
+
+  list_iter_t iter = list_iter(&ctx->args);
+  char **arg;
+  size_t i = 0;
+  while ((arg = list_next(&ctx->args, &iter))) {
+    argv[i++] = *arg;
+  }
+
+  if (argc == 2) {
+    if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
+      akx_print_help();
+      AK24_FREE(argv);
+      return 0;
+    }
+    if (strcmp(argv[1], "nucleus") != 0) {
+      int result = akx_interpret_file(argv[1], g_core, g_runtime);
+      AK24_FREE(argv);
+      return result;
+    }
+  }
+
+  int result = akx_dispatch_command((int)argc, argv);
+  AK24_FREE(argv);
+  return result;
 
   return 0;
 }

@@ -4,8 +4,8 @@
 (?str 42): 0
 (?real 3.14): 1
 (?int 3.14): 0
-(?str \"hello\"): 1
-(?int \"hello\"): 0
+(?str "hello"): 1
+(?int "hello"): 0
 (?lambda f): 1
 (?int f): 0
 === All type predicates passed ===
