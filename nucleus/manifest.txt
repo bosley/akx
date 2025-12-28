@@ -82,6 +82,7 @@ akx/exec       exec_impl           akx/exec.c          1
 # OS operations (compiled in)
 os/args        os_args_impl        os/args.c           1
 os/cwd         os_cwd_impl         os/cwd.c            1
+os/chdir       os_chdir_impl       os/chdir.c          1
 os/env         os_env_impl         os/env.c            1
 
 #

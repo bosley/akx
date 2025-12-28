@@ -95,4 +95,3 @@ akx_cell_t *os_env_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
   akx_rt_error(rt, "os/env: no valid operation specified");
   return NULL;
 }
-

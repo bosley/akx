@@ -8,19 +8,26 @@
 (let cwd (os/cwd))
 (io/putf "  Current directory: %s\n" cwd)
 
-(io/putf "\nTest 3: os/env :get - read environment variable\n")
+(io/putf "\nTest 3: os/chdir - change working directory\n")
+(let chdir-result (os/chdir "/tmp"))
+(io/putf "  Change to /tmp result: %v\n" chdir-result)
+(let new-cwd (os/cwd))
+(io/putf "  New directory contains 'tmp': %v\n" (eq chdir-result 1))
+(os/chdir cwd)
+
+(io/putf "\nTest 4: os/env :get - read environment variable\n")
 (let home (os/env :get "HOME"))
 (io/putf "  HOME=%s\n" home)
 
-(io/putf "\nTest 4: os/env :set - set environment variable\n")
+(io/putf "\nTest 5: os/env :set - set environment variable\n")
 (let set-result (os/env :set "AKX_TEST_VAR" "test_value"))
 (io/putf "  Set result: %v\n" set-result)
 
-(io/putf "\nTest 5: os/env :get - read newly set variable\n")
+(io/putf "\nTest 6: os/env :get - read newly set variable\n")
 (let test-var (os/env :get "AKX_TEST_VAR"))
 (io/putf "  AKX_TEST_VAR=%s\n" test-var)
 
-(io/putf "\nTest 6: os/env :get - read non-existent variable\n")
+(io/putf "\nTest 7: os/env :get - read non-existent variable\n")
 (let nonexist (os/env :get "AKX_NONEXISTENT_VAR_XYZ"))
 (io/putf "  Non-existent var: %v\n" nonexist)
 

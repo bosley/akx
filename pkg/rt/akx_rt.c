@@ -1071,7 +1071,8 @@ map_void_t *akx_rt_get_builtins(akx_runtime_ctx_t *rt) {
   return &rt->builtins;
 }
 
-void akx_runtime_set_script_args(akx_runtime_ctx_t *ctx, int argc, char **argv) {
+void akx_runtime_set_script_args(akx_runtime_ctx_t *ctx, int argc,
+                                 char **argv) {
   if (!ctx) {
     return;
   }

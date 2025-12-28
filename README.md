@@ -106,6 +106,9 @@ Access command-line arguments, environment variables, and system information:
 (let cwd (os/cwd))
 (println "Current directory:" cwd)
 
+(os/chdir "/tmp")
+(println "Changed to:" (os/cwd))
+
 (let home (os/env :get "HOME"))
 (println "Home directory:" home)
 
@@ -224,6 +227,7 @@ Built-in OS module provides system-level access:
 
 - **`os/args`** - Access command-line arguments as a list
 - **`os/cwd`** - Get current working directory
+- **`os/chdir "path"`** - Change working directory
 - **`os/env :get "VAR"`** - Read environment variables (returns `nil` if not found)
 - **`os/env :set "VAR" "VALUE"`** - Set environment variables
 

@@ -6,16 +6,20 @@ Test 1: os/args - get script arguments
 Test 2: os/cwd - get current working directory
   Current directory: <any>
 
-Test 3: os/env :get - read environment variable
+Test 3: os/chdir - change working directory
+  Change to /tmp result: 1
+  New directory contains 'tmp': 1
+
+Test 4: os/env :get - read environment variable
   HOME=<any>
 
-Test 4: os/env :set - set environment variable
+Test 5: os/env :set - set environment variable
   Set result: 1
 
-Test 5: os/env :get - read newly set variable
+Test 6: os/env :get - read newly set variable
   AKX_TEST_VAR=test_value
 
-Test 6: os/env :get - read non-existent variable
+Test 7: os/env :get - read non-existent variable
   Non-existent var: nil
 
 Test complete.

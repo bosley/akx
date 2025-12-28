@@ -1,9 +1,9 @@
 akx_cell_t *os_args_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
   (void)args;
-  
+
   int script_argc = akx_rt_get_script_argc(rt);
   char **script_argv = akx_rt_get_script_argv(rt);
-  
+
   if (script_argc <= 0 || !script_argv) {
     akx_cell_t *nil = akx_rt_alloc_cell(rt, AKX_TYPE_SYMBOL);
     akx_rt_set_symbol(rt, nil, "nil");
@@ -28,4 +28,3 @@ akx_cell_t *os_args_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
 
   return result ? result : akx_rt_alloc_cell(rt, AKX_TYPE_SYMBOL);
 }
-
