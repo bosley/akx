@@ -15,7 +15,7 @@ Opens a file, returns a File ID (FID).
 Closes an open file.
 
 **Args:** `:fid 1`  
-**Returns:** `true`
+**Returns:** `1` (true)
 
 ### `fs/read`
 Reads from an open file. Multiple modes:
@@ -65,13 +65,57 @@ Writes entire file in one shot.
 Checks if file/directory exists.
 
 **Args:** `"path/to/file.txt"`  
-**Returns:** `true` or `false`
+**Returns:** `1` (true) or `0` (false)
 
 ### `fs/delete`
 Deletes a file.
 
 **Args:** `"path/to/file.txt"`  
-**Returns:** `true` or `false`
+**Returns:** `1` (true) or `0` (false)
+
+## Directory Operations
+
+### `fs/list-dir`
+Lists contents of a directory.
+
+**Args:** `"path/to/dir"`  
+**Returns:** List of filenames (excluding `.` and `..`)
+
+### `fs/mkdir`
+Creates a directory.
+
+**Args:** `"path/to/dir"`  
+**Returns:** `1` (true) or `0` (false)
+
+### `fs/rmdir`
+Removes an empty directory.
+
+**Args:** `"path/to/dir"`  
+**Returns:** `1` (true) or `0` (false)
+
+### `fs/stat`
+Gets file/directory metadata.
+
+**Args:** `"path/to/file"`  
+**Returns:** Property list with `:size`, `:type` (file/dir/other), `:mtime`, `:mode`
+
+### `fs/rename`
+Renames or moves a file/directory.
+
+**Args:** `"old/path" "new/path"`  
+**Returns:** `1` (true) or `0` (false)
+
+### `fs/?is-dir`
+Checks if path is a directory.
+
+**Args:** `"path"`  
+**Returns:** `1` (true) or `0` (false)
+
+### `fs/?is-file`
+Checks if path is a regular file.
+
+**Args:** `"path"`  
+**Returns:** `1` (true) or `0` (false)
 
 ## Path Operations
 

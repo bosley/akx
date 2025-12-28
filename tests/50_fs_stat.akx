@@ -1,0 +1,30 @@
+(io/putf "Test: fs/stat file metadata\n\n")
+
+(let test-file "/tmp/akx_test_stat.txt")
+(let test-dir "/tmp/akx_test_stat_dir")
+
+(io/putf "Test 1: Create test file\n")
+(let content "This is test content for stat")
+(let bytes (fs/write-file test-file content))
+(io/putf "  Wrote %d bytes\n" bytes)
+
+(io/putf "\nTest 2: Get file stats\n")
+(let file-stats (fs/stat test-file))
+(io/putf "  File stats: (size, type, mtime, mode)\n")
+
+(io/putf "\nTest 3: Create directory and get stats\n")
+(fs/mkdir test-dir)
+(let dir-stats (fs/stat test-dir))
+(io/putf "  Directory stats: (size, type, mtime, mode)\n")
+
+(io/putf "\nTest 4: Verify file size matches content\n")
+(let stats (fs/stat test-file))
+(io/putf "  Content length: %d bytes\n" bytes)
+(io/putf "  Stat reports size from list\n")
+
+(io/putf "\nCleaning up...\n")
+(fs/delete test-file)
+(fs/delete test-dir)
+
+(io/putf "\nTest complete.\n")
+

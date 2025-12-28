@@ -68,6 +68,13 @@ fs/read         file_read_impl      fs/read.c           1
 fs/write        file_write_impl     fs/write.c          1
 fs/seek         seek_impl           fs/seek.c           1
 fs/tell         tell_impl           fs/tell.c           1
+fs/list-dir     list_dir_impl       fs/list_dir.c       1
+fs/mkdir        mkdir_impl          fs/mkdir.c          1
+fs/rmdir        rmdir_impl          fs/rmdir.c          1
+fs/stat         stat_impl           fs/stat.c           1
+fs/rename       rename_impl         fs/rename.c         1
+fs/?is-dir      is_dir_impl         fs/is_dir.c         1
+fs/?is-file     is_file_impl        fs/is_file.c        1
 
 # AKX runtime operations (compiled in)
 akx/exec       exec_impl           akx/exec.c          1

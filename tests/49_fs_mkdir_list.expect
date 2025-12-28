@@ -1,0 +1,26 @@
+Test: fs/mkdir and fs/list-dir
+
+Test 1: Create directory
+  mkdir result: 1
+
+Test 2: Verify directory exists
+  Directory exists: 1
+
+Test 3: Create files in directory
+  Created 3 test files
+
+Test 4: List directory contents
+  Files in directory:
+    - file1.txt
+    - file2.txt
+    - file3.txt
+
+Test 5: Try to create existing directory
+  mkdir on existing dir: 0
+
+Test 6: List empty directory
+  Empty directory list: nil
+
+Cleaning up...
+
+Test complete.

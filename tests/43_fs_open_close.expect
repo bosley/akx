@@ -2,15 +2,15 @@ Test: File open and close operations
 
 Test 1: Open file for reading
   Opened file with FID: 1
-  Closed file: true
+  Closed file: 1
 
 Test 2: Open file for writing
   Opened file with FID: 2
-  Closed file: true
+  Closed file: 1
 
 Test 3: Open file for appending
   Opened file with FID: 3
-  Closed file: true
+  Closed file: 1
 
 Test 4: Open multiple files
   Opened file 1 with FID: 4

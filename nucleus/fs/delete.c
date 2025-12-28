@@ -24,7 +24,7 @@ akx_cell_t *delete_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
 
   akx_rt_free_cell(rt, path_cell);
 
-  akx_cell_t *result = akx_rt_alloc_cell(rt, AKX_TYPE_SYMBOL);
-  akx_rt_set_symbol(rt, result, (result_code == 0) ? "true" : "false");
+  akx_cell_t *result = akx_rt_alloc_cell(rt, AKX_TYPE_INTEGER_LITERAL);
+  akx_rt_set_int(rt, result, (result_code == 0) ? 1 : 0);
   return result;
 }
