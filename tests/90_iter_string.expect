@@ -1,0 +1,18 @@
+Test: iter over strings
+
+Test 1: Empty string
+  Result: ''
+
+Test 2: Single character
+  Result: 'A'
+
+Test 3: Replace characters
+  Result: 'XYZ'
+
+Test 4: Remove vowels (replace with empty)
+  Result: 'hll'
+
+Test 5: Double each character
+  Result: 'HHii'
+
+Test complete.

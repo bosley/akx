@@ -1,0 +1,19 @@
+(io/putf "Test: iter over reals (bit manipulation)\n\n")
+
+(io/putf "Test 1: Identity on 0.0\n")
+(let val1 0.0)
+(let result1 (iter val1 (lambda [bit] bit)))
+(io/putf "  Input: %f, Result: %f\n" val1 result1)
+
+(io/putf "\nTest 2: Identity on 3.14\n")
+(let val2 3.14)
+(let result2 (iter val2 (lambda [bit] bit)))
+(io/putf "  Input: %f, Result: %f\n" val2 result2)
+
+(io/putf "\nTest 3: Set all bits to 0\n")
+(let val3 3.14)
+(let result3 (iter val3 (lambda [bit] 0)))
+(io/putf "  Input: %f, Result: %f\n" val3 result3)
+
+(io/putf "\nTest complete.\n")
+

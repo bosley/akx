@@ -37,7 +37,9 @@ AKX follows a unique bootstrap architecture where the runtime grows itself:
 3. **Dynamic Linking**: Links compiled functions into the running process
 4. **Registration**: Registers new functions as callable builtins from AKX code
 
-### The Nucleus System
+<summary><h3>The Nucleus System</h3></summary>
+
+<details>
 
 At build time, `nucleus/manifest.txt` defines which language features to compile in versus load at runtime. The core runtime is truly minimal - check the manifest to see which primitives are enabled by default.
 
@@ -55,12 +57,16 @@ At build time, `nucleus/manifest.txt` defines which language features to compile
 - **Testing**: `assert/true`, `assert/false`, `assert/eq`, `assert/ne`
 
 The same C file works both ways. Change the manifest to rebalance speed vs. flexibility without touching any code. **Disable primitives you don't need to keep the runtime lightweight.**
+</details>
 
-### Cell Memory Model
+<summary><h3>Cell Memory Model</h3></summary>
+
+<details>
 
 The runtime uses a **cell memory model** where expressions are represented as linked cells. Each cell can be a symbol, integer, real number, string, or list. Lists are formed by linking cells horizontally (`next`) and vertically (`list_head`).
 
 For detailed architecture diagrams, data flows, and implementation details, see [ARCHITECTURE.md](ARCHITECTURE.md).
+</details>
 
 ## Quick Start
 
@@ -103,7 +109,9 @@ The stdlib provides common operations via the nucleus system:
 (println "Equal?" (= 42 42))
 ```
 
-### OS Module - System Interaction
+<summary><h3>OS Module - System Interaction</h3></summary>
+
+<details>
 
 Access command-line arguments, environment variables, and system information:
 
@@ -130,9 +138,11 @@ Run with arguments:
 ```bash
 akx myscript.akx arg1 arg2 arg3
 ```
+</details>
 
-### Loading Your Own Functions
+<summary><h3>Loading Your Own Functions</h3></summary>
 
+<details>
 Write your logic in C, AKX provides the environment:
 
 ```c
@@ -151,9 +161,11 @@ Load and use it:
 (import "$AKX_HOME/stdlib/io.akx")
 (println (greet))
 ```
+</details>
 
-## Testing
+<summary><h2>Testing</h2></summary>
 
+<details>
 AKX includes a comprehensive test suite to ensure core language stability:
 
 ```bash
@@ -171,9 +183,11 @@ The test suite uses expect-based assertions to validate:
 - Assertion builtins
 
 See **[tests/README.md](tests/README.md)** for detailed testing documentation.
+</details>
 
-## Documentation
+<summary><h2>Documentation</h2></summary>
 
+<details>
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - Complete architecture overview with diagrams
 - **[nucleus/forms/forms.md](nucleus/forms/forms.md)** - Forms system: types, pattern matching, and affordances
 - **[LAMBDA_IMPLEMENTATION.md](LAMBDA_IMPLEMENTATION.md)** - Lambda and scope system implementation
@@ -181,8 +195,11 @@ See **[tests/README.md](tests/README.md)** for detailed testing documentation.
 - **[tests/README.md](tests/README.md)** - Test suite documentation and guidelines
 - **[pkg/rt/model.md](pkg/rt/model.md)** - Runtime model and API reference
 - **[pkg/cell/model.md](pkg/cell/model.md)** - Cell memory model documentation
+</details>
 
-## Building
+<summary><h2>Building</h2></summary>
+
+<details>
 
 AKX automatically fetches and installs AK24 if not found. No manual installation required.
 
@@ -232,10 +249,15 @@ By default, AKX uses the `akx.dev.0` branch of AK24. To use a different branch:
 ```bash
 cmake -DAK24_GIT_BRANCH=main ..
 ```
+</details>
 
-## Features
+<summary><h2>Features</h2></summary>
 
-### Forms System - Type Definitions & Protocols
+<details>
+
+<summary><h3>Forms System - Type Definitions & Protocols</h3></summary>
+
+<details>
 
 AKX includes a `forms` system for defining custom types, pattern matching, and behavioral protocols. Forms enable type-safe module development without modifying the runtime:
 
@@ -260,8 +282,11 @@ AKX includes a `forms` system for defining custom types, pattern matching, and b
 - **Composability**: Struct forms, optional types, repeatable types, and lists
 
 See **[nucleus/forms/forms.md](nucleus/forms/forms.md)** for complete documentation with examples.
+</details>
 
-### OS Integration
+<summary><h3>OS Integration</h3></summary>
+
+<details>
 
 Built-in OS module provides system-level access:
 
@@ -270,8 +295,11 @@ Built-in OS module provides system-level access:
 - **`os/chdir "path"`** - Change working directory
 - **`os/env :get "VAR"`** - Read environment variables (returns `nil` if not found)
 - **`os/env :set "VAR" "VALUE"`** - Set environment variables
+</details>
 
-### Tail Call Optimization
+<summary><h3>Tail Call Optimization</h3></summary>
+
+<details>
 
 AKX implements trampoline-based tail call optimization, allowing unbounded recursion for tail-recursive functions:
 
@@ -285,3 +313,42 @@ AKX implements trampoline-based tail call optimization, allowing unbounded recur
 ```
 
 The runtime automatically detects tail calls and converts them to iterative loops, eliminating C stack recursion.
+</details>
+
+<summary><h3>Universal Iterator - Transform Anything</h3></summary>
+
+<details>
+
+AKX includes an `iter` function that adapts to the type being iterated, enabling transformations at any level—from list elements to individual bits:
+
+**Lists**: Transform each element
+```akx
+(iter '(1 2 3 4 5) (lambda [n] (* n 2)))
+; → '(2 4 6 8 10)
+```
+
+**Strings**: Transform each UTF-8 character
+```akx
+(iter "hello" (lambda [c] 
+  (if (eq c "o") "*" c)))
+; → "hell*"
+```
+
+**Integers & Reals**: Transform each BIT (32-bit for int, 64-bit for real)
+```akx
+; Bitwise NOT via bit flipping
+(iter 5 (lambda [bit] (if (eq bit 0) 1 0)))
+; → -6
+
+; Zero out all bits in a float
+(iter 3.14159 (lambda [bit] 0))
+; → 0.0
+
+; Bit-level transformations enable low-level manipulation
+; without leaving the language
+```
+
+This unified iteration model means you can transform data at any granularity—from high-level collections down to individual bits in numeric types. The same `iter` function adapts its behavior based on what you're iterating over.
+</details>
+
+</details>

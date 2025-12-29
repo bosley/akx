@@ -109,6 +109,9 @@ os/env         os_env_impl         os/env.c            1
 str/+          str_concat_impl     str/concat.c        1
 str/split      str_split_impl      str/split.c         1
 
+# Iterator operations (compiled in)
+iter           iter_impl           iter/iter.c         1
+
 # Forms system (compiled in)
 form/define            form_define             forms/form_define.c             1
 form/matches           form_matches            forms/form_matches.c            1

@@ -1,0 +1,29 @@
+(io/putf "Test: iter over integers (bit manipulation)\n\n")
+
+(io/putf "Test 1: Identity on 0\n")
+(let val1 0)
+(let result1 (iter val1 (lambda [bit] bit)))
+(io/putf "  Input: %d, Result: %d\n" val1 result1)
+
+(io/putf "\nTest 2: Identity on 7 (binary: 111)\n")
+(let val2 7)
+(let result2 (iter val2 (lambda [bit] bit)))
+(io/putf "  Input: %d, Result: %d\n" val2 result2)
+
+(io/putf "\nTest 3: Flip all bits of 5 (binary: 101)\n")
+(let val3 5)
+(let result3 (iter val3 (lambda [bit] (if (eq bit 0) 1 0))))
+(io/putf "  Input: %d, Result: %d (should be NOT 5)\n" val3 result3)
+
+(io/putf "\nTest 4: Set all bits to 0\n")
+(let val4 255)
+(let result4 (iter val4 (lambda [bit] 0)))
+(io/putf "  Input: %d, Result: %d\n" val4 result4)
+
+(io/putf "\nTest 5: Set all bits to 1\n")
+(let val5 0)
+(let result5 (iter val5 (lambda [bit] 1)))
+(io/putf "  Input: %d, Result: %d\n" val5 result5)
+
+(io/putf "\nTest complete.\n")
+

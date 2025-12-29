@@ -1,0 +1,49 @@
+(io/putf "Test: Iterator operations\n\n")
+
+(io/putf "Test 1: iter over list - identity\n")
+(let list1 (begin 1 2 3))
+(let result1 (iter list1 (lambda [x] x)))
+(io/putf "  Result: %v\n" result1)
+
+(io/putf "\nTest 2: iter over list - double each\n")
+(let list2 (begin 1 2 3))
+(let result2 (iter list2 (lambda [x] (* x 2))))
+(io/putf "  Result: first=%d\n" result2)
+
+(io/putf "\nTest 3: iter over string - identity\n")
+(let str1 "Hello")
+(let result3 (iter str1 (lambda [c] c)))
+(io/putf "  Result: '%s'\n" result3)
+
+(io/putf "\nTest 4: iter over string - uppercase (simple)\n")
+(let str2 "abc")
+(let result4 (iter str2 (lambda [c] 
+  (if (eq c "a") "A"
+    (if (eq c "b") "B"
+      (if (eq c "c") "C" c))))))
+(io/putf "  Result: '%s'\n" result4)
+
+(io/putf "\nTest 5: iter over integer - count bits\n")
+(let int1 7)
+(let result5 (iter int1 (lambda [bit] bit)))
+(io/putf "  Result (7 with identity): %d\n" result5)
+
+(io/putf "\nTest 6: iter over integer - flip all bits\n")
+(let int2 5)
+(let result6 (iter int2 (lambda [bit] (if (eq bit 0) 1 0))))
+(io/putf "  Result (NOT 5): %d\n" result6)
+
+(io/putf "\nTest 7: iter over real - identity\n")
+(let real1 3.14)
+(let result7 (iter real1 (lambda [bit] bit)))
+(io/putf "  Result (3.14 with identity): %f\n" result7)
+
+(io/putf "\nTest 8: iter over string - replace chars\n")
+(let str3 "Hi")
+(let result8 (iter str3 (lambda [c]
+  (if (eq c "H") "B"
+    (if (eq c "i") "y" c)))))
+(io/putf "  Result: '%s'\n" result8)
+
+(io/putf "\nTest complete.\n")
+

@@ -1,0 +1,15 @@
+Test: iter over lists
+
+Test 1: Empty list
+  Result: nil
+
+Test 2: Single element list
+  Result: <list>
+
+Test 3: Multiple elements - multiply by 2
+  Result: <list>
+
+Test 4: String list - concatenate prefix
+  Result: <list>
+
+Test complete.

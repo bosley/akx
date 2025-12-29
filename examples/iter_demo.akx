@@ -1,0 +1,58 @@
+; Demonstration of the iter function
+
+(io/putf "=== ITER Function Demonstration ===\n\n")
+
+; Example 1: List transformation
+(io/putf "1. List Transformation\n")
+(io/putf "   Original: '(1 2 3 4 5)\n")
+(let numbers '(1 2 3 4 5))
+(let doubled (iter numbers (lambda [n] (* n 2))))
+(io/putf "   Doubled:  %v\n\n" doubled)
+
+; Example 2: String character replacement
+(io/putf "2. String Character Replacement\n")
+(io/putf "   Original: \"Hello World\"\n")
+(let greeting "Hello World")
+(let censored (iter greeting (lambda [c] 
+  (if (eq c "o") "*" c))))
+(io/putf "   Censored: \"%s\"\n\n" censored)
+
+; Example 3: String case transformation
+(io/putf "3. Simple Case Transformation\n")
+(io/putf "   Original: \"hi\"\n")
+(let lowercase "hi")
+(let uppercase (iter lowercase (lambda [c]
+  (if (eq c "h") "H"
+    (if (eq c "i") "I" c)))))
+(io/putf "   Uppercase: \"%s\"\n\n" uppercase)
+
+; Example 4: Integer bit manipulation
+(io/putf "4. Integer Bit Manipulation\n")
+(let num 7)
+(io/putf "   Original: %d (binary: 0111)\n" num)
+(let flipped (iter num (lambda [bit] (if (eq bit 0) 1 0))))
+(io/putf "   Flipped:  %d (bitwise NOT)\n\n" flipped)
+
+; Example 5: Zero out a number
+(io/putf "5. Zero Out All Bits\n")
+(let val 255)
+(io/putf "   Original: %d\n" val)
+(let zeroed (iter val (lambda [bit] 0)))
+(io/putf "   Zeroed:   %d\n\n" zeroed)
+
+; Example 6: Real number bit manipulation
+(io/putf "6. Real Number Identity\n")
+(let pi 3.14159)
+(io/putf "   Original: %f\n" pi)
+(let same (iter pi (lambda [bit] bit)))
+(io/putf "   Identity: %f\n\n" same)
+
+; Example 7: Empty list handling
+(io/putf "7. Empty List\n")
+(let empty '())
+(io/putf "   Original: %v\n" empty)
+(let result (iter empty (lambda [x] (* x 2))))
+(io/putf "   Result:   %v\n\n" result)
+
+(io/putf "=== End of Demonstration ===\n")
+

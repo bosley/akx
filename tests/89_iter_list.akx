@@ -1,0 +1,24 @@
+(io/putf "Test: iter over lists\n\n")
+
+(io/putf "Test 1: Empty list\n")
+(let empty '())
+(let result1 (iter empty (lambda [x] (* x 2))))
+(io/putf "  Result: %v\n" result1)
+
+(io/putf "\nTest 2: Single element list\n")
+(let single '(42))
+(let result2 (iter single (lambda [x] (+ x 1))))
+(io/putf "  Result: %v\n" result2)
+
+(io/putf "\nTest 3: Multiple elements - multiply by 2\n")
+(let nums '(1 2 3 4 5))
+(let result3 (iter nums (lambda [x] (* x 2))))
+(io/putf "  Result: %v\n" result3)
+
+(io/putf "\nTest 4: String list - concatenate prefix\n")
+(let words '("hello" "world"))
+(let result4 (iter words (lambda [w] (str/+ ">" w))))
+(io/putf "  Result: %v\n" result4)
+
+(io/putf "\nTest complete.\n")
+

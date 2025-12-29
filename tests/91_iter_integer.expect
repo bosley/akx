@@ -1,0 +1,18 @@
+Test: iter over integers (bit manipulation)
+
+Test 1: Identity on 0
+  Input: 0, Result: 0
+
+Test 2: Identity on 7 (binary: 111)
+  Input: 7, Result: 7
+
+Test 3: Flip all bits of 5 (binary: 101)
+  Input: 5, Result: -6 (should be NOT 5)
+
+Test 4: Set all bits to 0
+  Input: 255, Result: 0
+
+Test 5: Set all bits to 1
+  Input: 0, Result: -1
+
+Test complete.

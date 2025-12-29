@@ -1,0 +1,27 @@
+Test: Iterator operations
+
+Test 1: iter over list - identity
+  Result: 3
+
+Test 2: iter over list - double each
+  Result: first=3
+
+Test 3: iter over string - identity
+  Result: 'Hello'
+
+Test 4: iter over string - uppercase (simple)
+  Result: 'ABC'
+
+Test 5: iter over integer - count bits
+  Result (7 with identity): 7
+
+Test 6: iter over integer - flip all bits
+  Result (NOT 5): -6
+
+Test 7: iter over real - identity
+  Result (3.14 with identity): 3.140000
+
+Test 8: iter over string - replace chars
+  Result: 'By'
+
+Test complete.

@@ -1,0 +1,7 @@
+(io/putf "Test: iter error cases\n\n")
+
+(io/putf "Test 1: iter with lambda type (should error)\n")
+(let my_lambda (lambda [x] x))
+(let result1 (iter my_lambda (lambda [x] x)))
+(io/putf "  Should not reach here\n")
+
