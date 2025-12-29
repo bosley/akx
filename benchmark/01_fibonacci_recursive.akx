@@ -1,0 +1,27 @@
+(io/putf "Benchmark: Fibonacci (Tail-Call Optimized Recursion)\n")
+
+(let fib (lambda [n a b]
+  (if (eq n 0)
+    a
+    (if (eq n 1)
+      b
+      (fib (- n 1) b (+ a b))))))
+
+(io/putf "Computing fib(100)...\n")
+(let result1 (fib 100 0 1))
+(io/putf "fib(100) = %d\n" result1)
+
+(io/putf "Computing fib(500)...\n")
+(let result2 (fib 500 0 1))
+(io/putf "fib(500) computed (large number)\n")
+
+(io/putf "Computing fib(1000)...\n")
+(let result3 (fib 1000 0 1))
+(io/putf "fib(1000) computed (very large number)\n")
+
+(io/putf "Computing fib(2000)...\n")
+(let result4 (fib 2000 0 1))
+(io/putf "fib(2000) computed (extremely large number)\n")
+
+(io/putf "Benchmark complete\n")
+

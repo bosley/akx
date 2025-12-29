@@ -1,0 +1,76 @@
+(io/putf "Benchmark: Collatz Conjecture Stress Test\n")
+
+(let collatz-steps (lambda [n steps]
+  (if (eq n 1)
+    steps
+    (if (eq (% n 2) 0)
+      (collatz-steps (/ n 2) (+ steps 1))
+      (collatz-steps (+ (* 3 n) 1) (+ steps 1))))))
+
+(io/putf "\nTest 1: Known interesting sequences\n")
+(let result1 (collatz-steps 27 0))
+(io/putf "  27: %d steps\n" result1)
+
+(let result2 (collatz-steps 9999 0))
+(io/putf "  9999: %d steps\n" result2)
+
+(let result3 (collatz-steps 77031 0))
+(io/putf "  77031: %d steps\n" result3)
+
+(io/putf "\nTest 2: Range 1 to 50000\n")
+(let num 1)
+(let total-steps 0)
+(let max-steps 0)
+(let max-num 0)
+(loop (lte num 50000)
+  (begin
+    (let steps (collatz-steps num 0))
+    (set total-steps (+ total-steps steps))
+    (if (gt steps max-steps)
+      (begin
+        (set max-steps steps)
+        (set max-num num))
+      nil)
+    (set num (+ num 1))))
+(io/putf "  Total steps: %d\n" total-steps)
+(io/putf "  Number with most steps: %d (%d steps)\n" max-num max-steps)
+
+(io/putf "\nTest 3: Medium-sized numbers\n")
+(let r4 (collatz-steps 10000 0))
+(io/putf "  10000: %d steps\n" r4)
+
+(let r5 (collatz-steps 20000 0))
+(io/putf "  20000: %d steps\n" r5)
+
+(let r6 (collatz-steps 30000 0))
+(io/putf "  30000: %d steps\n" r6)
+
+(let r7 (collatz-steps 40000 0))
+(io/putf "  40000: %d steps\n" r7)
+
+(let r8 (collatz-steps 50000 0))
+(io/putf "  50000: %d steps\n" r8)
+
+(io/putf "\nTest 4: Range 50000 to 60000\n")
+(set num 50000)
+(set total-steps 0)
+(loop (lte num 60000)
+  (begin
+    (set total-steps (+ total-steps (collatz-steps num 0)))
+    (set num (+ num 1))))
+(io/putf "  Total steps: %d\n" total-steps)
+
+(io/putf "\nTest 5: More sequences\n")
+(let r9 (collatz-steps 60000 0))
+(io/putf "  60000: %d steps\n" r9)
+
+(let r10 (collatz-steps 70000 0))
+(io/putf "  70000: %d steps\n" r10)
+
+(let r11 (collatz-steps 80000 0))
+(io/putf "  80000: %d steps\n" r11)
+
+(let r12 (collatz-steps 90000 0))
+(io/putf "  90000: %d steps\n" r12)
+
+(io/putf "\nBenchmark complete\n")

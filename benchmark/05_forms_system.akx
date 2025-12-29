@@ -1,0 +1,78 @@
+(io/putf "Benchmark: Forms System and Type Operations\n")
+
+(io/putf "Test 1: Defining multiple forms\n")
+(form/define :Point { :int :int })
+(form/define :Counter :int)
+(form/define :Name :string)
+(form/define :Distance :int)
+(form/define :Coordinate { :int :int :int })
+(io/putf "Defined 5 forms\n")
+
+(io/putf "Test 2: Pattern matching operations\n")
+(let match-count 0)
+(let i 0)
+(loop (lt i 1000)
+  (begin
+    (if (form/matches i :Distance)
+      (set match-count (+ match-count 1))
+      nil)
+    (set i (+ i 1))))
+(io/putf "Performed 1000 pattern matches: %d successful\n" match-count)
+
+(io/putf "Test 3: Affordance definitions\n")
+(form/add-affordance :Counter :increment
+  (lambda [x] (+ x 1)))
+
+(form/add-affordance :Counter :decrement
+  (lambda [x] (- x 1)))
+
+(form/add-affordance :Distance :double
+  (lambda [d] (* d 2)))
+
+(form/add-affordance :Distance :square
+  (lambda [d] (* d d)))
+
+(io/putf "Defined 4 affordances\n")
+
+(io/putf "Test 4: Affordance invocations\n")
+(let counter 0)
+(loop (lt counter 100)
+  (begin
+    (let incremented (form/invoke counter :increment))
+    (let decremented (form/invoke counter :decrement))
+    (set counter (+ counter 1))))
+(io/putf "Invoked counter operations 200 times\n")
+
+(let dist-count 1)
+(loop (lte dist-count 100)
+  (begin
+    (let doubled (form/invoke dist-count :double))
+    (let squared (form/invoke dist-count :square))
+    (set dist-count (+ dist-count 1))))
+(io/putf "Invoked distance operations 200 times\n")
+
+(io/putf "Test 5: Form definition stress test\n")
+(set i 0)
+(loop (lt i 100)
+  (begin
+    (form/matches i :Counter)
+    (form/matches i :Distance)
+    (set i (+ i 1))))
+(io/putf "Performed 200 form matching operations\n")
+
+(io/putf "Test 6: Type predicate operations\n")
+(let type-checks 0)
+(set i 0)
+(loop (lt i 1000)
+  (begin
+    (if (?int i)
+      (set type-checks (+ type-checks 1))
+      nil)
+    (if (?nil nil)
+      (set type-checks (+ type-checks 1))
+      nil)
+    (set i (+ i 1))))
+(io/putf "Performed 2000 type checks\n")
+
+(io/putf "Benchmark complete\n")
+

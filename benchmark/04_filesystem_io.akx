@@ -1,0 +1,65 @@
+(io/putf "Benchmark: Filesystem I/O Operations\n")
+
+(let test-file "/tmp/akx_bench_test.txt")
+(let test-file2 "/tmp/akx_bench_test2.txt")
+(let test-file3 "/tmp/akx_bench_test3.txt")
+
+(io/putf "Test 1: Write and read operations\n")
+(let i 0)
+(loop (lt i 100)
+  (begin
+    (fs/write-file test-file "This is test content for the benchmark\n")
+    (let content (fs/read-file test-file))
+    (set i (+ i 1))))
+(io/putf "Completed 100 write/read cycles\n")
+
+(io/putf "Test 2: File existence checks\n")
+(set i 0)
+(loop (lt i 1000)
+  (begin
+    (fs/?exists test-file)
+    (set i (+ i 1))))
+(io/putf "Completed 1000 existence checks\n")
+
+(io/putf "Test 3: Multiple file operations\n")
+(set i 0)
+(loop (lt i 50)
+  (begin
+    (fs/write-file test-file "Content A\n")
+    (fs/write-file test-file2 "Content B\n")
+    (fs/write-file test-file3 "Content C\n")
+    (let c1 (fs/read-file test-file))
+    (let c2 (fs/read-file test-file2))
+    (let c3 (fs/read-file test-file3))
+    (set i (+ i 1))))
+(io/putf "Completed 50 multi-file cycles\n")
+
+(io/putf "Test 4: File handle operations\n")
+(let handle-file "/tmp/akx_bench_handle.txt")
+(let h (fs/open :path handle-file :mode "w"))
+(let write-count 0)
+(loop (lt write-count 500)
+  (begin
+    (fs/write :fid h :content "Line of text for benchmarking\n")
+    (set write-count (+ write-count 1))))
+(fs/close :fid h)
+(io/putf "Wrote 500 lines using file handle\n")
+
+(let h2 (fs/open :path handle-file :mode "r"))
+(let read-count 0)
+(loop (lt read-count 500)
+  (begin
+    (fs/read :fid h2 :bytes 30)
+    (set read-count (+ read-count 1))))
+(fs/close :fid h2)
+(io/putf "Read 500 lines using file handle\n")
+
+(io/putf "Test 5: Cleanup\n")
+(fs/delete test-file)
+(fs/delete test-file2)
+(fs/delete test-file3)
+(fs/delete handle-file)
+(io/putf "Cleaned up all test files\n")
+
+(io/putf "Benchmark complete\n")
+

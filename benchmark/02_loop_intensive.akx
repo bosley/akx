@@ -1,0 +1,42 @@
+(io/putf "Benchmark: Loop-Intensive Computation\n")
+
+(io/putf "Test 1: Sum of integers 1 to 10000\n")
+(let sum 0)
+(let i 1)
+(loop (lte i 10000)
+  (begin
+    (set sum (+ sum i))
+    (set i (+ i 1))))
+(io/putf "Sum(1..10000) = %d\n" sum)
+
+(io/putf "Test 2: Nested loop - multiplication table\n")
+(let outer 1)
+(let total 0)
+(loop (lte outer 100)
+  (begin
+    (let inner 1)
+    (loop (lte inner 100)
+      (begin
+        (set total (+ total (* outer inner)))
+        (set inner (+ inner 1))))
+    (set outer (+ outer 1))))
+(io/putf "Sum of 100x100 multiplication table = %d\n" total)
+
+(io/putf "Test 3: Collatz conjecture for multiple numbers\n")
+(let collatz-steps (lambda [n steps]
+  (if (eq n 1)
+    steps
+    (if (eq (% n 2) 0)
+      (collatz-steps (/ n 2) (+ steps 1))
+      (collatz-steps (+ (* 3 n) 1) (+ steps 1))))))
+
+(let num 1)
+(let total-steps 0)
+(loop (lte num 1000)
+  (begin
+    (set total-steps (+ total-steps (collatz-steps num 0)))
+    (set num (+ num 1))))
+(io/putf "Total Collatz steps for 1..1000 = %d\n" total-steps)
+
+(io/putf "Benchmark complete\n")
+

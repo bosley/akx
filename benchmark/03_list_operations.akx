@@ -1,0 +1,39 @@
+(io/putf "Benchmark: Lambda Applications and Higher-Order Functions\n")
+
+(io/putf "Test 1: Higher-order function applications\n")
+(let apply-n-times (lambda [f x n]
+  (if (eq n 0)
+    x
+    (apply-n-times f (f x) (- n 1)))))
+
+(let increment (lambda [x] (+ x 1)))
+(let double (lambda [x] (* x 2)))
+
+(let result1 (apply-n-times increment 0 1000))
+(io/putf "Applied increment 1000 times: %d\n" result1)
+
+(let result2 (apply-n-times double 1 10))
+(io/putf "Applied double 10 times: %d\n" result2)
+
+(io/putf "Test 3: Nested lambda applications\n")
+(let add-two (lambda [x y] (+ x y)))
+(let mul-two (lambda [x y] (* x y)))
+
+(let counter 0)
+(loop (lt counter 100)
+  (begin
+    (let temp (add-two counter 5))
+    (set counter (add-two temp 5))))
+(io/putf "Final counter after nested operations: %d\n" counter)
+
+(io/putf "Test 4: Recursive list processing\n")
+(let process-range (lambda [start end acc]
+  (if (gt start end)
+    acc
+    (process-range (+ start 1) end (+ acc (* start start))))))
+
+(let sum-of-squares (process-range 1 100 0))
+(io/putf "Sum of squares 1..100 = %d\n" sum-of-squares)
+
+(io/putf "Benchmark complete\n")
+
