@@ -1,64 +1,64 @@
 (io/putf "=== Forms Modifier Tests ===\n")
 
 (io/putf "Test 1: Optional int form\n")
-(form-define :OptionalInt (optional :int))
+(form/define :OptionalInt (optional :int))
 (io/putf "  PASS: Optional int defined\n")
 
 (io/putf "Test 2: Optional real form\n")
-(form-define :OptionalReal (optional :real))
+(form/define :OptionalReal (optional :real))
 (io/putf "  PASS: Optional real defined\n")
 
 (io/putf "Test 3: Optional string form\n")
-(form-define :OptionalString (optional :string))
+(form/define :OptionalString (optional :string))
 (io/putf "  PASS: Optional string defined\n")
 
 (io/putf "Test 4: Repeatable int form\n")
-(form-define :RepeatableInt (repeatable :int))
+(form/define :RepeatableInt (repeatable :int))
 (io/putf "  PASS: Repeatable int defined\n")
 
 (io/putf "Test 5: Repeatable string form\n")
-(form-define :RepeatableString (repeatable :string))
+(form/define :RepeatableString (repeatable :string))
 (io/putf "  PASS: Repeatable string defined\n")
 
 (io/putf "Test 6: Repeatable real form\n")
-(form-define :RepeatableReal (repeatable :real))
+(form/define :RepeatableReal (repeatable :real))
 (io/putf "  PASS: Repeatable real defined\n")
 
 (io/putf "Test 7: List of int form\n")
-(form-define :IntList (list :int))
+(form/define :IntList (list :int))
 (io/putf "  PASS: List of int defined\n")
 
 (io/putf "Test 8: List of string form\n")
-(form-define :StringList (list :string))
+(form/define :StringList (list :string))
 (io/putf "  PASS: List of string defined\n")
 
 (io/putf "Test 9: List of real form\n")
-(form-define :RealList (list :real))
+(form/define :RealList (list :real))
 (io/putf "  PASS: List of real defined\n")
 
 (io/putf "Test 10: Nested modifiers - optional list\n")
-(form-define :TempList (list :int))
-(form-define :OptionalIntList (optional :TempList))
+(form/define :TempList (list :int))
+(form/define :OptionalIntList (optional :TempList))
 (io/putf "  PASS: Optional list defined\n")
 
 (io/putf "Test 11: Nested modifiers - list of optional\n")
-(form-define :MaybeInt (optional :int))
-(form-define :ListOfOptional (list :MaybeInt))
+(form/define :MaybeInt (optional :int))
+(form/define :ListOfOptional (list :MaybeInt))
 (io/putf "  PASS: List of optional defined\n")
 
 (io/putf "Test 12: Repeatable of custom form\n")
-(form-define :Item [:id :int :name :string])
-(form-define :Items (repeatable :Item))
+(form/define :Item [:id :int :name :string])
+(form/define :Items (repeatable :Item))
 (io/putf "  PASS: Repeatable struct defined\n")
 
 (io/putf "Test 13: Optional of custom form\n")
-(form-define :Metadata [:key :string :value :string])
-(form-define :OptionalMetadata (optional :Metadata))
+(form/define :Metadata [:key :string :value :string])
+(form/define :OptionalMetadata (optional :Metadata))
 (io/putf "  PASS: Optional struct defined\n")
 
 (io/putf "Test 14: List of custom form\n")
-(form-define :Entry [:index :int :data :string])
-(form-define :EntryList (list :Entry))
+(form/define :Entry [:index :int :data :string])
+(form/define :EntryList (list :Entry))
 (io/putf "  PASS: List of struct defined\n")
 
 (io/putf "\n=== All Modifier Tests Complete ===\n")

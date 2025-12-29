@@ -1,47 +1,47 @@
 (io/putf "=== Forms Struct Field Tests ===\n")
 
 (io/putf "Test 1: Simple struct with two fields\n")
-(form-define :Point [:x :int :y :int])
+(form/define :Point [:x :int :y :int])
 (io/putf "  PASS: Simple struct defined\n")
 
 (io/putf "Test 2: Struct with three fields\n")
-(form-define :Person [:name :string :age :int :email :string])
+(form/define :Person [:name :string :age :int :email :string])
 (io/putf "  PASS: Three-field struct defined\n")
 
 (io/putf "Test 3: Struct with mixed types\n")
-(form-define :Record [:id :int :value :real :label :string])
+(form/define :Record [:id :int :value :real :label :string])
 (io/putf "  PASS: Mixed-type struct defined\n")
 
 (io/putf "Test 4: Struct with many fields\n")
-(form-define :Employee [:id :int :name :string :salary :real :active :int :dept :string])
+(form/define :Employee [:id :int :name :string :salary :real :active :int :dept :string])
 (io/putf "  PASS: Multi-field struct defined\n")
 
 (io/putf "Test 5: Nested struct forms\n")
-(form-define :Address [:street :string :city :string :zip :int])
-(form-define :PersonWithAddress [:name :string :age :int :addr :Address])
+(form/define :Address [:street :string :city :string :zip :int])
+(form/define :PersonWithAddress [:name :string :age :int :addr :Address])
 (io/putf "  PASS: Nested struct forms defined\n")
 
 (io/putf "Test 6: Struct with optional field type\n")
-(form-define :OptionalPort (optional :int))
-(form-define :Config [:host :string :port :OptionalPort])
+(form/define :OptionalPort (optional :int))
+(form/define :Config [:host :string :port :OptionalPort])
 (io/putf "  PASS: Struct with optional field defined\n")
 
 (io/putf "Test 7: Struct with repeatable field type\n")
-(form-define :Tags (repeatable :string))
-(form-define :Document [:title :string :tags :Tags])
+(form/define :Tags (repeatable :string))
+(form/define :Document [:title :string :tags :Tags])
 (io/putf "  PASS: Struct with repeatable field defined\n")
 
 (io/putf "Test 8: Struct with list field type\n")
-(form-define :IntList (list :int))
-(form-define :DataSet [:name :string :values :IntList])
+(form/define :IntList (list :int))
+(form/define :DataSet [:name :string :values :IntList])
 (io/putf "  PASS: Struct with list field defined\n")
 
 (io/putf "Test 9: Minimal struct\n")
-(form-define :Pair [:first :int :second :int])
+(form/define :Pair [:first :int :second :int])
 (io/putf "  PASS: Minimal struct defined\n")
 
 (io/putf "Test 10: Struct with all primitive types\n")
-(form-define :AllTypes [:i :int :r :real :s :string])
+(form/define :AllTypes [:i :int :r :real :s :string])
 (io/putf "  PASS: All-primitive-types struct defined\n")
 
 (io/putf "\n=== All Struct Field Tests Complete ===\n")

@@ -2,7 +2,7 @@
 
 akx_cell_t *form_invoke(akx_runtime_ctx_t *rt, akx_cell_t *args) {
   if (akx_rt_list_length(args) < 2) {
-    akx_rt_error(rt, "form-invoke requires at least 2 arguments "
+    akx_rt_error(rt, "form/invoke requires at least 2 arguments "
                      "(value :affordance-name [additional-args...])");
     return NULL;
   }

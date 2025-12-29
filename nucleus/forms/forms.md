@@ -42,30 +42,30 @@ Forms use **keyword syntax** (symbols starting with `:`) to reference form names
 
 ## Nucleus Builtins
 
-### form-define
+### form/define
 
 Define a new form.
 
 **Syntax:**
 ```lisp
-(form-define :FormName :base-type)
-(form-define :FormName { :type1 :type2 ... })
-(form-define :FormName [:field1 :type1 :field2 :type2 ...])
-(form-define :FormName (optional :type))
-(form-define :FormName (repeatable :type))
-(form-define :FormName (list :type))
+(form/define :FormName :base-type)
+(form/define :FormName { :type1 :type2 ... })
+(form/define :FormName [:field1 :type1 :field2 :type2 ...])
+(form/define :FormName (optional :type))
+(form/define :FormName (repeatable :type))
+(form/define :FormName (list :type))
 ```
 
 **Examples:**
 ```lisp
-(form-define :Point :int)
-(form-define :Temperature :real)
-(form-define :Name :string)
-(form-define :Coordinate { :int :int })
-(form-define :Person [:name :string :age :int :email :string])
-(form-define :OptionalAge (optional :int))
-(form-define :Tags (repeatable :string))
-(form-define :Numbers (list :int))
+(form/define :Point :int)
+(form/define :Temperature :real)
+(form/define :Name :string)
+(form/define :Coordinate { :int :int })
+(form/define :Person [:name :string :age :int :email :string])
+(form/define :OptionalAge (optional :int))
+(form/define :Tags (repeatable :string))
+(form/define :Numbers (list :int))
 ```
 
 **Parameters:**
@@ -81,28 +81,28 @@ Define a new form.
 
 **Form Aliasing:**
 ```lisp
-(form-define :Age :int)
-(form-define :PersonAge :Age)
+(form/define :Age :int)
+(form/define :PersonAge :Age)
 ```
 
-### form-matches
+### form/matches
 
 Check if a value matches a form pattern.
 
 **Syntax:**
 ```lisp
-(form-matches value :FormName)
+(form/matches value :FormName)
 ```
 
 **Examples:**
 ```lisp
 (let x 42)
-(if (form-matches x :Point)
+(if (form/matches x :Point)
   (io/putf "x is a Point\n")
   (io/putf "x is not a Point\n"))
 
 (let temp 98.6)
-(form-matches temp :Temperature)
+(form/matches temp :Temperature)
 ```
 
 **Parameters:**
@@ -117,25 +117,25 @@ Check if a value matches a form pattern.
 - Strings match `:string` forms
 - Type mismatches return 0 (false)
 
-### form-add-affordance
+### form/add-affordance
 
 Attach a behavioral affordance to a form.
 
 **Syntax:**
 ```lisp
-(form-add-affordance :FormName :affordance-name lambda)
+(form/add-affordance :FormName :affordance-name lambda)
 ```
 
 **Examples:**
 ```lisp
-(form-define :Counter :int)
-(form-add-affordance :Counter :increment
+(form/define :Counter :int)
+(form/add-affordance :Counter :increment
   (lambda [x] (+ x 1)))
 
-(form-add-affordance :Counter :decrement
+(form/add-affordance :Counter :decrement
   (lambda [x] (- x 1)))
 
-(form-add-affordance :Counter :reset
+(form/add-affordance :Counter :reset
   (lambda [x] 0))
 ```
 
@@ -149,25 +149,25 @@ Attach a behavioral affordance to a form.
 **Multiple Affordances:**
 A single form can have multiple affordances, enabling rich behavioral protocols.
 
-### form-invoke
+### form/invoke
 
 Invoke an affordance on a value that matches a form.
 
 **Syntax:**
 ```lisp
-(form-invoke value :affordance-name [additional-args...])
+(form/invoke value :affordance-name [additional-args...])
 ```
 
 **Examples:**
 ```lisp
-(form-define :Counter :int)
-(form-add-affordance :Counter :increment (lambda [x] (+ x 1)))
+(form/define :Counter :int)
+(form/add-affordance :Counter :increment (lambda [x] (+ x 1)))
 
 (let counter 10)
-(let result (form-invoke counter :increment))
+(let result (form/invoke counter :increment))
 
-(form-add-affordance :Counter :add (lambda [x y] (+ x y)))
-(let result (form-invoke counter :add 5))
+(form/add-affordance :Counter :add (lambda [x y] (+ x y)))
+(let result (form/invoke counter :add 5))
 ```
 
 **Parameters:**
@@ -188,7 +188,7 @@ Invoke an affordance on a value that matches a form.
 
 ```lisp
 (let x 10)
-(form-invoke x :increment)
+(form/invoke x :increment)
 ```
 
 This design reflects that forms describe the structure of instantiated objects, enabling extensible behavior on actual data.
@@ -213,16 +213,16 @@ The runtime automatically registers these primitive forms:
 
 ```lisp
 (let i 42)           
-(form-matches i :int)     ; 1 (true)
-(form-matches i :real)    ; 0 (false)
+(form/matches i :int)     ; 1 (true)
+(form/matches i :real)    ; 0 (false)
 
 (let r 3.14)
-(form-matches r :real)    ; 1 (true)
-(form-matches r :int)     ; 0 (false)
+(form/matches r :real)    ; 1 (true)
+(form/matches r :int)     ; 0 (false)
 
 (let s "hello")
-(form-matches s :string)  ; 1 (true)
-(form-matches s :int)     ; 0 (false)
+(form/matches s :string)  ; 1 (true)
+(form/matches s :int)     ; 0 (false)
 ```
 
 ### Compound Matching
@@ -230,9 +230,9 @@ The runtime automatically registers these primitive forms:
 Compound forms use curly brace syntax to define ordered type sequences:
 
 ```lisp
-(form-define :Point2D { :int :int })
-(form-define :Point3D { :int :int :int })
-(form-define :Record { :string :int :real })
+(form/define :Point2D { :int :int })
+(form/define :Point3D { :int :int :int })
+(form/define :Record { :string :int :real })
 ```
 
 Compound forms are useful for tuples and fixed-structure data.
@@ -242,7 +242,7 @@ Compound forms are useful for tuples and fixed-structure data.
 Matching against non-existent forms returns 0 (false) without error:
 
 ```lisp
-(form-matches x :NonExistent)  ; 0 (false)
+(form/matches x :NonExistent)  ; 0 (false)
 ```
 
 ## Usage Patterns
@@ -250,10 +250,10 @@ Matching against non-existent forms returns 0 (false) without error:
 ### Type Validation
 
 ```lisp
-(form-define :Age :int)
+(form/define :Age :int)
 
 (let age 25)
-(if (form-matches age :Age)
+(if (form/matches age :Age)
   (io/putf "Valid age\n")
   (io/putf "Invalid age\n"))
 ```
@@ -261,29 +261,29 @@ Matching against non-existent forms returns 0 (false) without error:
 ### Protocol Definition
 
 ```lisp
-(form-define :Drawable :int)
+(form/define :Drawable :int)
 
-(form-add-affordance :Drawable :draw
+(form/add-affordance :Drawable :draw
   (lambda [x] (io/putf "Drawing...\n")))
 
-(form-add-affordance :Drawable :erase
+(form/add-affordance :Drawable :erase
   (lambda [x] (io/putf "Erasing...\n")))
 ```
 
 ### Domain Modeling
 
 ```lisp
-(form-define :Width :int)
-(form-define :Height :int)
-(form-define :Depth :int)
+(form/define :Width :int)
+(form/define :Height :int)
+(form/define :Depth :int)
 
 (let w 100)
 (let h 200)
 (let d 50)
 
-(if (and (form-matches w :Width)
-         (form-matches h :Height)
-         (form-matches d :Depth))
+(if (and (form/matches w :Width)
+         (form/matches h :Height)
+         (form/matches d :Depth))
   (io/putf "Valid dimensions\n")
   (io/putf "Invalid dimensions\n"))
 ```
@@ -293,9 +293,9 @@ Matching against non-existent forms returns 0 (false) without error:
 Struct forms use square bracket syntax to define named fields:
 
 ```lisp
-(form-define :Person [:name :string :age :int :email :string])
-(form-define :Point [:x :int :y :int])
-(form-define :Employee [:id :int :name :string :salary :real :active :int])
+(form/define :Person [:name :string :age :int :email :string])
+(form/define :Point [:x :int :y :int])
+(form/define :Employee [:id :int :name :string :salary :real :active :int])
 ```
 
 Struct forms provide clear field semantics and enable self-documenting data structures.
@@ -305,37 +305,37 @@ Struct forms provide clear field semantics and enable self-documenting data stru
 Optional forms represent values that may be absent:
 
 ```lisp
-(form-define :OptionalPort (optional :int))
-(form-define :MaybeString (optional :string))
+(form/define :OptionalPort (optional :int))
+(form/define :MaybeString (optional :string))
 ```
 
 Repeatable forms represent zero or more occurrences:
 
 ```lisp
-(form-define :Tags (repeatable :string))
-(form-define :IntSequence (repeatable :int))
+(form/define :Tags (repeatable :string))
+(form/define :IntSequence (repeatable :int))
 ```
 
 List forms represent homogeneous collections:
 
 ```lisp
-(form-define :Numbers (list :int))
-(form-define :StringList (list :string))
-(form-define :RealList (list :real))
+(form/define :Numbers (list :int))
+(form/define :StringList (list :string))
+(form/define :RealList (list :real))
 ```
 
 These can be combined in struct forms:
 
 ```lisp
-(form-define :Config [:host :string :port :OptionalPort])
-(form-define :Document [:title :string :tags :Tags])
+(form/define :Config [:host :string :port :OptionalPort])
+(form/define :Document [:title :string :tags :Tags])
 ```
 
 Or nested within each other:
 
 ```lisp
-(form-define :TempList (list :int))
-(form-define :OptionalList (optional :TempList))
+(form/define :TempList (list :int))
+(form/define :OptionalList (optional :TempList))
 ```
 
 ## Implementation Details
@@ -417,19 +417,19 @@ Affordances are implemented as lambda expressions, allowing:
 ### Complete Example: Counter with Affordances
 
 ```lisp
-(form-define :Counter :int)
+(form/define :Counter :int)
 
-(form-add-affordance :Counter :increment
+(form/add-affordance :Counter :increment
   (lambda [x] (+ x 1)))
 
-(form-add-affordance :Counter :decrement
+(form/add-affordance :Counter :decrement
   (lambda [x] (- x 1)))
 
-(form-add-affordance :Counter :reset
+(form/add-affordance :Counter :reset
   (lambda [x] 0))
 
 (let counter 10)
-(if (form-matches counter :Counter)
+(if (form/matches counter :Counter)
   (begin
     (io/putf "Counter is valid\n")
     (io/putf "Counter can be incremented, decremented, and reset\n"))
@@ -439,17 +439,17 @@ Affordances are implemented as lambda expressions, allowing:
 ### Complete Example: Dimensional Validation
 
 ```lisp
-(form-define :Width :int)
-(form-define :Height :int)
-(form-define :Depth :int)
+(form/define :Width :int)
+(form/define :Height :int)
+(form/define :Depth :int)
 
 (let w 100)
 (let h 200)
 (let d 50)
 
-(if (and (form-matches w :Width)
-         (form-matches h :Height)
-         (form-matches d :Depth))
+(if (and (form/matches w :Width)
+         (form/matches h :Height)
+         (form/matches d :Depth))
   (begin
     (io/putf "Valid box dimensions:\n")
     (io/putf "  Width: ")
@@ -469,7 +469,7 @@ Affordances are implemented as lambda expressions, allowing:
 The runtime automatically defines a global `nil` symbol at initialization:
 
 ```lisp
-(if (form-matches nil :int)
+(if (form/matches nil :int)
   (io/putf "nil matches int\n")
   (io/putf "nil does not match int\n"))  ; This branch executes
 ```
@@ -479,10 +479,10 @@ The runtime automatically defines a global `nil` symbol at initialization:
 Named forms properly follow alias chains to their underlying types:
 
 ```lisp
-(form-define :UserId :int)
-(form-define :PersonId :UserId)
+(form/define :UserId :int)
+(form/define :PersonId :UserId)
 
 (let id 1001)
-(form-matches id :PersonId)  ; 1 (true) - follows chain to :int
+(form/matches id :PersonId)  ; 1 (true) - follows chain to :int
 ```
 

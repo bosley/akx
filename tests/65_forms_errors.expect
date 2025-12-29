@@ -1,17 +1,17 @@
 === Forms Error Handling Tests ===
-Test 1: form-define with non-keyword name
+Test 1: form/define with non-keyword name
   SKIP: Would cause runtime error
-Test 2: form-define with too few args
+Test 2: form/define with too few args
   SKIP: Would cause runtime error
-Test 3: form-matches with non-keyword form
+Test 3: form/matches with non-keyword form
   SKIP: Would cause runtime error
-Test 4: form-matches with too few args
+Test 4: form/matches with too few args
   SKIP: Would cause runtime error
-Test 5: form-add-affordance with non-keyword form
+Test 5: form/add-affordance with non-keyword form
   SKIP: Would cause runtime error
-Test 6: form-add-affordance with non-keyword affordance
+Test 6: form/add-affordance with non-keyword affordance
   SKIP: Would cause runtime error
-Test 7: form-add-affordance with too few args
+Test 7: form/add-affordance with too few args
   SKIP: Would cause runtime error
 Test 8: Valid error recovery
   PASS: System still functional after error tests
