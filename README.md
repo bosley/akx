@@ -44,7 +44,7 @@ AKX follows a unique bootstrap architecture where the runtime grows itself:
 At build time, `nucleus/manifest.txt` defines which language features to compile in versus load at runtime. The core runtime is truly minimal - check the manifest to see which primitives are enabled by default.
 
 **Current default compilation includes:**
-- **Core language**: `if`, `lambda`, `let`, `set`, `import`, `begin`, `loop`, `?defined`
+- **Core language**: `if`, `lambda`, `let`, `set`, `import`, `begin`, `loop`, `?defined`, `cons`, `car`, `cdr`
 - **Math operations**: `+`, `-`, `*`, `/`, `%`, `=`
 - **Comparison**: `eq`, `neq`, `gt`, `gte`, `lt`, `lte`
 - **Logic**: `and`, `or`, `not`
@@ -349,6 +349,48 @@ AKX includes an `iter` function that adapts to the type being iterated, enabling
 ```
 
 This unified iteration model means you can transform data at any granularity—from high-level collections down to individual bits in numeric types. The same `iter` function adapts its behavior based on what you're iterating over.
+</details>
+
+<summary><h3>List Operations - cons, car, cdr</h3></summary>
+
+<details>
+
+AKX provides fundamental Lisp-style list manipulation functions for building and traversing lists:
+
+**`cons`** - Prepend an element to a list
+```akx
+(cons 1 '(2 3))
+; → '(1 2 3)
+
+(cons "a" '())
+; → '("a")
+```
+
+**`car`** - Get the first element of a list
+```akx
+(car '(10 20 30))
+; → 10
+
+(car '("first" "second"))
+; → "first"
+```
+
+**`cdr`** - Get the rest of the list (everything after the first element)
+```akx
+(cdr '(1 2 3 4))
+; → '(2 3 4)
+
+(cdr '(only))
+; → nil
+```
+
+**Building lists with cons:**
+```akx
+(let my-list (cons 1 (cons 2 (cons 3 '()))))
+(car my-list)           ; → 1
+(car (cdr my-list))    ; → 2
+(car (cdr (cdr my-list))) ; → 3
+```
 </details>
 
 </details>
