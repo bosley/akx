@@ -1,0 +1,67 @@
+(io/putf "Test: cons, car, cdr operations\n\n")
+
+(io/putf "Test 1: cons - prepend integer to list\n")
+(let list1 '(2 3))
+(let result1 (cons 1 list1))
+(io/putf "  Result: <list>\n")
+(io/putf "  First element (car): %d\n" (car result1))
+
+(io/putf "\nTest 2: cons - prepend string to list\n")
+(let list2 '(b c))
+(let result2 (cons "a" list2))
+(io/putf "  Result: <list>\n")
+(io/putf "  First element (car): %s\n" (car result2))
+
+(io/putf "\nTest 3: cons - prepend to empty list\n")
+(let empty '())
+(let result3 (cons 42 empty))
+(io/putf "  Result: <list>\n")
+(io/putf "  First element (car): %d\n" (car result3))
+(io/putf "  Rest (cdr): %v\n" (cdr result3))
+
+(io/putf "\nTest 4: car - get first element of integer list\n")
+(let list4 '(10 20 30))
+(io/putf "  First element: %d\n" (car list4))
+
+(io/putf "\nTest 5: car - get first element of string list\n")
+(let list5 '("first" "second" "third"))
+(io/putf "  First element: %s\n" (car list5))
+
+(io/putf "\nTest 6: car - get first element of mixed list\n")
+(let list6 '(42 "hello" 3.14))
+(io/putf "  First element: %d\n" (car list6))
+
+(io/putf "\nTest 7: cdr - get rest of multi-element list\n")
+(let list7 '(1 2 3 4))
+(let rest7 (cdr list7))
+(io/putf "  Rest: <list>\n")
+(io/putf "  First of rest: %d\n" (car rest7))
+
+(io/putf "\nTest 8: cdr - get rest of two-element list\n")
+(let list8 '(a b))
+(let rest8 (cdr list8))
+(io/putf "  Rest: <list>\n")
+(io/putf "  First of rest: %v\n" (car rest8))
+
+(io/putf "\nTest 9: cdr - get rest of single-element list\n")
+(let list9 '(only))
+(let rest9 (cdr list9))
+(io/putf "  Rest: %v\n" rest9)
+
+(io/putf "\nTest 10: cons + car + cdr chain\n")
+(let base '(b c))
+(let with-a (cons "a" base))
+(io/putf "  Car: %s\n" (car with-a))
+(let without-a (cdr with-a))
+(io/putf "  Cdr (first element): %v\n" (car without-a))
+
+(io/putf "\nTest 11: nested cons operations\n")
+(let list11 '(c))
+(let list11b (cons "b" list11))
+(let list11a (cons "a" list11b))
+(io/putf "  First: %s\n" (car list11a))
+(io/putf "  Second: %s\n" (car (cdr list11a)))
+(io/putf "  Third: %v\n" (car (cdr (cdr list11a))))
+
+(io/putf "\nTest complete.\n")
+

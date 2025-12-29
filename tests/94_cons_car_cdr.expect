@@ -1,0 +1,45 @@
+Test: cons, car, cdr operations
+
+Test 1: cons - prepend integer to list
+  Result: <list>
+  First element (car): 1
+
+Test 2: cons - prepend string to list
+  Result: <list>
+  First element (car): a
+
+Test 3: cons - prepend to empty list
+  Result: <list>
+  First element (car): 42
+  Rest (cdr): nil
+
+Test 4: car - get first element of integer list
+  First element: 10
+
+Test 5: car - get first element of string list
+  First element: first
+
+Test 6: car - get first element of mixed list
+  First element: 42
+
+Test 7: cdr - get rest of multi-element list
+  Rest: <list>
+  First of rest: 2
+
+Test 8: cdr - get rest of two-element list
+  Rest: <list>
+  First of rest: b
+
+Test 9: cdr - get rest of single-element list
+  Rest: nil
+
+Test 10: cons + car + cdr chain
+  Car: a
+  Cdr (first element): b
+
+Test 11: nested cons operations
+  First: a
+  Second: b
+  Third: c
+
+Test complete.

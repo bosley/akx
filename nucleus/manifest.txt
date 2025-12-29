@@ -8,6 +8,9 @@ lambda      lambda_impl     core/lambda.c       1
 let         let_impl        core/let.c          1
 set         set_impl        core/set.c          1
 import      import_impl     core/import.c       1
+cons        cons_impl       core/cons.c         1
+car         car_impl        core/car.c          1
+cdr         cdr_impl        core/cdr.c          1
 
 # Assertions (compiled in for testing)
 assert/true  assert_true_impl   assert/assert_true.c    1
