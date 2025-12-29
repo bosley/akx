@@ -1,0 +1,32 @@
+(io/putf "Test: Real number logic operations\n\n")
+
+(io/putf "Test 1: real/and logical AND\n")
+(let l1 (real/and 1.5 2.5))
+(io/putf "  1.5 AND 2.5: %d\n" l1)
+(let l2 (real/and 1.5 0.0))
+(io/putf "  1.5 AND 0.0: %d\n" l2)
+(let l3 (real/and 0.0 0.0))
+(io/putf "  0.0 AND 0.0: %d\n" l3)
+(let l4 (real/and 1.0 2.0 3.0))
+(io/putf "  1.0 AND 2.0 AND 3.0: %d\n" l4)
+
+(io/putf "\nTest 2: real/or logical OR\n")
+(let l5 (real/or 1.5 2.5))
+(io/putf "  1.5 OR 2.5: %d\n" l5)
+(let l6 (real/or 1.5 0.0))
+(io/putf "  1.5 OR 0.0: %d\n" l6)
+(let l7 (real/or 0.0 0.0))
+(io/putf "  0.0 OR 0.0: %d\n" l7)
+(let l8 (real/or 0.0 0.0 1.5))
+(io/putf "  0.0 OR 0.0 OR 1.5: %d\n" l8)
+
+(io/putf "\nTest 3: real/not logical NOT\n")
+(let l9 (real/not 0.0))
+(io/putf "  NOT 0.0: %d\n" l9)
+(let l10 (real/not 5.5))
+(io/putf "  NOT 5.5: %d\n" l10)
+(let l11 (real/not 0.00001))
+(io/putf "  NOT 0.00001: %d\n" l11)
+
+(io/putf "\nTest complete.\n")
+

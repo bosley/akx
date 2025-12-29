@@ -1,0 +1,28 @@
+(io/putf "Test: String concatenation operations\n\n")
+
+(io/putf "Test 1: str/+ with two strings\n")
+(let s1 (str/+ "Hello" "World"))
+(io/putf "  Result: '%s'\n" s1)
+
+(io/putf "\nTest 2: str/+ with three strings\n")
+(let s2 (str/+ "Hello" " " "World"))
+(io/putf "  Result: '%s'\n" s2)
+
+(io/putf "\nTest 3: str/+ with many strings\n")
+(let s3 (str/+ "a" "b" "c" "d" "e" "f"))
+(io/putf "  Result: '%s'\n" s3)
+
+(io/putf "\nTest 4: str/+ with empty strings\n")
+(let s4 (str/+ "" "Hello" "" "World" ""))
+(io/putf "  Result: '%s'\n" s4)
+
+(io/putf "\nTest 5: str/+ single string\n")
+(let s5 (str/+ "OnlyOne"))
+(io/putf "  Result: '%s'\n" s5)
+
+(io/putf "\nTest 6: str/+ building sentence\n")
+(let s6 (str/+ "The" " " "quick" " " "brown" " " "fox"))
+(io/putf "  Result: '%s'\n" s6)
+
+(io/putf "\nTest complete.\n")
+

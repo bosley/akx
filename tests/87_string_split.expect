@@ -1,0 +1,27 @@
+Test: String split operations
+
+Test 1: str/split with :idx at beginning
+  Left: ''
+
+Test 2: str/split with :idx in middle
+  Result: 'Hello'
+
+Test 3: str/split with :idx at end
+  Left: 'HelloWorld'
+
+Test 4: str/split with :sub found
+  Result: 'Hello'
+
+Test 5: str/split with :sub not found
+  Result: 'HelloWorld'
+
+Test 6: str/split with :sub multiple occurrences
+  Result: 'a'
+
+Test 7: str/split with :sub longer delimiter
+  Result: 'Hello'
+
+Test 8: str/split with :idx splitting path
+  Result: '/usr'
+
+Test complete.

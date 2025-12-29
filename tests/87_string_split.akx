@@ -1,0 +1,36 @@
+(io/putf "Test: String split operations\n\n")
+
+(io/putf "Test 1: str/split with :idx at beginning\n")
+(let s1 (str/split "HelloWorld" :idx 0))
+(io/putf "  Left: '%s'\n" s1)
+
+(io/putf "\nTest 2: str/split with :idx in middle\n")
+(let s2 (str/split "HelloWorld" :idx 5))
+(io/putf "  Result: '%s'\n" s2)
+
+(io/putf "\nTest 3: str/split with :idx at end\n")
+(let s3 (str/split "HelloWorld" :idx 10))
+(io/putf "  Left: '%s'\n" s3)
+
+(io/putf "\nTest 4: str/split with :sub found\n")
+(let s4 (str/split "Hello-World" :sub "-"))
+(io/putf "  Result: '%s'\n" s4)
+
+(io/putf "\nTest 5: str/split with :sub not found\n")
+(let s5 (str/split "HelloWorld" :sub "-"))
+(io/putf "  Result: '%s'\n" s5)
+
+(io/putf "\nTest 6: str/split with :sub multiple occurrences\n")
+(let s6 (str/split "a-b-c-d" :sub "-"))
+(io/putf "  Result: '%s'\n" s6)
+
+(io/putf "\nTest 7: str/split with :sub longer delimiter\n")
+(let s7 (str/split "Hello::World" :sub "::"))
+(io/putf "  Result: '%s'\n" s7)
+
+(io/putf "\nTest 8: str/split with :idx splitting path\n")
+(let s8 (str/split "/usr/local/bin" :idx 4))
+(io/putf "  Result: '%s'\n" s8)
+
+(io/putf "\nTest complete.\n")
+

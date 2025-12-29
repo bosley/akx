@@ -1,0 +1,33 @@
+Test: Real number comparison operations
+
+Test 1: real/eq equality
+  5.5 == 5.5: 1
+  5.5 == 5.6: 0
+  3.0 == 3.0 == 3.0: 1
+
+Test 2: real/neq inequality
+  5.5 != 6.5: 1
+  5.5 != 5.5: 0
+  1.0 != 2.0 != 3.0: 1
+
+Test 3: real/gt greater than
+  10.5 > 5.5: 1
+  5.5 > 10.5: 0
+  5.5 > 5.5: 0
+
+Test 4: real/gte greater than or equal
+  10.5 >= 5.5: 1
+  5.5 >= 5.5: 1
+  5.5 >= 10.5: 0
+
+Test 5: real/lt less than
+  5.5 < 10.5: 1
+  10.5 < 5.5: 0
+  5.5 < 5.5: 0
+
+Test 6: real/lte less than or equal
+  5.5 <= 10.5: 1
+  5.5 <= 5.5: 1
+  10.5 <= 5.5: 0
+
+Test complete.

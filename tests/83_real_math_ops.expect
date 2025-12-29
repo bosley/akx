@@ -1,0 +1,23 @@
+Test: Real number math operations
+
+Test 1: real/+ addition
+  1.5 + 2.5 = 4.000000
+  1.0 + 2.0 + 3.0 + 4.0 = 10.000000
+
+Test 2: real/- subtraction
+  10.5 - 3.2 = 7.300000
+  20.0 - 5.0 - 2.5 = 12.500000
+
+Test 3: real/* multiplication
+  2.5 * 4.0 = 10.000000
+  2.0 * 3.0 * 4.0 = 24.000000
+
+Test 4: real// division
+  10.0 / 2.0 = 5.000000
+  100.0 / 5.0 / 2.0 = 10.000000
+
+Test 5: real/% modulo
+  10.5 % 3.0 = 1.500000
+  7.8 % 2.5 = 0.300000
+
+Test complete.

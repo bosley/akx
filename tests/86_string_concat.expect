@@ -1,0 +1,21 @@
+Test: String concatenation operations
+
+Test 1: str/+ with two strings
+  Result: 'HelloWorld'
+
+Test 2: str/+ with three strings
+  Result: 'Hello World'
+
+Test 3: str/+ with many strings
+  Result: 'abcdef'
+
+Test 4: str/+ with empty strings
+  Result: 'HelloWorld'
+
+Test 5: str/+ single string
+  Result: 'OnlyOne'
+
+Test 6: str/+ building sentence
+  Result: 'The quick brown fox'
+
+Test complete.

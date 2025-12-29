@@ -23,6 +23,13 @@ assert/ne    assert_ne_impl     assert/assert_ne.c      1
 %           akx_mod         math/mod.c          1
 =           akx_eq          math/eq.c           1
 
+# Real math operators (compiled in)
+real/+      real_add        math/real_add.c     1
+real/-      real_sub        math/real_sub.c     1
+real/*      real_mul        math/real_mul.c     1
+real//      real_div        math/real_div.c     1
+real/%      real_mod        math/real_mod.c     1
+
 # I/O (compiled in)
 io/putf     putf_impl       io/putf.c           1
 io/scanf    scanf_impl      io/scanf.c          1
@@ -44,10 +51,23 @@ gt          gt_impl         cmp/gt.c            1
 lte         lte_impl        cmp/lte.c           1
 lt          lt_impl         cmp/lt.c            1
 
+# Real comparison operators (compiled in)
+real/eq     real_eq_impl    cmp/real_eq.c       1
+real/neq    real_neq_impl   cmp/real_neq.c      1
+real/gt     real_gt_impl    cmp/real_gt.c       1
+real/gte    real_gte_impl   cmp/real_gte.c      1
+real/lt     real_lt_impl    cmp/real_lt.c       1
+real/lte    real_lte_impl   cmp/real_lte.c      1
+
 # Logic operators (compiled in)
 not         not_impl        logic/not.c         1
 and         and_impl        logic/and.c         1
 or          or_impl         logic/or.c          1
+
+# Real logic operators (compiled in)
+real/not    real_not_impl   logic/real_not.c    1
+real/and    real_and_impl   logic/real_and.c    1
+real/or     real_or_impl    logic/real_or.c     1
 
 # Control flow (compiled in)
 ?defined    defined_impl    core/defined.c      1
@@ -84,6 +104,10 @@ os/args        os_args_impl        os/args.c           1
 os/cwd         os_cwd_impl         os/cwd.c            1
 os/chdir       os_chdir_impl       os/chdir.c          1
 os/env         os_env_impl         os/env.c            1
+
+# String operations (compiled in)
+str/+          str_concat_impl     str/concat.c        1
+str/split      str_split_impl      str/split.c         1
 
 # Forms system (compiled in)
 form/define            form_define             forms/form_define.c             1

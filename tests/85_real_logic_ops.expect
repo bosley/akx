@@ -1,0 +1,20 @@
+Test: Real number logic operations
+
+Test 1: real/and logical AND
+  1.5 AND 2.5: 1
+  1.5 AND 0.0: 0
+  0.0 AND 0.0: 0
+  1.0 AND 2.0 AND 3.0: 1
+
+Test 2: real/or logical OR
+  1.5 OR 2.5: 1
+  1.5 OR 0.0: 1
+  0.0 OR 0.0: 0
+  0.0 OR 0.0 OR 1.5: 1
+
+Test 3: real/not logical NOT
+  NOT 0.0: 1
+  NOT 5.5: 0
+  NOT 0.00001: 0
+
+Test complete.
