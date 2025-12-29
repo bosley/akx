@@ -1,0 +1,20 @@
+Test: akx/exec nested calls with arguments
+
+Calling outer script with arguments...
+Outer script args:
+  [0] tests/helpers/exec_nested_outer.akx
+  [1] outer1
+  [2] outer2
+Calling inner script...
+Inner script args:
+  [0] tests/helpers/exec_nested_inner.akx
+  [1] inner1
+  [2] inner2
+Back in outer, inner returned: 99
+Outer args still intact:
+  [0] tests/helpers/exec_nested_outer.akx
+  [1] outer1
+  [2] outer2
+Final result: 77
+
+Test complete.

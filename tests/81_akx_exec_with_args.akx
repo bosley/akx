@@ -1,0 +1,12 @@
+(io/putf "Test: akx/exec with arguments\n\n")
+
+(io/putf "Test 1: Basic argument passing\n")
+(let result (akx/exec "tests/helpers/exec_with_args.akx" "hello" "world" 123 456.78))
+(io/putf "Returned: %d\n" result)
+
+(io/putf "\nTest 2: Exec without arguments (backwards compatibility)\n")
+(let no-args-result (akx/exec "tests/helpers/return_number.akx"))
+(io/putf "Returned: %d\n" no-args-result)
+
+(io/putf "\nTest complete.\n")
+

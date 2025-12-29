@@ -1,0 +1,18 @@
+(begin
+  (let inner-args (os/args))
+  (io/putf "Inner script args:\n")
+  (let inner-idx 0)
+  (loop (lt inner-idx 3)
+    (begin
+      (if (eq inner-idx 0)
+        (io/putf "  [%d] %s\n" inner-idx "tests/helpers/exec_nested_inner.akx")
+        (begin))
+      (if (eq inner-idx 1)
+        (io/putf "  [%d] %s\n" inner-idx "inner1")
+        (begin))
+      (if (eq inner-idx 2)
+        (io/putf "  [%d] %s\n" inner-idx "inner2")
+        (begin))
+      (set inner-idx (+ inner-idx 1))))
+  99)
+

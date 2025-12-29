@@ -1,0 +1,38 @@
+(begin
+  (let args (os/args))
+  (io/putf "Outer script args:\n")
+  (let idx 0)
+  (loop (lt idx 3)
+    (begin
+      (if (eq idx 0)
+        (io/putf "  [%d] %s\n" idx "tests/helpers/exec_nested_outer.akx")
+        (begin))
+      (if (eq idx 1)
+        (io/putf "  [%d] %s\n" idx "outer1")
+        (begin))
+      (if (eq idx 2)
+        (io/putf "  [%d] %s\n" idx "outer2")
+        (begin))
+      (set idx (+ idx 1))))
+  
+  (io/putf "Calling inner script...\n")
+  (let inner-result (akx/exec "tests/helpers/exec_nested_inner.akx" "inner1" "inner2"))
+  
+  (io/putf "Back in outer, inner returned: %d\n" inner-result)
+  (io/putf "Outer args still intact:\n")
+  (set idx 0)
+  (loop (lt idx 3)
+    (begin
+      (if (eq idx 0)
+        (io/putf "  [%d] %s\n" idx "tests/helpers/exec_nested_outer.akx")
+        (begin))
+      (if (eq idx 1)
+        (io/putf "  [%d] %s\n" idx "outer1")
+        (begin))
+      (if (eq idx 2)
+        (io/putf "  [%d] %s\n" idx "outer2")
+        (begin))
+      (set idx (+ idx 1))))
+  
+  77)
+

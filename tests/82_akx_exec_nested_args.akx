@@ -1,0 +1,8 @@
+(io/putf "Test: akx/exec nested calls with arguments\n\n")
+
+(io/putf "Calling outer script with arguments...\n")
+(let result (akx/exec "tests/helpers/exec_nested_outer.akx" "outer1" "outer2"))
+(io/putf "Final result: %d\n" result)
+
+(io/putf "\nTest complete.\n")
+

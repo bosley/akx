@@ -1,0 +1,15 @@
+Test: akx/exec with arguments
+
+Test 1: Basic argument passing
+Script received arguments:
+  [0] tests/helpers/exec_with_args.akx
+  [1] hello
+  [2] world
+  [3] 123
+  [4] 456.780000
+Returned: 42
+
+Test 2: Exec without arguments (backwards compatibility)
+Returned: 42
+
+Test complete.
