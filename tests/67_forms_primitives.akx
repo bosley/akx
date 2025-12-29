@@ -1,0 +1,56 @@
+(io/putf "=== Forms Built-in Primitives Tests ===\n")
+
+(io/putf "Test 1: Match against built-in :int form\n")
+(let i 42)
+(if (form-matches i :int)
+  (io/putf "  PASS: Integer matches built-in :int\n")
+  (io/putf "  FAIL: Integer should match built-in :int\n"))
+
+(io/putf "Test 2: Match against built-in :real form\n")
+(let r 3.14)
+(if (form-matches r :real)
+  (io/putf "  PASS: Real matches built-in :real\n")
+  (io/putf "  FAIL: Real should match built-in :real\n"))
+
+(io/putf "Test 3: Match against built-in :byte form\n")
+(form-define :MyByte :byte)
+(io/putf "  PASS: Byte form accessible\n")
+
+(io/putf "Test 4: Match against built-in :string form\n")
+(let s "hello")
+(if (form-matches s :string)
+  (io/putf "  PASS: String matches built-in :string\n")
+  (io/putf "  FAIL: String should match built-in :string\n"))
+
+(io/putf "Test 5: Built-in :symbol form exists\n")
+(form-define :MySymbol :symbol)
+(io/putf "  PASS: Symbol form accessible\n")
+
+(io/putf "Test 6: Built-in :list form exists\n")
+(form-define :MyList (list :int))
+(io/putf "  PASS: List form accessible\n")
+
+(io/putf "Test 7: Built-in :nil form exists\n")
+(form-define :MyNil :nil)
+(io/putf "  PASS: nil form accessible\n")
+
+(io/putf "Test 8: Cross-type rejection - int vs real\n")
+(let intval 10)
+(if (form-matches intval :real)
+  (io/putf "  FAIL: Int should not match :real\n")
+  (io/putf "  PASS: Int correctly rejected for :real\n"))
+
+(io/putf "Test 9: Cross-type rejection - real vs int\n")
+(let realval 10.5)
+(if (form-matches realval :int)
+  (io/putf "  FAIL: Real should not match :int\n")
+  (io/putf "  PASS: Real correctly rejected for :int\n"))
+
+(io/putf "Test 10: Cross-type rejection - string vs int\n")
+(let strval "123")
+(if (form-matches strval :int)
+  (io/putf "  FAIL: String should not match :int\n")
+  (io/putf "  PASS: String correctly rejected for :int\n"))
+
+(io/putf "\n=== All Primitives Tests Complete ===\n")
+

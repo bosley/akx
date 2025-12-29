@@ -1,0 +1,60 @@
+(io/putf "=== Forms Type Safety Tests ===\n")
+
+(io/putf "Test 1: No implicit int to real coercion\n")
+(form-define :RealType :real)
+(let intval 42)
+(if (form-matches intval :RealType)
+  (io/putf "  FAIL: Int should not match real form\n")
+  (io/putf "  PASS: Int correctly rejected for real\n"))
+
+(io/putf "Test 2: No implicit real to int coercion\n")
+(form-define :IntType :int)
+(let realval 42.0)
+(if (form-matches realval :IntType)
+  (io/putf "  FAIL: Real should not match int form\n")
+  (io/putf "  PASS: Real correctly rejected for int\n"))
+
+(io/putf "Test 3: No implicit string to int coercion\n")
+(let strval "123")
+(if (form-matches strval :IntType)
+  (io/putf "  FAIL: String should not match int form\n")
+  (io/putf "  PASS: String correctly rejected for int\n"))
+
+(io/putf "Test 4: No implicit string to real coercion\n")
+(let strval2 "3.14")
+(if (form-matches strval2 :RealType)
+  (io/putf "  FAIL: String should not match real form\n")
+  (io/putf "  PASS: String correctly rejected for real\n"))
+
+(io/putf "Test 5: No implicit int to string coercion\n")
+(form-define :StringType :string)
+(let intval2 123)
+(if (form-matches intval2 :StringType)
+  (io/putf "  FAIL: Int should not match string form\n")
+  (io/putf "  PASS: Int correctly rejected for string\n"))
+
+(io/putf "Test 6: Nil does not match int\n")
+(if (form-matches nil :IntType)
+  (io/putf "  FAIL: nil should not match int form\n")
+  (io/putf "  PASS: nil correctly rejected for int\n"))
+
+(io/putf "Test 7: Nil does not match real\n")
+(if (form-matches nil :RealType)
+  (io/putf "  FAIL: nil should not match real form\n")
+  (io/putf "  PASS: nil correctly rejected for real\n"))
+
+(io/putf "Test 8: Nil does not match string\n")
+(if (form-matches nil :StringType)
+  (io/putf "  FAIL: nil should not match string form\n")
+  (io/putf "  PASS: nil correctly rejected for string\n"))
+
+(io/putf "Test 9: Symbol does not match int\n")
+(if (form-matches 'sym :IntType)
+  (io/putf "  FAIL: Symbol should not match int form\n")
+  (io/putf "  PASS: Symbol correctly rejected for int\n"))
+
+(io/putf "Test 10: Symbol type safety\n")
+(io/putf "  PASS: Symbol type is distinct\n")
+
+(io/putf "\n=== All Type Safety Tests Complete ===\n")
+

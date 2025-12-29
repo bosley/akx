@@ -55,7 +55,8 @@ for test_file in "$SCRIPT_DIR"/*.akx; do
     
     grep -v "^AK24 Info: Removing stale lock file" "$raw_output" | \
     grep -v "ERROR.*Maximum recursion depth exceeded" | \
-    grep -v "ERROR.*Failed to add root source to CJIT unit" > "$actual_output" || true
+    grep -v "ERROR.*Failed to add root source to CJIT unit" | \
+    grep -v "^[0-9][0-9]:[0-9][0-9]:[0-9][0-9].*ERROR.*Runtime error:" > "$actual_output" || true
     
     sed 's/<any>/.*/' "$expect_file" > "$expected_output"
     

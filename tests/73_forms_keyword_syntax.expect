@@ -1,0 +1,23 @@
+=== Forms Keyword Syntax Tests ===
+Test 1: Form name with colon prefix
+  PASS: Colon-prefixed form name accepted
+Test 2: Form matching with colon prefix
+  PASS: Colon-prefixed matching works
+Test 3: Affordance name with colon prefix
+  PASS: Colon-prefixed affordance name accepted
+Test 4: Compound form with keyword types
+  PASS: Compound with keyword types accepted
+Test 5: Struct form with keyword field types
+  PASS: Struct with keyword field types accepted
+Test 6: Optional with keyword type
+  PASS: Optional with keyword type accepted
+Test 7: Repeatable with keyword type
+  PASS: Repeatable with keyword type accepted
+Test 8: List with keyword type
+  PASS: List with keyword type accepted
+Test 9: Alias with keyword type
+  PASS: Alias with keyword type accepted
+Test 10: Nested keywords in struct
+  PASS: Nested keywords in struct accepted
+
+=== All Keyword Syntax Tests Complete ===

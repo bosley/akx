@@ -1,0 +1,31 @@
+=== Forms Modifier Tests ===
+Test 1: Optional int form
+  PASS: Optional int defined
+Test 2: Optional real form
+  PASS: Optional real defined
+Test 3: Optional string form
+  PASS: Optional string defined
+Test 4: Repeatable int form
+  PASS: Repeatable int defined
+Test 5: Repeatable string form
+  PASS: Repeatable string defined
+Test 6: Repeatable real form
+  PASS: Repeatable real defined
+Test 7: List of int form
+  PASS: List of int defined
+Test 8: List of string form
+  PASS: List of string defined
+Test 9: List of real form
+  PASS: List of real defined
+Test 10: Nested modifiers - optional list
+  PASS: Optional list defined
+Test 11: Nested modifiers - list of optional
+  PASS: List of optional defined
+Test 12: Repeatable of custom form
+  PASS: Repeatable struct defined
+Test 13: Optional of custom form
+  PASS: Optional struct defined
+Test 14: List of custom form
+  PASS: List of struct defined
+
+=== All Modifier Tests Complete ===

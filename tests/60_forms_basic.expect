@@ -1,0 +1,29 @@
+=== Forms Basic Tests ===
+Test 1: Define primitive form
+  PASS: Primitive form defined
+Test 2: Match integer to int form
+  PASS: Integer matches int form
+Test 3: Reject real for int form
+  PASS: Real rejected for int form
+Test 4: Reject string for int form
+  PASS: String rejected for int form
+Test 5: Define real form
+  PASS: Real form defined
+Test 6: Match real to real form
+  PASS: Real matches real form
+Test 7: Reject integer for real form
+  PASS: Integer rejected for real form
+Test 8: Define string form
+  PASS: String form defined
+Test 9: Match string to string form
+  PASS: String matches string form
+Test 10: Reject integer for string form
+  PASS: Integer rejected for string form
+Test 11: Define byte form
+  PASS: Byte form defined
+Test 12: Define compound form
+  PASS: Compound form defined
+Test 13: Define named form alias
+  PASS: Named form alias defined
+
+=== All Basic Tests Complete ===

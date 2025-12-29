@@ -1,0 +1,19 @@
+=== Forms Matching Tests ===
+Test 1: Compound form definition
+  PASS: Compound form defined
+Test 2: Mixed compound form definition
+  PASS: Mixed compound form defined
+Test 3: Struct form definition
+  PASS: Struct form defined
+Test 4: List form definition
+  PASS: List form defined
+Test 5: Named form alias matching
+  PASS: Named alias matches
+Test 6: Chained alias matching
+  PASS: Chained alias matches
+Test 7: Nil matching
+  PASS: Nil rejected for int
+Test 8: Symbol matching
+  PASS: Symbol rejected for int
+
+=== All Matching Tests Complete ===
