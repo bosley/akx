@@ -1,0 +1,1 @@
+if we swap-out the generated abi from cmake that bridges the jit we can use the abi calls to call into a proper compiler to opt-out the type and range checks that can be statically checked
