@@ -1,0 +1,17 @@
+(let test-file "/tmp/akx_test_write_read.txt")
+(let test-content "Hello from AKX filesystem!")
+
+(io/putf "Test: Write and read file operations\n")
+(io/putf "Writing to file...\n")
+(let bytes-written (fs/write-file test-file test-content))
+(io/putf "Wrote %d bytes\n" bytes-written)
+
+(io/putf "Reading from file...\n")
+(let file-content (fs/read-file test-file))
+(io/putf "File content: %s\n" file-content)
+
+(io/putf "Cleaning up...\n")
+(let deleted (fs/delete test-file))
+(io/putf "File deleted: %v\n" deleted)
+(io/putf "Test complete.\n")
+

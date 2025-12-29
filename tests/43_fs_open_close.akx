@@ -1,0 +1,34 @@
+(io/putf "Test: File open and close operations\n\n")
+
+(io/putf "Test 1: Open file for reading\n")
+(let test-file "/tmp/akx_test_open_close.txt")
+(fs/write-file test-file "Test content for open/close")
+(let fid1 (fs/open :path test-file :mode "r"))
+(io/putf "  Opened file with FID: %d\n" fid1)
+(let closed1 (fs/close :fid fid1))
+(io/putf "  Closed file: %v\n\n" closed1)
+
+(io/putf "Test 2: Open file for writing\n")
+(let fid2 (fs/open :path test-file :mode "w"))
+(io/putf "  Opened file with FID: %d\n" fid2)
+(let closed2 (fs/close :fid fid2))
+(io/putf "  Closed file: %v\n\n" closed2)
+
+(io/putf "Test 3: Open file for appending\n")
+(let fid3 (fs/open :path test-file :mode "a"))
+(io/putf "  Opened file with FID: %d\n" fid3)
+(let closed3 (fs/close :fid fid3))
+(io/putf "  Closed file: %v\n\n" closed3)
+
+(io/putf "Test 4: Open multiple files\n")
+(let fid4 (fs/open :path test-file :mode "r"))
+(let fid5 (fs/open :path test-file :mode "r"))
+(io/putf "  Opened file 1 with FID: %d\n" fid4)
+(io/putf "  Opened file 2 with FID: %d\n" fid5)
+(fs/close :fid fid4)
+(fs/close :fid fid5)
+(io/putf "  Closed both files\n\n")
+
+(fs/delete test-file)
+(io/putf "Test complete.\n")
+

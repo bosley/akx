@@ -1,0 +1,8 @@
+(io/putf "Executing return_number.akx\n")
+(let result (akx/exec "tests/helpers/return_number.akx"))
+(io/putf "Result: %d\n" result)
+
+(io/putf "Executing return_string.akx\n")
+(let str_result (akx/exec "tests/helpers/return_string.akx"))
+(io/putf "Result: %s\n" str_result)
+

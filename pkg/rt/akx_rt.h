@@ -5,6 +5,7 @@
 #include "akx_sv.h"
 #include <ak24/cjit.h>
 #include <ak24/context.h>
+#include <ak24/forms.h>
 #include <ak24/kernel.h>
 #include <ak24/list.h>
 #include <stdarg.h>
@@ -50,6 +51,11 @@ typedef struct {
 akx_runtime_ctx_t *akx_runtime_init(void);
 
 void akx_runtime_deinit(akx_runtime_ctx_t *ctx);
+
+void akx_runtime_set_script_args(akx_runtime_ctx_t *ctx, int argc, char **argv);
+
+int akx_rt_get_script_argc(akx_runtime_ctx_t *rt);
+char **akx_rt_get_script_argv(akx_runtime_ctx_t *rt);
 
 int akx_runtime_start(akx_runtime_ctx_t *ctx, akx_cell_list_t *cells);
 
@@ -102,6 +108,7 @@ void akx_rt_error_at(akx_runtime_ctx_t *rt, akx_cell_t *cell,
 void akx_rt_error_fmt(akx_runtime_ctx_t *rt, const char *fmt, ...);
 
 akx_cell_t *akx_rt_eval(akx_runtime_ctx_t *rt, akx_cell_t *expr);
+akx_cell_t *akx_rt_eval_tail(akx_runtime_ctx_t *rt, akx_cell_t *expr);
 akx_cell_t *akx_rt_eval_list(akx_runtime_ctx_t *rt, akx_cell_t *list);
 akx_cell_t *akx_rt_eval_and_assert(akx_runtime_ctx_t *rt, akx_cell_t *expr,
                                    akx_type_t expected_type,
@@ -112,6 +119,12 @@ void *akx_rt_module_get_data(akx_runtime_ctx_t *rt);
 
 akx_cell_t *akx_rt_invoke_lambda(akx_runtime_ctx_t *rt, akx_cell_t *lambda_cell,
                                  akx_cell_t *args);
+
+akx_cell_t *akx_rt_alloc_continuation(akx_runtime_ctx_t *rt,
+                                      akx_cell_t *lambda_cell,
+                                      akx_cell_t *args);
+
+int akx_rt_is_continuation(akx_cell_t *cell);
 
 char *akx_rt_expand_env_vars(const char *path);
 
@@ -126,5 +139,26 @@ int akx_rt_register_builtin(akx_runtime_ctx_t *rt, const char *name,
                             void (*reload_fn)(akx_runtime_ctx_t *, void *));
 
 map_void_t *akx_rt_get_builtins(akx_runtime_ctx_t *rt);
+
+int akx_rt_register_form(akx_runtime_ctx_t *rt, const char *name,
+                         ak_form_t *form);
+
+ak_form_t *akx_rt_lookup_form(akx_runtime_ctx_t *rt, const char *name);
+
+int akx_rt_cell_matches_form(akx_runtime_ctx_t *rt, akx_cell_t *cell,
+                             const char *form_name);
+
+int akx_rt_form_add_affordance(akx_runtime_ctx_t *rt, const char *form_name,
+                               const char *affordance_name, ak_lambda_t *impl,
+                               akx_cell_t *param_forms, ak_form_t *return_form);
+
+ak_affect_t *akx_rt_form_get_affordance(akx_runtime_ctx_t *rt,
+                                        const char *form_name,
+                                        const char *affordance_name);
+
+int akx_rt_form_has_affordance(akx_runtime_ctx_t *rt, const char *form_name,
+                               const char *affordance_name);
+
+map_void_t *akx_rt_get_forms(akx_runtime_ctx_t *rt);
 
 #endif

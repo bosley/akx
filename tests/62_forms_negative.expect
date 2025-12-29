@@ -1,0 +1,21 @@
+=== Forms Negative Tests ===
+Test 1: Match non-existent form should fail gracefully
+  PASS: Non-existent form rejected
+Test 2: Define form with valid primitives
+  PASS: All primitive forms defined
+Test 3: Type mismatch - int vs real
+  PASS: Int correctly rejected for real form
+  PASS: Real correctly rejected for int form
+Test 4: Type mismatch - string vs numeric
+  PASS: String correctly rejected for int form
+Test 5: Compound form definition
+  PASS: Compound form with two ints defined
+Test 6: Complex compound form
+  PASS: Compound form with mixed types defined
+Test 7: Form aliasing
+  PASS: Form alias created
+Test 8: Multiple forms with same base type
+  PASS: Value matches Width form
+  PASS: Value matches Height form
+
+=== All Negative Tests Complete ===

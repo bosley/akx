@@ -48,9 +48,12 @@ file(WRITE ${REGISTRY_C} "#include \"builtin_registry.h\"
 #include <ak24/intern.h>
 #include <ak24/context.h>
 #include <ak24/lambda.h>
+#include <ak24/buffer.h>
+#include <ak24/filepath.h>
 #include <signal.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 ")
 
@@ -158,6 +161,8 @@ target_include_directories(akx_nucleus PUBLIC
     ${CMAKE_SOURCE_DIR}/pkg/cell
     ${CMAKE_SOURCE_DIR}/pkg/rt
     ${CMAKE_BINARY_DIR}/generated
+    ${CMAKE_CURRENT_SOURCE_DIR}/fs
+    ${CMAKE_CURRENT_SOURCE_DIR}/os
     ${AK24_INCLUDE_DIR}
 )
 target_link_libraries(akx_nucleus PUBLIC

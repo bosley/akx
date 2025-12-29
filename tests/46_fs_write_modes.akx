@@ -1,0 +1,39 @@
+(io/putf "Test: File write modes\n\n")
+
+(let test-file "/tmp/akx_test_write_modes.txt")
+
+(io/putf "Test 1: Write initial content\n")
+(let fid1 (fs/open :path test-file :mode "w"))
+(let written1 (fs/write :fid fid1 :content "Initial content"))
+(io/putf "  Wrote %d bytes\n" written1)
+(fs/close :fid fid1)
+(let content1 (fs/read-file test-file))
+(io/putf "  File content: %s\n\n" content1)
+
+(io/putf "Test 2: Append content\n")
+(let fid2 (fs/open :path test-file :mode "a"))
+(let written2 (fs/write :fid fid2 :content " - Appended text" :append 1))
+(io/putf "  Wrote %d bytes\n" written2)
+(fs/close :fid fid2)
+(let content2 (fs/read-file test-file))
+(io/putf "  File content: %s\n\n" content2)
+
+(io/putf "Test 3: Write at offset\n")
+(let fid3 (fs/open :path test-file :mode "r+"))
+(let written3 (fs/write :fid fid3 :content "MODIFIED" :offset 0))
+(io/putf "  Wrote %d bytes at offset 0\n" written3)
+(fs/close :fid fid3)
+(let content3 (fs/read-file test-file))
+(io/putf "  File content: %s\n\n" content3)
+
+(io/putf "Test 4: Write at middle offset\n")
+(let fid4 (fs/open :path test-file :mode "r+"))
+(let written4 (fs/write :fid fid4 :content "XXX" :offset 10))
+(io/putf "  Wrote %d bytes at offset 10\n" written4)
+(fs/close :fid fid4)
+(let content4 (fs/read-file test-file))
+(io/putf "  File content: %s\n\n" content4)
+
+(fs/delete test-file)
+(io/putf "Test complete.\n")
+

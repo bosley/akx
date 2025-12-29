@@ -1,0 +1,19 @@
+Test: File write modes
+
+Test 1: Write initial content
+  Wrote 15 bytes
+  File content: Initial content
+
+Test 2: Append content
+  Wrote 16 bytes
+  File content: Initial content - Appended text
+
+Test 3: Write at offset
+  Wrote 8 bytes at offset 0
+  File content: MODIFIEDcontent - Appended text
+
+Test 4: Write at middle offset
+  Wrote 3 bytes at offset 10
+  File content: MODIFIEDcoXXXnt - Appended text
+
+Test complete.

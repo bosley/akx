@@ -1,0 +1,58 @@
+(io/putf "=== Forms Negative Tests ===\n")
+
+(io/putf "Test 1: Match non-existent form should fail gracefully\n")
+(let x 42)
+(if (form/matches x :NonExistent)
+  (io/putf "  FAIL: Should not match non-existent form\n")
+  (io/putf "  PASS: Non-existent form rejected\n"))
+
+(io/putf "Test 2: Define form with valid primitives\n")
+(form/define :ValidInt :int)
+(form/define :ValidReal :real)
+(form/define :ValidByte :byte)
+(form/define :ValidString :string)
+(io/putf "  PASS: All primitive forms defined\n")
+
+(io/putf "Test 3: Type mismatch - int vs real\n")
+(let intVal 10)
+(let realVal 10.5)
+(if (form/matches intVal :ValidReal)
+  (io/putf "  FAIL: Int should not match real form\n")
+  (io/putf "  PASS: Int correctly rejected for real form\n"))
+(if (form/matches realVal :ValidInt)
+  (io/putf "  FAIL: Real should not match int form\n")
+  (io/putf "  PASS: Real correctly rejected for int form\n"))
+
+(io/putf "Test 4: Type mismatch - string vs numeric\n")
+(let str "123")
+(if (form/matches str :ValidInt)
+  (io/putf "  FAIL: String should not match int form\n")
+  (io/putf "  PASS: String correctly rejected for int form\n"))
+
+(io/putf "Test 5: Compound form definition\n")
+(form/define :Point2D { :int :int })
+(io/putf "  PASS: Compound form with two ints defined\n")
+
+(io/putf "Test 6: Complex compound form\n")
+(form/define :MixedData { :int :real :string })
+(io/putf "  PASS: Compound form with mixed types defined\n")
+
+(io/putf "Test 7: Form aliasing\n")
+(form/define :Age :int)
+(form/define :PersonAge :Age)
+(io/putf "  PASS: Form alias created\n")
+
+(io/putf "Test 8: Multiple forms with same base type\n")
+(form/define :Width :int)
+(form/define :Height :int)
+(form/define :Depth :int)
+(let w 100)
+(if (form/matches w :Width)
+  (io/putf "  PASS: Value matches Width form\n")
+  (io/putf "  FAIL: Value should match Width form\n"))
+(if (form/matches w :Height)
+  (io/putf "  PASS: Value matches Height form\n")
+  (io/putf "  FAIL: Value should match Height form\n"))
+
+(io/putf "\n=== All Negative Tests Complete ===\n")
+

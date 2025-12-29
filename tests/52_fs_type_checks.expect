@@ -1,0 +1,28 @@
+Test: fs/?is-file and fs/?is-dir type checks
+
+Test 1: Create file and directory
+  Created test file and directory
+
+Test 2: Check file type
+  /tmp/akx_test_type_file.txt is file: 1
+  /tmp/akx_test_type_file.txt is dir: 0
+
+Test 3: Check directory type
+  /tmp/akx_test_type_dir is file: 0
+  /tmp/akx_test_type_dir is dir: 1
+
+Test 4: Check non-existent path
+  Non-existent is file: 0
+  Non-existent is dir: 0
+
+Test 5: Use type checks for conditional logic
+  Confirmed: /tmp/akx_test_type_file.txt is a file
+  Confirmed: /tmp/akx_test_type_dir is a directory
+
+Test 6: Combined with fs/?exists
+  Path: /tmp/akx_test_type_file.txt
+    exists: 1, is-file: 1, is-dir: 0
+
+Cleaning up...
+
+Test complete.

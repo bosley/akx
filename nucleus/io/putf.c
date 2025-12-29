@@ -174,6 +174,9 @@ akx_cell_t *putf_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
         case AKX_TYPE_LAMBDA:
           type_name = "lambda";
           break;
+        case AKX_TYPE_CONTINUATION:
+          type_name = "continuation";
+          break;
         }
         printf("%s", type_name);
         char_count += strlen(type_name);
@@ -223,6 +226,11 @@ akx_cell_t *putf_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
         case AKX_TYPE_QUOTED: {
           printf("'");
           char_count += 1;
+          break;
+        }
+        case AKX_TYPE_CONTINUATION: {
+          printf("<continuation>");
+          char_count += 14;
           break;
         }
         }

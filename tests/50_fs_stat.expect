@@ -1,0 +1,18 @@
+Test: fs/stat file metadata
+
+Test 1: Create test file
+  Wrote 29 bytes
+
+Test 2: Get file stats
+  File stats: (size, type, mtime, mode)
+
+Test 3: Create directory and get stats
+  Directory stats: (size, type, mtime, mode)
+
+Test 4: Verify file size matches content
+  Content length: 29 bytes
+  Stat reports size from list
+
+Cleaning up...
+
+Test complete.

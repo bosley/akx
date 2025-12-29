@@ -1,0 +1,24 @@
+Test: File seek and tell operations
+
+Test 1: Tell initial position
+  Position: 0
+
+Test 2: Seek to position 10 (SEEK_SET)
+  New position: 10
+  Content at position: ABCDE
+
+Test 3: Seek relative (SEEK_CUR)
+  Position after reading 5 bytes: 5
+  Position after seeking +5: 10
+  Content at position: ABC
+
+Test 4: Seek from end (SEEK_END)
+  Position (5 bytes from end): 31
+  Content at position: VWXYZ
+
+Test 5: Multiple seeks
+  Read from start: 012
+  Read from position 15: FGH
+  Read from position 30: UVW
+
+Test complete.

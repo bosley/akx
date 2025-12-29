@@ -1,0 +1,29 @@
+Test: File handle lifecycle management
+
+Test 1: Open multiple files simultaneously
+  Opened file 1 with FID: 1
+  Opened file 2 with FID: 2
+  Opened file 3 with FID: 3
+
+Test 2: Verify FIDs are unique
+  All FIDs are unique: true
+
+Test 3: Read from different handles
+  File 1 content: Content 1
+  File 2 content: Content 2
+  File 3 content: Content 3
+
+Test 4: Close files in different order
+  Closed FID 2
+  Closed FID 1
+  Closed FID 3
+
+Test 5: Reopen file and get new FID
+  Reopened file with new FID: 4
+
+Test 6: Open same file multiple times
+  First handle FID: 5
+  Second handle FID: 6
+  FIDs are different: 1
+
+Test complete.

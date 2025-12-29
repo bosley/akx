@@ -418,7 +418,8 @@ const char *akx_compiler_generate_abi_header(void) {
          "  AKX_TYPE_LIST_CURLY = 6,\n"
          "  AKX_TYPE_LIST_TEMPLE = 7,\n"
          "  AKX_TYPE_QUOTED = 8,\n"
-         "  AKX_TYPE_LAMBDA = 9\n"
+         "  AKX_TYPE_LAMBDA = 9,\n"
+         "  AKX_TYPE_CONTINUATION = 10\n"
          "} akx_type_t;\n"
          "\n"
          "typedef akx_cell_t* (*akx_builtin_fn)(akx_runtime_ctx_t*, "
@@ -486,6 +487,23 @@ const char *akx_compiler_generate_abi_header(void) {
          "extern void akx_rt_module_set_data(akx_runtime_ctx_t *rt, void "
          "*data);\n"
          "extern void* akx_rt_module_get_data(akx_runtime_ctx_t *rt);\n"
+         "\n"
+         "typedef struct ak_buffer_s ak_buffer_t;\n"
+         "\n"
+         "extern ak_buffer_t* ak_buffer_new(size_t initial_size);\n"
+         "extern void ak_buffer_free(ak_buffer_t *buffer);\n"
+         "extern ak_buffer_t* ak_buffer_from_file(const char *filepath);\n"
+         "extern uint8_t* ak_buffer_data(ak_buffer_t *buffer);\n"
+         "extern size_t ak_buffer_count(ak_buffer_t *buffer);\n"
+         "extern int ak_buffer_copy_to(ak_buffer_t *buffer, uint8_t *src, "
+         "size_t len);\n"
+         "\n"
+         "extern ak_buffer_t* ak_filepath_join(size_t count, ...);\n"
+         "extern ak_buffer_t* ak_filepath_basename(const char *path);\n"
+         "extern ak_buffer_t* ak_filepath_dirname(const char *path);\n"
+         "extern ak_buffer_t* ak_filepath_home(void);\n"
+         "extern ak_buffer_t* ak_filepath_temp(void);\n"
+         "extern ak_buffer_t* ak_filepath_cwd(void);\n"
          "\n";
 }
 
@@ -635,6 +653,18 @@ int akx_compiler_load_builtin_ex(akx_runtime_ctx_t *rt, const char *name,
   ak_cjit_add_symbol(unit, "akx_rt_expand_env_vars", akx_rt_expand_env_vars);
   ak_cjit_add_symbol(unit, "akx_rt_module_set_data", akx_rt_module_set_data);
   ak_cjit_add_symbol(unit, "akx_rt_module_get_data", akx_rt_module_get_data);
+  ak_cjit_add_symbol(unit, "ak_buffer_new", ak_buffer_new);
+  ak_cjit_add_symbol(unit, "ak_buffer_free", ak_buffer_free);
+  ak_cjit_add_symbol(unit, "ak_buffer_from_file", ak_buffer_from_file);
+  ak_cjit_add_symbol(unit, "ak_buffer_data", ak_buffer_data);
+  ak_cjit_add_symbol(unit, "ak_buffer_count", ak_buffer_count);
+  ak_cjit_add_symbol(unit, "ak_buffer_copy_to", ak_buffer_copy_to);
+  ak_cjit_add_symbol(unit, "ak_filepath_join", ak_filepath_join);
+  ak_cjit_add_symbol(unit, "ak_filepath_basename", ak_filepath_basename);
+  ak_cjit_add_symbol(unit, "ak_filepath_dirname", ak_filepath_dirname);
+  ak_cjit_add_symbol(unit, "ak_filepath_home", ak_filepath_home);
+  ak_cjit_add_symbol(unit, "ak_filepath_temp", ak_filepath_temp);
+  ak_cjit_add_symbol(unit, "ak_filepath_cwd", ak_filepath_cwd);
 
 #pragma clang diagnostic pop
 

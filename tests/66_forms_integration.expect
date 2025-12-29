@@ -1,0 +1,23 @@
+=== Forms Integration Tests ===
+Test 1: Nested compound forms
+  PASS: Nested compound forms defined
+Test 2: Configuration with optional fields
+  PASS: Config with optional port defined
+Test 3: Document with tags
+  PASS: Document with repeatable tags defined
+Test 4: List of integers
+  PASS: List of integers defined
+Test 5: Complex struct
+  PASS: Nested struct forms defined
+Test 6: Multiple affordances on one form
+  PASS: Multiple affordances added
+Test 7: Affordances on different forms
+  PASS: Different forms with affordances
+Test 8: Domain modeling
+  PASS: Domain types validated
+Test 9: Optional list combination
+  PASS: Optional list combination defined
+Test 10: Repeatable struct
+  PASS: Repeatable struct defined
+
+=== All Integration Tests Complete ===

@@ -54,6 +54,43 @@ or          or_impl         logic/or.c          1
 loop        loop_impl       core/loop.c         1
 begin       begin_impl      core/begin.c        1
 
+# Filesystem operations (compiled in)
+fs/read-file    read_file_impl      fs/read_file.c      1
+fs/write-file   write_file_impl     fs/write_file.c     1
+fs/?exists      exists_impl         fs/exists.c         1
+fs/delete       delete_impl         fs/delete.c         1
+fs/path-join    path_join_impl      fs/path_join.c      1
+fs/basename     basename_impl       fs/basename.c       1
+fs/dirname      dirname_impl        fs/dirname.c        1
+fs/open         open_impl           fs/open.c           1
+fs/close        close_impl          fs/close.c          1
+fs/read         file_read_impl      fs/read.c           1
+fs/write        file_write_impl     fs/write.c          1
+fs/seek         seek_impl           fs/seek.c           1
+fs/tell         tell_impl           fs/tell.c           1
+fs/list-dir     list_dir_impl       fs/list_dir.c       1
+fs/mkdir        mkdir_impl          fs/mkdir.c          1
+fs/rmdir        rmdir_impl          fs/rmdir.c          1
+fs/stat         stat_impl           fs/stat.c           1
+fs/rename       rename_impl         fs/rename.c         1
+fs/?is-dir      is_dir_impl         fs/is_dir.c         1
+fs/?is-file     is_file_impl        fs/is_file.c        1
+
+# AKX runtime operations (compiled in)
+akx/exec       exec_impl           akx/exec.c          1
+
+# OS operations (compiled in)
+os/args        os_args_impl        os/args.c           1
+os/cwd         os_cwd_impl         os/cwd.c            1
+os/chdir       os_chdir_impl       os/chdir.c          1
+os/env         os_env_impl         os/env.c            1
+
+# Forms system (compiled in)
+form/define            form_define             forms/form_define.c             1
+form/matches           form_matches            forms/form_matches.c            1
+form/add-affordance    form_add_affordance     forms/form_add_affordance.c     1
+form/invoke            form_invoke             forms/form_invoke.c             1
+
 #
 #  As new nucleus files are created we will have them not directly in-built
 #  but we've been developing core functionality so all are included by-chance for now

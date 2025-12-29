@@ -1,0 +1,52 @@
+(io/putf "Test: fs/?is-file and fs/?is-dir type checks\n\n")
+
+(let test-file "/tmp/akx_test_type_file.txt")
+(let test-dir "/tmp/akx_test_type_dir")
+
+(io/putf "Test 1: Create file and directory\n")
+(fs/write-file test-file "test content")
+(fs/mkdir test-dir)
+(io/putf "  Created test file and directory\n")
+
+(io/putf "\nTest 2: Check file type\n")
+(let is-file (fs/?is-file test-file))
+(let is-dir (fs/?is-dir test-file))
+(io/putf "  %s is file: %v\n" test-file is-file)
+(io/putf "  %s is dir: %v\n" test-file is-dir)
+
+(io/putf "\nTest 3: Check directory type\n")
+(let dir-is-file (fs/?is-file test-dir))
+(let dir-is-dir (fs/?is-dir test-dir))
+(io/putf "  %s is file: %v\n" test-dir dir-is-file)
+(io/putf "  %s is dir: %v\n" test-dir dir-is-dir)
+
+(io/putf "\nTest 4: Check non-existent path\n")
+(let fake-path "/tmp/akx_nonexistent_path_xyz")
+(let fake-is-file (fs/?is-file fake-path))
+(let fake-is-dir (fs/?is-dir fake-path))
+(io/putf "  Non-existent is file: %v\n" fake-is-file)
+(io/putf "  Non-existent is dir: %v\n" fake-is-dir)
+
+(io/putf "\nTest 5: Use type checks for conditional logic\n")
+(if (fs/?is-file test-file)
+  (io/putf "  Confirmed: %s is a file\n" test-file)
+  (io/putf "  ERROR: File not detected\n"))
+
+(if (fs/?is-dir test-dir)
+  (io/putf "  Confirmed: %s is a directory\n" test-dir)
+  (io/putf "  ERROR: Directory not detected\n"))
+
+(io/putf "\nTest 6: Combined with fs/?exists\n")
+(let path test-file)
+(let exists (fs/?exists path))
+(let is-f (fs/?is-file path))
+(let is-d (fs/?is-dir path))
+(io/putf "  Path: %s\n" path)
+(io/putf "    exists: %v, is-file: %v, is-dir: %v\n" exists is-f is-d)
+
+(io/putf "\nCleaning up...\n")
+(fs/delete test-file)
+(fs/delete test-dir)
+
+(io/putf "\nTest complete.\n")
+

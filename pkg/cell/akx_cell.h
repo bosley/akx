@@ -22,9 +22,15 @@ typedef enum {
   AKX_TYPE_LIST_TEMPLE,
   AKX_TYPE_QUOTED,
   AKX_TYPE_LAMBDA,
+  AKX_TYPE_CONTINUATION,
 } akx_type_t;
 
 typedef struct akx_cell_t akx_cell_t;
+
+typedef struct {
+  akx_cell_t *lambda_cell;
+  akx_cell_t *args;
+} akx_continuation_t;
 
 typedef struct akx_parse_error_t {
   ak_source_loc_t location;
@@ -50,6 +56,7 @@ struct akx_cell_t {
     akx_cell_t *list_head;
     ak_buffer_t *quoted_literal;
     ak_lambda_t *lambda;
+    akx_continuation_t *continuation;
   } value;
 
   ak_source_range_t *sourceloc;

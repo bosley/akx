@@ -39,12 +39,22 @@ AKX follows a unique bootstrap architecture where the runtime grows itself:
 
 ### The Nucleus System
 
-At build time, `nucleus/manifest.txt` defines which language features to compile in versus load at runtime:
+At build time, `nucleus/manifest.txt` defines which language features to compile in versus load at runtime. The core runtime is truly minimal - check the manifest to see which primitives are enabled by default.
 
-- **Compiled-in nuclei** (fast): `if`, `lambda`, `let`, `set`, `assert-*`
-- **Runtime-loadable nuclei** (flexible): `+`, `-`, `*`, `/`, `%`, `=`, `print`, `println`
+**Current default compilation includes:**
+- **Core language**: `if`, `lambda`, `let`, `set`, `import`, `begin`, `loop`, `?defined`
+- **Math operations**: `+`, `-`, `*`, `/`, `%`, `=`
+- **Comparison**: `eq`, `neq`, `gt`, `gte`, `lt`, `lte`
+- **Logic**: `and`, `or`, `not`
+- **Type predicates**: `?nil`, `?int`, `?real`, `?lambda`, `?str`, `?quote`, `?sym`
+- **I/O**: `io/putf`, `io/scanf`
+- **Filesystem**: `fs/read-file`, `fs/write-file`, `fs/open`, `fs/close`, and more
+- **OS integration**: `os/args`, `os/cwd`, `os/chdir`, `os/env`
+- **Forms system**: `form/define`, `form/matches`, `form/add-affordance`, `form/invoke`
+- **Runtime**: `akx/exec`
+- **Testing**: `assert-true`, `assert-false`, `assert-eq`, `assert-ne`
 
-The same C file works both ways. Change the manifest to rebalance speed vs. flexibility without touching any code.
+The same C file works both ways. Change the manifest to rebalance speed vs. flexibility without touching any code. **Disable primitives you don't need to keep the runtime lightweight.**
 
 ### Cell Memory Model
 
@@ -93,6 +103,34 @@ The stdlib provides common operations via the nucleus system:
 (println "Equal?" (= 42 42))
 ```
 
+### OS Module - System Interaction
+
+Access command-line arguments, environment variables, and system information:
+
+```akx
+(import "$AKX_HOME/stdlib/io.akx")
+
+(let args (os/args))
+(println "Script arguments:" args)
+
+(let cwd (os/cwd))
+(println "Current directory:" cwd)
+
+(os/chdir "/tmp")
+(println "Changed to:" (os/cwd))
+
+(let home (os/env :get "HOME"))
+(println "Home directory:" home)
+
+(os/env :set "MY_VAR" "my_value")
+(println "Set variable:" (os/env :get "MY_VAR"))
+```
+
+Run with arguments:
+```bash
+akx myscript.akx arg1 arg2 arg3
+```
+
 ### Loading Your Own Functions
 
 Write your logic in C, AKX provides the environment:
@@ -127,6 +165,9 @@ The test suite uses expect-based assertions to validate:
 - Lambda functions and closures
 - Scope management
 - Type system (integers, reals, strings)
+- Forms system (type definitions, pattern matching, affordances)
+- Filesystem operations
+- OS integration
 - Assertion builtins
 
 See **[tests/README.md](tests/README.md)** for detailed testing documentation.
@@ -134,6 +175,7 @@ See **[tests/README.md](tests/README.md)** for detailed testing documentation.
 ## Documentation
 
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - Complete architecture overview with diagrams
+- **[nucleus/forms/forms.md](nucleus/forms/forms.md)** - Forms system: types, pattern matching, and affordances
 - **[LAMBDA_IMPLEMENTATION.md](LAMBDA_IMPLEMENTATION.md)** - Lambda and scope system implementation
 - **[ASSERTIONS.md](ASSERTIONS.md)** - Assertion builtins and signal handling
 - **[tests/README.md](tests/README.md)** - Test suite documentation and guidelines
@@ -191,6 +233,55 @@ By default, AKX uses the `akx.dev.0` branch of AK24. To use a different branch:
 cmake -DAK24_GIT_BRANCH=main ..
 ```
 
-# Limitations
+## Features
 
-- Lambda Recursion is hard-limited until we get tail call optimization
+### Forms System - Type Definitions & Protocols
+
+AKX includes a `forms` system for defining custom types, pattern matching, and behavioral protocols. Forms enable type-safe module development without modifying the runtime:
+
+```akx
+(form/define :Temperature :real)
+
+(form/add-affordance :Temperature :to-fahrenheit
+  (lambda [c] (+ (* c 1.8) 32)))
+
+(let temp 25.0)
+(let fahrenheit (form/invoke temp :to-fahrenheit))
+(io/putf "25°C = ")
+(io/putf fahrenheit)
+(io/putf "°F\n")
+```
+
+**Key capabilities:**
+- **Custom types**: Define domain-specific types beyond built-in primitives
+- **Pattern matching**: Validate data structures at runtime with `form/matches`
+- **Affordances**: Attach behavioral protocols (trait-like interfaces) to types
+- **Type safety**: Strict type checking with no implicit coercion
+- **Composability**: Struct forms, optional types, repeatable types, and lists
+
+See **[nucleus/forms/forms.md](nucleus/forms/forms.md)** for complete documentation with examples.
+
+### OS Integration
+
+Built-in OS module provides system-level access:
+
+- **`os/args`** - Access command-line arguments as a list
+- **`os/cwd`** - Get current working directory
+- **`os/chdir "path"`** - Change working directory
+- **`os/env :get "VAR"`** - Read environment variables (returns `nil` if not found)
+- **`os/env :set "VAR" "VALUE"`** - Set environment variables
+
+### Tail Call Optimization
+
+AKX implements trampoline-based tail call optimization, allowing unbounded recursion for tail-recursive functions:
+
+```akx
+(let countdown (lambda [n]
+  (if (eq n 0)
+    0
+    (countdown (- n 1)))))
+
+(countdown 5000)  # No stack overflow!
+```
+
+The runtime automatically detects tail calls and converts them to iterative loops, eliminating C stack recursion.

@@ -1,0 +1,53 @@
+(io/putf "Test: fs/rename file and directory renaming\n\n")
+
+(let test-file1 "/tmp/akx_test_rename_old.txt")
+(let test-file2 "/tmp/akx_test_rename_new.txt")
+(let test-dir1 "/tmp/akx_test_rename_dir_old")
+(let test-dir2 "/tmp/akx_test_rename_dir_new")
+
+(io/putf "Test 1: Create and rename file\n")
+(fs/write-file test-file1 "Original content")
+(io/putf "  Created file: %s\n" test-file1)
+(let exists-before (fs/?exists test-file1))
+(io/putf "  File exists before rename: %v\n" exists-before)
+
+(let rename-result (fs/rename test-file1 test-file2))
+(io/putf "  Rename result: %v\n" rename-result)
+
+(let exists-old (fs/?exists test-file1))
+(let exists-new (fs/?exists test-file2))
+(io/putf "  Old path exists: %v\n" exists-old)
+(io/putf "  New path exists: %v\n" exists-new)
+
+(io/putf "\nTest 2: Verify content preserved\n")
+(let content (fs/read-file test-file2))
+(io/putf "  Content: %s\n" content)
+
+(io/putf "\nTest 3: Rename directory\n")
+(fs/mkdir test-dir1)
+(fs/write-file "/tmp/akx_test_rename_dir_old/file.txt" "test")
+(io/putf "  Created directory with file\n")
+
+(let dir-rename (fs/rename test-dir1 test-dir2))
+(io/putf "  Directory rename result: %v\n" dir-rename)
+
+(let dir-exists-old (fs/?exists test-dir1))
+(let dir-exists-new (fs/?exists test-dir2))
+(io/putf "  Old dir exists: %v\n" dir-exists-old)
+(io/putf "  New dir exists: %v\n" dir-exists-new)
+
+(io/putf "\nTest 4: Verify file in renamed directory\n")
+(let file-in-dir (fs/?exists "/tmp/akx_test_rename_dir_new/file.txt"))
+(io/putf "  File in renamed dir exists: %v\n" file-in-dir)
+
+(io/putf "\nTest 5: Try to rename non-existent file\n")
+(let bad-rename (fs/rename "/tmp/nonexistent.txt" "/tmp/also_nonexistent.txt"))
+(io/putf "  Rename non-existent result: %v\n" bad-rename)
+
+(io/putf "\nCleaning up...\n")
+(fs/delete test-file2)
+(fs/delete "/tmp/akx_test_rename_dir_new/file.txt")
+(fs/delete test-dir2)
+
+(io/putf "\nTest complete.\n")
+

@@ -1,0 +1,23 @@
+=== Forms Built-in Primitives Tests ===
+Test 1: Match against built-in :int form
+  PASS: Integer matches built-in :int
+Test 2: Match against built-in :real form
+  PASS: Real matches built-in :real
+Test 3: Match against built-in :byte form
+  PASS: Byte form accessible
+Test 4: Match against built-in :string form
+  PASS: String matches built-in :string
+Test 5: Built-in :symbol form exists
+  PASS: Symbol form accessible
+Test 6: Built-in :list form exists
+  PASS: List form accessible
+Test 7: Built-in :nil form exists
+  PASS: nil form accessible
+Test 8: Cross-type rejection - int vs real
+  PASS: Int correctly rejected for :real
+Test 9: Cross-type rejection - real vs int
+  PASS: Real correctly rejected for :int
+Test 10: Cross-type rejection - string vs int
+  PASS: String correctly rejected for :int
+
+=== All Primitives Tests Complete ===

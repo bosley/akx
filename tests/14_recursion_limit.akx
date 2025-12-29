@@ -1,7 +1,0 @@
-(io/putf "Testing recursion limit protection...\n")
-
-(let infinite-loop (lambda []
-  (infinite-loop)))
-
-(infinite-loop)
-(io/putf "This should never print\n")

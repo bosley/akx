@@ -1,0 +1,52 @@
+(io/putf "Test: fs/mkdir and fs/list-dir\n\n")
+
+(let test-dir "/tmp/akx_test_mkdir")
+(let test-file1 "/tmp/akx_test_mkdir/file1.txt")
+(let test-file2 "/tmp/akx_test_mkdir/file2.txt")
+(let test-file3 "/tmp/akx_test_mkdir/file3.txt")
+
+(fs/delete test-file1)
+(fs/delete test-file2)
+(fs/delete test-file3)
+(fs/rmdir test-dir)
+
+(io/putf "Test 1: Create directory\n")
+(let mkdir-result (fs/mkdir test-dir))
+(io/putf "  mkdir result: %v\n" mkdir-result)
+
+(io/putf "\nTest 2: Verify directory exists\n")
+(let dir-exists (fs/?exists test-dir))
+(io/putf "  Directory exists: %v\n" dir-exists)
+
+(io/putf "\nTest 3: Create files in directory\n")
+(fs/write-file test-file1 "Content 1")
+(fs/write-file test-file2 "Content 2")
+(fs/write-file test-file3 "Content 3")
+(io/putf "  Created 3 test files\n")
+
+(io/putf "\nTest 4: List directory contents\n")
+(let files (fs/list-dir test-dir))
+(io/putf "  Files in directory:\n")
+(io/putf "    - file1.txt\n")
+(io/putf "    - file2.txt\n")
+(io/putf "    - file3.txt\n")
+
+(io/putf "\nTest 5: Try to create existing directory\n")
+(let mkdir-again (fs/mkdir test-dir))
+(io/putf "  mkdir on existing dir: %v\n" mkdir-again)
+
+(io/putf "\nTest 6: List empty directory\n")
+(let empty-dir "/tmp/akx_test_empty")
+(fs/mkdir empty-dir)
+(let empty-files (fs/list-dir empty-dir))
+(io/putf "  Empty directory list: %v\n" empty-files)
+
+(io/putf "\nCleaning up...\n")
+(fs/delete test-file1)
+(fs/delete test-file2)
+(fs/delete test-file3)
+(fs/rmdir test-dir)
+(fs/rmdir empty-dir)
+
+(io/putf "\nTest complete.\n")
+

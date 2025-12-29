@@ -1,0 +1,25 @@
+Test: Line-based file reading
+
+Test 1: Read first 3 lines
+Content:
+Line 1
+Line 2
+Line 3
+
+Test 2: Read lines 2-4 (line-start 1, line-end 3)
+Content:
+Line 2
+Line 3
+Line 4
+
+Test 3: Read lines 5-7 (line-start 4, line-end 6)
+Content:
+Line 5
+Line 6
+Line 7
+
+Test 4: Read single line (line 3)
+Content:
+Line 3
+
+Test complete.

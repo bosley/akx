@@ -1,0 +1,59 @@
+(io/putf "Test: File handle lifecycle management\n\n")
+
+(let test-file1 "/tmp/akx_test_lifecycle1.txt")
+(let test-file2 "/tmp/akx_test_lifecycle2.txt")
+(let test-file3 "/tmp/akx_test_lifecycle3.txt")
+
+(fs/write-file test-file1 "Content 1")
+(fs/write-file test-file2 "Content 2")
+(fs/write-file test-file3 "Content 3")
+
+(io/putf "Test 1: Open multiple files simultaneously\n")
+(let fid1 (fs/open :path test-file1 :mode "r"))
+(let fid2 (fs/open :path test-file2 :mode "r"))
+(let fid3 (fs/open :path test-file3 :mode "r"))
+(io/putf "  Opened file 1 with FID: %d\n" fid1)
+(io/putf "  Opened file 2 with FID: %d\n" fid2)
+(io/putf "  Opened file 3 with FID: %d\n" fid3)
+
+(io/putf "\nTest 2: Verify FIDs are unique\n")
+(if (neq fid1 fid2 fid3)
+  (io/putf "  All FIDs are unique: true\n")
+  (io/putf "  All FIDs are unique: false\n"))
+
+(io/putf "\nTest 3: Read from different handles\n")
+(let content1 (fs/read :fid fid1))
+(let content2 (fs/read :fid fid2))
+(let content3 (fs/read :fid fid3))
+(io/putf "  File 1 content: %s\n" content1)
+(io/putf "  File 2 content: %s\n" content2)
+(io/putf "  File 3 content: %s\n" content3)
+
+(io/putf "\nTest 4: Close files in different order\n")
+(fs/close :fid fid2)
+(io/putf "  Closed FID %d\n" fid2)
+(fs/close :fid fid1)
+(io/putf "  Closed FID %d\n" fid1)
+(fs/close :fid fid3)
+(io/putf "  Closed FID %d\n" fid3)
+
+(io/putf "\nTest 5: Reopen file and get new FID\n")
+(let fid4 (fs/open :path test-file1 :mode "r"))
+(io/putf "  Reopened file with new FID: %d\n" fid4)
+(fs/close :fid fid4)
+
+(io/putf "\nTest 6: Open same file multiple times\n")
+(let fid5 (fs/open :path test-file1 :mode "r"))
+(let fid6 (fs/open :path test-file1 :mode "r"))
+(io/putf "  First handle FID: %d\n" fid5)
+(io/putf "  Second handle FID: %d\n" fid6)
+(io/putf "  FIDs are different: %v\n" (neq fid5 fid6))
+(fs/close :fid fid5)
+(fs/close :fid fid6)
+
+(fs/delete test-file1)
+(fs/delete test-file2)
+(fs/delete test-file3)
+
+(io/putf "\nTest complete.\n")
+

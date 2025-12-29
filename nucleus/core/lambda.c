@@ -45,7 +45,11 @@ static void akx_lambda_invoke_impl(void *captured_ctx, void *invoke_args) {
     if (result) {
       akx_cell_free(result);
     }
-    result = akx_rt_eval(rt, current);
+    if (current->next) {
+      result = akx_rt_eval(rt, current);
+    } else {
+      result = akx_rt_eval_tail(rt, current);
+    }
     if (!result) {
       return;
     }

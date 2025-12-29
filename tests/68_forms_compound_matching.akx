@@ -1,0 +1,37 @@
+(io/putf "=== Forms Compound Matching Tests ===\n")
+
+(io/putf "Test 1: Define Point3D compound form\n")
+(form/define :Point3D { :int :int :int })
+(io/putf "  PASS: Point3D compound form defined\n")
+
+(io/putf "Test 2: Define mixed type compound form\n")
+(form/define :MixedRecord { :string :int :real })
+(io/putf "  PASS: Mixed compound form defined\n")
+
+(io/putf "Test 3: Define nested compound forms\n")
+(form/define :Inner { :int :real })
+(form/define :Outer { :Inner :string })
+(io/putf "  PASS: Nested compound forms defined\n")
+
+(io/putf "Test 4: Define compound with same type repeated\n")
+(form/define :IntPair { :int :int })
+(io/putf "  PASS: IntPair compound form defined\n")
+
+(io/putf "Test 5: Define compound with all primitives\n")
+(form/define :AllPrimitives { :int :real :string })
+(io/putf "  PASS: AllPrimitives compound form defined\n")
+
+(io/putf "Test 6: Define single-element compound form\n")
+(form/define :SingleInt { :int })
+(io/putf "  PASS: Single-element compound form defined\n")
+
+(io/putf "Test 7: Define large compound form\n")
+(form/define :LargeCompound { :int :int :int :int :int })
+(io/putf "  PASS: Large compound form defined\n")
+
+(io/putf "Test 8: Compound with string types\n")
+(form/define :StringPair { :string :string })
+(io/putf "  PASS: StringPair compound form defined\n")
+
+(io/putf "\n=== All Compound Matching Tests Complete ===\n")
+

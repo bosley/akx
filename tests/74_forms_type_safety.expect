@@ -1,0 +1,23 @@
+=== Forms Type Safety Tests ===
+Test 1: No implicit int to real coercion
+  PASS: Int correctly rejected for real
+Test 2: No implicit real to int coercion
+  PASS: Real correctly rejected for int
+Test 3: No implicit string to int coercion
+  PASS: String correctly rejected for int
+Test 4: No implicit string to real coercion
+  PASS: String correctly rejected for real
+Test 5: No implicit int to string coercion
+  PASS: Int correctly rejected for string
+Test 6: Nil does not match int
+  PASS: nil correctly rejected for int
+Test 7: Nil does not match real
+  PASS: nil correctly rejected for real
+Test 8: Nil does not match string
+  PASS: nil correctly rejected for string
+Test 9: Symbol does not match int
+  PASS: Symbol correctly rejected for int
+Test 10: Symbol type safety
+  PASS: Symbol type is distinct
+
+=== All Type Safety Tests Complete ===

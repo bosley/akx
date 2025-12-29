@@ -1,0 +1,53 @@
+(io/putf "=== Forms Advanced Tests ===\n")
+
+(io/putf "Test 1: Define optional form\n")
+(form/define :OptionalAge (optional :int))
+(io/putf "  PASS: Optional form defined\n")
+
+(io/putf "Test 2: Define repeatable form\n")
+(form/define :Tags (repeatable :string))
+(io/putf "  PASS: Repeatable form defined\n")
+
+(io/putf "Test 3: Define list form\n")
+(form/define :Numbers (list :int))
+(io/putf "  PASS: List form defined\n")
+
+(io/putf "Test 4: Define struct form with named fields\n")
+(form/define :Person [:name :string :age :int :email :string])
+(io/putf "  PASS: Struct form with named fields defined\n")
+
+(io/putf "Test 5: Define nested optional\n")
+(form/define :MaybeNumber (optional :int))
+(io/putf "  PASS: Nested optional defined\n")
+
+(io/putf "Test 6: Define list of strings\n")
+(form/define :StringList (list :string))
+(io/putf "  PASS: List of strings defined\n")
+
+(io/putf "Test 7: Define list of reals\n")
+(form/define :RealList (list :real))
+(io/putf "  PASS: List of reals defined\n")
+
+(io/putf "Test 8: Define complex struct\n")
+(form/define :Employee [:id :int :name :string :salary :real :active :int])
+(io/putf "  PASS: Complex struct defined\n")
+
+(io/putf "Test 9: Define repeatable integers\n")
+(form/define :IntSequence (repeatable :int))
+(io/putf "  PASS: Repeatable integers defined\n")
+
+(io/putf "Test 10: Define optional string\n")
+(form/define :MaybeString (optional :string))
+(io/putf "  PASS: Optional string defined\n")
+
+(io/putf "Test 11: Combine forms - optional list\n")
+(form/define :TempList (list :int))
+(form/define :OptionalList (optional :TempList))
+(io/putf "  PASS: Optional list defined\n")
+
+(io/putf "Test 12: Define minimal struct\n")
+(form/define :Point [:x :int :y :int])
+(io/putf "  PASS: Minimal struct defined\n")
+
+(io/putf "\n=== All Advanced Tests Complete ===\n")
+

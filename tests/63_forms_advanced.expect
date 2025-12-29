@@ -1,0 +1,27 @@
+=== Forms Advanced Tests ===
+Test 1: Define optional form
+  PASS: Optional form defined
+Test 2: Define repeatable form
+  PASS: Repeatable form defined
+Test 3: Define list form
+  PASS: List form defined
+Test 4: Define struct form with named fields
+  PASS: Struct form with named fields defined
+Test 5: Define nested optional
+  PASS: Nested optional defined
+Test 6: Define list of strings
+  PASS: List of strings defined
+Test 7: Define list of reals
+  PASS: List of reals defined
+Test 8: Define complex struct
+  PASS: Complex struct defined
+Test 9: Define repeatable integers
+  PASS: Repeatable integers defined
+Test 10: Define optional string
+  PASS: Optional string defined
+Test 11: Combine forms - optional list
+  PASS: Optional list defined
+Test 12: Define minimal struct
+  PASS: Minimal struct defined
+
+=== All Advanced Tests Complete ===

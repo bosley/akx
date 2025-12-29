@@ -1,0 +1,4 @@
+(begin
+  (let str_val "Hello from exec")
+  str_val)
+

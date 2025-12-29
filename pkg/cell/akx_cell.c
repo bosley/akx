@@ -72,6 +72,15 @@ void akx_cell_free(akx_cell_t *cell) {
       ak_buffer_free(cell->value.quoted_literal);
     } else if (cell->type == AKX_TYPE_LAMBDA && cell->value.lambda) {
       ak_lambda_free(cell->value.lambda);
+    } else if (cell->type == AKX_TYPE_CONTINUATION &&
+               cell->value.continuation) {
+      if (cell->value.continuation->lambda_cell) {
+        akx_cell_free(cell->value.continuation->lambda_cell);
+      }
+      if (cell->value.continuation->args) {
+        akx_cell_free(cell->value.continuation->args);
+      }
+      AK24_FREE(cell->value.continuation);
     }
 
     if (cell->sourceloc) {
@@ -159,6 +168,48 @@ static akx_cell_t *parse_static_type(ak_scanner_t *scanner,
   return cell;
 }
 
+static size_t process_escape_sequences(const uint8_t *src, size_t src_len,
+                                       uint8_t *dst) {
+  size_t dst_pos = 0;
+  size_t i = 0;
+
+  while (i < src_len) {
+    if (src[i] == '\\' && i + 1 < src_len) {
+      i++; // Skip the backslash
+      switch (src[i]) {
+      case 'n':
+        dst[dst_pos++] = '\n';
+        break;
+      case 't':
+        dst[dst_pos++] = '\t';
+        break;
+      case 'r':
+        dst[dst_pos++] = '\r';
+        break;
+      case '\\':
+        dst[dst_pos++] = '\\';
+        break;
+      case '"':
+        dst[dst_pos++] = '"';
+        break;
+      case '0':
+        dst[dst_pos++] = '\0';
+        break;
+      default:
+        // Unknown escape sequence, keep the backslash and character
+        dst[dst_pos++] = '\\';
+        dst[dst_pos++] = src[i];
+        break;
+      }
+      i++;
+    } else {
+      dst[dst_pos++] = src[i++];
+    }
+  }
+
+  return dst_pos;
+}
+
 static akx_cell_t *parse_string_literal(ak_scanner_t *scanner,
                                         ak_source_file_t *source_file,
                                         parse_context_t *ctx) {
@@ -190,6 +241,7 @@ static akx_cell_t *parse_string_literal(ak_scanner_t *scanner,
   size_t content_start = result.index_of_start_symbol + 1;
   size_t content_len = result.index_of_closing_symbol - content_start;
 
+  // Allocate buffer for the processed string (worst case: same size as input)
   cell->value.string_literal = ak_buffer_new(content_len + 1);
   if (!cell->value.string_literal) {
     akx_cell_free(cell);
@@ -197,8 +249,17 @@ static akx_cell_t *parse_string_literal(ak_scanner_t *scanner,
   }
 
   uint8_t *buf_data = ak_buffer_data(scanner->buffer);
-  ak_buffer_copy_to(cell->value.string_literal, buf_data + content_start,
-                    content_len);
+  uint8_t *dst_data = ak_buffer_data(cell->value.string_literal);
+
+  // Process escape sequences
+  size_t processed_len =
+      process_escape_sequences(buf_data + content_start, content_len, dst_data);
+
+  // Null-terminate
+  dst_data[processed_len] = '\0';
+
+  // Update buffer count to reflect actual processed length
+  cell->value.string_literal->count = processed_len;
 
   scanner->position = result.index_of_closing_symbol + 1;
 
@@ -720,6 +781,20 @@ akx_cell_t *akx_cell_clone(akx_cell_t *cell) {
     if (!cloned->value.lambda && cell->value.lambda) {
       akx_cell_free(cloned);
       return NULL;
+    }
+    break;
+
+  case AKX_TYPE_CONTINUATION:
+    if (cell->value.continuation) {
+      cloned->value.continuation = AK24_ALLOC(sizeof(akx_continuation_t));
+      if (!cloned->value.continuation) {
+        akx_cell_free(cloned);
+        return NULL;
+      }
+      cloned->value.continuation->lambda_cell =
+          akx_cell_clone(cell->value.continuation->lambda_cell);
+      cloned->value.continuation->args =
+          akx_cell_clone(cell->value.continuation->args);
     }
     break;
   }

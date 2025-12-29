@@ -1,0 +1,5 @@
+Testing akx/exec with $AKX_HOME path expansion
+Loaded stdlib/math.akx: symbol
+Testing math operations from loaded stdlib
+Sum: 30
+Product: 12

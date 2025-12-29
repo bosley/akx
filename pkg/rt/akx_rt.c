@@ -13,8 +13,6 @@
 #include <string.h>
 #include <time.h>
 
-#define AKX_MAX_RECURSION_DEPTH 1000
-
 struct akx_rt_error_ctx_t {
   int error_count;
   akx_parse_error_t *errors;
@@ -25,11 +23,15 @@ struct akx_runtime_ctx_t {
   akx_rt_error_ctx_t *error_ctx;
   ak_context_t *current_context;
   map_void_t builtins;
+  map_void_t forms;
   list_t(ak_cjit_unit_t *) cjit_units;
   const char *current_module_name;
-  size_t recursion_depth;
-  size_t max_recursion_depth;
+  int in_tail_position;
+  int script_argc;
+  char **script_argv;
 };
+
+static void akx_rt_register_primitive_forms(akx_runtime_ctx_t *ctx);
 
 akx_runtime_ctx_t *akx_runtime_init(void) {
   akx_runtime_ctx_t *ctx = AK24_ALLOC(sizeof(akx_runtime_ctx_t));
@@ -58,23 +60,100 @@ akx_runtime_ctx_t *akx_runtime_init(void) {
   }
 
   map_init_generic(&ctx->builtins, sizeof(char *), map_hash_str, map_cmp_str);
+  map_init_generic(&ctx->forms, sizeof(char *), map_hash_str, map_cmp_str);
   list_init(&ctx->cjit_units);
   ctx->current_module_name = NULL;
-  ctx->recursion_depth = 0;
-  ctx->max_recursion_depth = AKX_MAX_RECURSION_DEPTH;
+  ctx->in_tail_position = 0;
+  ctx->script_argc = 0;
+  ctx->script_argv = NULL;
 
   akx_rt_register_bootstrap_builtins(ctx);
   akx_rt_register_compiled_nuclei(ctx);
+  akx_rt_register_primitive_forms(ctx);
+
+  akx_cell_t *nil_cell = akx_rt_alloc_cell(ctx, AKX_TYPE_SYMBOL);
+  akx_rt_set_symbol(ctx, nil_cell, "nil");
+  akx_rt_scope_set(ctx, "nil", nil_cell);
 
   AK24_LOG_TRACE("AKX runtime initialized");
 
   return ctx;
 }
 
+static void akx_rt_register_primitive_forms(akx_runtime_ctx_t *ctx) {
+  if (!ctx) {
+    return;
+  }
+
+  const char *int_name = ak_intern("int");
+  ak_form_t *int_form = ak_form_new_primitive(AK_FORM_PRIMITIVE_I64);
+  if (int_form) {
+    map_set_generic(&ctx->forms, &int_name, int_form);
+    AK24_LOG_TRACE("Registered primitive form: int");
+  }
+
+  const char *real_name = ak_intern("real");
+  ak_form_t *real_form = ak_form_new_primitive(AK_FORM_PRIMITIVE_F64);
+  if (real_form) {
+    map_set_generic(&ctx->forms, &real_name, real_form);
+    AK24_LOG_TRACE("Registered primitive form: real");
+  }
+
+  const char *byte_name = ak_intern("byte");
+  ak_form_t *byte_form = ak_form_new_primitive(AK_FORM_PRIMITIVE_U8);
+  if (byte_form) {
+    map_set_generic(&ctx->forms, &byte_name, byte_form);
+    AK24_LOG_TRACE("Registered primitive form: byte");
+  }
+
+  const char *string_name = ak_intern("string");
+  ak_form_t *string_form =
+      ak_form_new_list(ak_form_new_primitive(AK_FORM_PRIMITIVE_CHAR));
+  if (string_form) {
+    map_set_generic(&ctx->forms, &string_name, string_form);
+    AK24_LOG_TRACE("Registered primitive form: string");
+  }
+
+  const char *symbol_name = ak_intern("symbol");
+  ak_form_t *symbol_form = ak_form_new_named(
+      "symbol", ak_form_new_primitive(AK_FORM_PRIMITIVE_CHAR));
+  if (symbol_form) {
+    map_set_generic(&ctx->forms, &symbol_name, symbol_form);
+    AK24_LOG_TRACE("Registered primitive form: symbol");
+  }
+
+  const char *list_name = ak_intern("list");
+  ak_form_t *list_form = ak_form_new_list(NULL);
+  if (list_form) {
+    map_set_generic(&ctx->forms, &list_name, list_form);
+    AK24_LOG_TRACE("Registered primitive form: list");
+  }
+
+  const char *nil_name = ak_intern("nil");
+  ak_form_t *nil_form =
+      ak_form_new_named("nil", ak_form_new_primitive(AK_FORM_PRIMITIVE_U8));
+  if (nil_form) {
+    map_set_generic(&ctx->forms, &nil_name, nil_form);
+    AK24_LOG_TRACE("Registered primitive form: nil");
+  }
+}
+
 void akx_runtime_deinit(akx_runtime_ctx_t *ctx) {
   if (!ctx) {
     return;
   }
+
+  map_iter_t form_iter = map_iter(&ctx->forms);
+  const char **form_key_ptr;
+  while ((form_key_ptr =
+              (const char **)map_next_generic(&ctx->forms, &form_iter))) {
+    void **form_ptr = map_get_generic(&ctx->forms, form_key_ptr);
+    if (form_ptr && *form_ptr) {
+      ak_form_t *form = (ak_form_t *)*form_ptr;
+      ak_form_free(form);
+    }
+  }
+  map_deinit(&ctx->forms);
 
   map_iter_t iter = map_iter(&ctx->builtins);
   const char **key_ptr;
@@ -572,6 +651,106 @@ akx_cell_t *akx_rt_eval(akx_runtime_ctx_t *rt, akx_cell_t *expr) {
   }
 }
 
+akx_cell_t *akx_rt_eval_tail(akx_runtime_ctx_t *rt, akx_cell_t *expr) {
+  if (!rt || !expr) {
+    return NULL;
+  }
+
+  int saved_tail_flag = rt->in_tail_position;
+  rt->in_tail_position = 1;
+
+  akx_cell_t *result = NULL;
+  switch (expr->type) {
+  case AKX_TYPE_INTEGER_LITERAL:
+  case AKX_TYPE_REAL_LITERAL:
+  case AKX_TYPE_STRING_LITERAL:
+    result = akx_cell_clone(expr);
+    break;
+
+  case AKX_TYPE_SYMBOL: {
+    const char *sym = expr->value.symbol;
+    void *value = akx_rt_scope_get(rt, sym);
+    if (value) {
+      akx_cell_t *stored = (akx_cell_t *)value;
+      if (stored->type == AKX_TYPE_LAMBDA) {
+        result = stored;
+      } else {
+        result = akx_cell_clone(stored);
+      }
+    } else {
+      char error_msg[256];
+      snprintf(error_msg, sizeof(error_msg), "undefined symbol: %s", sym);
+      akx_rt_error_at(rt, expr, error_msg);
+    }
+    break;
+  }
+
+  case AKX_TYPE_LIST:
+  case AKX_TYPE_LIST_SQUARE:
+  case AKX_TYPE_LIST_CURLY:
+  case AKX_TYPE_LIST_TEMPLE: {
+    akx_cell_t *head = expr->value.list_head;
+    if (!head) {
+      akx_cell_t *nil = akx_rt_alloc_cell(rt, AKX_TYPE_SYMBOL);
+      akx_rt_set_symbol(rt, nil, "nil");
+      result = nil;
+      break;
+    }
+
+    if (head->type == AKX_TYPE_SYMBOL) {
+      const char *func_name = head->value.symbol;
+
+      void **builtin_ptr = map_get_generic(&rt->builtins, &func_name);
+      if (builtin_ptr && *builtin_ptr) {
+        akx_builtin_info_t *info = (akx_builtin_info_t *)*builtin_ptr;
+        akx_cell_t *args = head->next;
+        rt->current_module_name = info->module_name;
+        result = info->function(rt, args);
+        rt->current_module_name = NULL;
+        break;
+      }
+
+      void *value = akx_rt_scope_get(rt, func_name);
+      if (value) {
+        akx_cell_t *func_cell = (akx_cell_t *)value;
+        if (func_cell->type == AKX_TYPE_LAMBDA) {
+          result = akx_rt_alloc_continuation(rt, func_cell, head->next);
+          break;
+        }
+      }
+
+      char error_msg[256];
+      snprintf(error_msg, sizeof(error_msg), "undefined function: %s",
+               func_name);
+      akx_rt_error_at(rt, head, error_msg);
+      break;
+    }
+
+    akx_cell_t *evaled_head = akx_rt_eval(rt, head);
+    if (evaled_head && evaled_head->type == AKX_TYPE_LAMBDA) {
+      result = akx_rt_alloc_continuation(rt, evaled_head, head->next);
+    } else {
+      if (evaled_head) {
+        akx_cell_free(evaled_head);
+      }
+      akx_rt_error_at(rt, expr, "cannot evaluate list - not a function call");
+    }
+    break;
+  }
+
+  case AKX_TYPE_QUOTED:
+    result = akx_cell_unwrap_quoted(expr);
+    break;
+
+  default:
+    akx_rt_error(rt, "unknown cell type in eval");
+    break;
+  }
+
+  rt->in_tail_position = saved_tail_flag;
+  return result;
+}
+
 akx_cell_t *akx_rt_eval_list(akx_runtime_ctx_t *rt, akx_cell_t *list) {
   if (!rt || !list) {
     return NULL;
@@ -627,42 +806,94 @@ akx_cell_t *akx_rt_eval_and_assert(akx_runtime_ctx_t *rt, akx_cell_t *expr,
   return result;
 }
 
+akx_cell_t *akx_rt_alloc_continuation(akx_runtime_ctx_t *rt,
+                                      akx_cell_t *lambda_cell,
+                                      akx_cell_t *args) {
+  (void)rt;
+  akx_cell_t *cont_cell = akx_rt_alloc_cell(rt, AKX_TYPE_CONTINUATION);
+  if (!cont_cell) {
+    return NULL;
+  }
+
+  akx_continuation_t *cont = AK24_ALLOC(sizeof(akx_continuation_t));
+  if (!cont) {
+    akx_cell_free(cont_cell);
+    return NULL;
+  }
+
+  cont->lambda_cell = lambda_cell;
+  cont->args = args;
+  cont_cell->value.continuation = cont;
+
+  return cont_cell;
+}
+
+int akx_rt_is_continuation(akx_cell_t *cell) {
+  return cell && cell->type == AKX_TYPE_CONTINUATION;
+}
+
 akx_cell_t *akx_rt_invoke_lambda(akx_runtime_ctx_t *rt, akx_cell_t *lambda_cell,
                                  akx_cell_t *args) {
   if (!rt || !lambda_cell || lambda_cell->type != AKX_TYPE_LAMBDA) {
     return NULL;
   }
 
-  if (rt->recursion_depth >= rt->max_recursion_depth) {
-    AK24_LOG_ERROR("Maximum recursion depth exceeded (%zu)",
-                   rt->max_recursion_depth);
-    raise(SIGABRT);
+  akx_cell_t *current_lambda = lambda_cell;
+  akx_cell_t *current_args = args;
+  akx_cell_t *result = NULL;
+
+  while (1) {
+    if (!current_lambda || current_lambda->type != AKX_TYPE_LAMBDA) {
+      if (result) {
+        akx_cell_free(result);
+      }
+      akx_rt_error(rt, "invalid lambda cell in trampoline");
+      return NULL;
+    }
+
+    ak_lambda_t *lambda = current_lambda->value.lambda;
+    if (!lambda) {
+      if (result) {
+        akx_cell_free(result);
+      }
+      akx_rt_error(rt, "invalid lambda cell - no lambda data");
+      return NULL;
+    }
+
+    akx_rt_push_scope(rt);
+    ak_lambda_invoke(lambda, current_args);
+
+    akx_lambda_context_t *lambda_ctx =
+        (akx_lambda_context_t *)ak_lambda_get_context(lambda);
+    result = lambda_ctx ? lambda_ctx->result : NULL;
+
+    akx_rt_pop_scope(rt);
+
+    if (!result) {
+      result = akx_rt_alloc_cell(rt, AKX_TYPE_SYMBOL);
+      akx_rt_set_symbol(rt, result, "nil");
+      return result;
+    }
+
+    if (result->type != AKX_TYPE_CONTINUATION) {
+      return result;
+    }
+
+    akx_continuation_t *cont = result->value.continuation;
+    if (!cont) {
+      akx_cell_free(result);
+      akx_rt_error(rt, "invalid continuation - no data");
+      return NULL;
+    }
+
+    current_lambda = cont->lambda_cell;
+    current_args = cont->args;
+
+    cont->lambda_cell = NULL;
+    cont->args = NULL;
+    akx_cell_free(result);
+    result = NULL;
   }
-
-  ak_lambda_t *lambda = lambda_cell->value.lambda;
-  if (!lambda) {
-    akx_rt_error(rt, "invalid lambda cell - no lambda data");
-    return NULL;
-  }
-
-  rt->recursion_depth++;
-  akx_rt_push_scope(rt);
-
-  ak_lambda_invoke(lambda, args);
-
-  akx_lambda_context_t *lambda_ctx =
-      (akx_lambda_context_t *)ak_lambda_get_context(lambda);
-  akx_cell_t *result = lambda_ctx ? lambda_ctx->result : NULL;
-
-  akx_rt_pop_scope(rt);
-  rt->recursion_depth--;
-
-  if (!result) {
-    result = akx_rt_alloc_cell(rt, AKX_TYPE_SYMBOL);
-    akx_rt_set_symbol(rt, result, "nil");
-  }
-
-  return result;
 }
 
 void akx_rt_module_set_data(akx_runtime_ctx_t *rt, void *data) {
@@ -917,4 +1148,200 @@ map_void_t *akx_rt_get_builtins(akx_runtime_ctx_t *rt) {
     return NULL;
   }
   return &rt->builtins;
+}
+
+void akx_runtime_set_script_args(akx_runtime_ctx_t *ctx, int argc,
+                                 char **argv) {
+  if (!ctx) {
+    return;
+  }
+  ctx->script_argc = argc;
+  ctx->script_argv = argv;
+}
+
+int akx_rt_get_script_argc(akx_runtime_ctx_t *rt) {
+  if (!rt) {
+    return 0;
+  }
+  return rt->script_argc;
+}
+
+char **akx_rt_get_script_argv(akx_runtime_ctx_t *rt) {
+  if (!rt) {
+    return NULL;
+  }
+  return rt->script_argv;
+}
+
+int akx_rt_register_form(akx_runtime_ctx_t *rt, const char *name,
+                         ak_form_t *form) {
+  if (!rt || !name || !form) {
+    return -1;
+  }
+
+  const char *interned_name = ak_intern(name);
+
+  void **existing_ptr = map_get_generic(&rt->forms, &interned_name);
+  if (existing_ptr && *existing_ptr) {
+    ak_form_t *existing_form = (ak_form_t *)*existing_ptr;
+    ak_form_free(existing_form);
+  }
+
+  map_set_generic(&rt->forms, &interned_name, form);
+  AK24_LOG_DEBUG("Registered form: %s", name);
+  return 0;
+}
+
+ak_form_t *akx_rt_lookup_form(akx_runtime_ctx_t *rt, const char *name) {
+  if (!rt || !name) {
+    return NULL;
+  }
+
+  void **form_ptr = map_get_generic(&rt->forms, &name);
+  if (!form_ptr || !*form_ptr) {
+    return NULL;
+  }
+
+  return (ak_form_t *)*form_ptr;
+}
+
+int akx_rt_cell_matches_form(akx_runtime_ctx_t *rt, akx_cell_t *cell,
+                             const char *form_name) {
+  if (!rt || !cell || !form_name) {
+    return 0;
+  }
+
+  ak_form_t *form = akx_rt_lookup_form(rt, form_name);
+  if (!form) {
+    return 0;
+  }
+
+  if (form->kind == AK_FORM_NAMED && form->data.named.actual_form) {
+    form = form->data.named.actual_form;
+  }
+
+  switch (cell->type) {
+  case AKX_TYPE_INTEGER_LITERAL:
+    return form->kind == AK_FORM_PRIMITIVE &&
+           (form->data.primitive == AK_FORM_PRIMITIVE_I64 ||
+            form->data.primitive == AK_FORM_PRIMITIVE_I32 ||
+            form->data.primitive == AK_FORM_PRIMITIVE_I16 ||
+            form->data.primitive == AK_FORM_PRIMITIVE_I8);
+
+  case AKX_TYPE_REAL_LITERAL:
+    return form->kind == AK_FORM_PRIMITIVE &&
+           (form->data.primitive == AK_FORM_PRIMITIVE_F64 ||
+            form->data.primitive == AK_FORM_PRIMITIVE_F32);
+
+  case AKX_TYPE_STRING_LITERAL:
+    if (form->kind == AK_FORM_LIST && form->data.list_form.element_type) {
+      return form->data.list_form.element_type->kind == AK_FORM_PRIMITIVE &&
+             form->data.list_form.element_type->data.primitive ==
+                 AK_FORM_PRIMITIVE_CHAR;
+    }
+    return 0;
+
+  case AKX_TYPE_LIST:
+  case AKX_TYPE_LIST_SQUARE:
+  case AKX_TYPE_LIST_CURLY:
+  case AKX_TYPE_LIST_TEMPLE:
+    return form->kind == AK_FORM_LIST || form->kind == AK_FORM_COMPOUND;
+
+  case AKX_TYPE_SYMBOL:
+    return form->kind == AK_FORM_NAMED && strcmp(form->name, "symbol") == 0;
+
+  case AKX_TYPE_LAMBDA:
+    return form->kind == AK_FORM_NAMED && strcmp(form->name, "lambda") == 0;
+
+  default:
+    return 0;
+  }
+}
+
+int akx_rt_form_add_affordance(akx_runtime_ctx_t *rt, const char *form_name,
+                               const char *affordance_name, ak_lambda_t *impl,
+                               akx_cell_t *param_forms,
+                               ak_form_t *return_form) {
+  if (!rt || !form_name || !affordance_name || !impl) {
+    return -1;
+  }
+
+  ak_form_t *form = akx_rt_lookup_form(rt, form_name);
+  if (!form) {
+    akx_rt_error_fmt(rt, "form not found: %s", form_name);
+    return -1;
+  }
+
+  list_void_t param_list;
+  list_init(&param_list);
+
+  if (param_forms) {
+    akx_cell_t *current = param_forms;
+    while (current) {
+      if (current->type == AKX_TYPE_SYMBOL) {
+        const char *param_form_name = akx_rt_cell_as_symbol(current);
+        ak_form_t *param_form = akx_rt_lookup_form(rt, param_form_name);
+        if (param_form) {
+          list_push(&param_list, param_form);
+        }
+      }
+      current = current->next;
+    }
+  }
+
+  ak_affect_t *affect =
+      ak_affect_new(affordance_name, impl, &param_list, return_form);
+  if (!affect) {
+    list_deinit(&param_list);
+    akx_rt_error(rt, "failed to create affordance");
+    return -1;
+  }
+
+  int result = ak_form_add_affect(form, affect);
+  if (result != 0) {
+    ak_affect_free(affect);
+    akx_rt_error_fmt(rt, "failed to add affordance %s to form %s",
+                     affordance_name, form_name);
+    return -1;
+  }
+
+  AK24_LOG_DEBUG("Added affordance '%s' to form '%s'", affordance_name,
+                 form_name);
+  return 0;
+}
+
+ak_affect_t *akx_rt_form_get_affordance(akx_runtime_ctx_t *rt,
+                                        const char *form_name,
+                                        const char *affordance_name) {
+  if (!rt || !form_name || !affordance_name) {
+    return NULL;
+  }
+
+  ak_form_t *form = akx_rt_lookup_form(rt, form_name);
+  if (!form) {
+    return NULL;
+  }
+
+  return ak_form_get_affect(form, affordance_name);
+}
+
+int akx_rt_form_has_affordance(akx_runtime_ctx_t *rt, const char *form_name,
+                               const char *affordance_name) {
+  if (!rt || !form_name || !affordance_name) {
+    return 0;
+  }
+
+  ak_form_t *form = akx_rt_lookup_form(rt, form_name);
+  if (!form) {
+    return 0;
+  }
+
+  return ak_form_has_affordance(form, affordance_name);
+}
+
+map_void_t *akx_rt_get_forms(akx_runtime_ctx_t *rt) {
+  if (!rt) {
+    return NULL;
+  }
+  return &rt->forms;
 }

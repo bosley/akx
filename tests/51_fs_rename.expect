@@ -1,0 +1,27 @@
+Test: fs/rename file and directory renaming
+
+Test 1: Create and rename file
+  Created file: /tmp/akx_test_rename_old.txt
+  File exists before rename: 1
+  Rename result: 1
+  Old path exists: 0
+  New path exists: 1
+
+Test 2: Verify content preserved
+  Content: Original content
+
+Test 3: Rename directory
+  Created directory with file
+  Directory rename result: 1
+  Old dir exists: 0
+  New dir exists: 1
+
+Test 4: Verify file in renamed directory
+  File in renamed dir exists: 1
+
+Test 5: Try to rename non-existent file
+  Rename non-existent result: 0
+
+Cleaning up...
+
+Test complete.

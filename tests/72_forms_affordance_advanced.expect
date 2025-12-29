@@ -1,0 +1,23 @@
+=== Forms Advanced Affordance Tests ===
+Test 1: Affordance with no parameters
+  PASS: No-parameter affordance added
+Test 2: Affordance with single parameter
+  PASS: Single-parameter affordance added
+Test 3: Affordance with multiple parameters
+  PASS: Multi-parameter affordance added
+Test 4: Multiple affordances on same form
+  PASS: Four affordances added to one form
+Test 5: Affordances on different forms
+  PASS: Different forms with affordances
+Test 6: Affordance on compound form
+  PASS: Affordance on compound form
+Test 7: Affordance on struct form
+  PASS: Affordance on struct form
+Test 8: Affordance on optional form
+  PASS: Affordance on optional form
+Test 9: Affordance on list form
+  PASS: Affordance on list form
+Test 10: Affordance on aliased form
+  PASS: Affordance on aliased form
+
+=== All Advanced Affordance Tests Complete ===
