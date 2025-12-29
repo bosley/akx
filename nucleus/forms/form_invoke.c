@@ -38,7 +38,6 @@ akx_cell_t *form_invoke(akx_runtime_ctx_t *rt, akx_cell_t *args) {
   }
 
   ak_affect_t *found_affordance = NULL;
-  const char *matched_form_name = NULL;
 
   map_iter_t iter = map_iter(forms_map);
   const char **form_name_ptr;
@@ -50,7 +49,6 @@ akx_cell_t *form_invoke(akx_runtime_ctx_t *rt, akx_cell_t *args) {
           akx_rt_form_get_affordance(rt, form_name, affordance_name);
       if (affordance) {
         found_affordance = affordance;
-        matched_form_name = form_name;
         break;
       }
     }

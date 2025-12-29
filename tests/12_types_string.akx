@@ -6,7 +6,7 @@
 (io/putf "hello = %s\n" hello)
 (io/putf "world = %s\n" world)
 
-(assert-eq empty "")
-(assert-eq hello "hello")
-(assert-ne hello world)
+(assert/eq empty "")
+(assert/eq hello "hello")
+(assert/ne hello world)
 (io/putf "PASS: string types work\n")

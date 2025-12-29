@@ -9,6 +9,6 @@
 (io/putf "inner x (from lambda) = %d\n" result)
 (io/putf "outer x (after lambda) = %d\n" x)
 
-(assert-eq result 20)
-(assert-eq x 10)
+(assert/eq result 20)
+(assert/eq x 10)
 (io/putf "PASS: scope shadowing works\n")

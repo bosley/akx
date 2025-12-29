@@ -1,7 +1,7 @@
 akx_cell_t *assert_false_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
   akx_cell_t *condition_cell = akx_rt_list_nth(args, 0);
   if (!condition_cell) {
-    akx_rt_error(rt, "assert-false: missing condition argument");
+    akx_rt_error(rt, "assert/false: missing condition argument");
     return NULL;
   }
 

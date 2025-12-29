@@ -3,7 +3,7 @@ akx_cell_t *assert_eq_impl(akx_runtime_ctx_t *rt, akx_cell_t *args) {
   akx_cell_t *right_cell = akx_rt_list_nth(args, 1);
 
   if (!left_cell || !right_cell) {
-    akx_rt_error(rt, "assert-eq: requires two arguments");
+    akx_rt_error(rt, "assert/eq: requires two arguments");
     return NULL;
   }
 

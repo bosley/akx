@@ -2,5 +2,5 @@
 (let result (identity 42))
 
 (io/putf "identity(42) = %d\n" result)
-(assert-eq result 42)
+(assert/eq result 42)
 (io/putf "PASS: identity function works\n")

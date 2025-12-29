@@ -96,7 +96,7 @@
       "patterns": [
         {
           "name": "keyword.control.akx",
-          "match": "\\b(cjit-load-builtin|let|set|lambda|if|import|assert-eq|assert-ne|assert-true|assert-false|print|println)\\b"
+          "match": "\\b(cjit-load-builtin|let|set|lambda|if|import|assert/eq|assert/ne|assert/true|assert/false|print|println)\\b"
         }
       ]
     },

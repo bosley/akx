@@ -1,11 +1,11 @@
 (let x 10)
 (let y 20)
 
-(assert-ne x y)
+(assert/ne x y)
 (io/putf "PASS: x != y\n")
 
-(assert-ne x 99)
+(assert/ne x 99)
 (io/putf "PASS: x != 99\n")
 
-(assert-ne "Alice" "Bob")
+(assert/ne "Alice" "Bob")
 (io/putf "PASS: Alice != Bob\n")

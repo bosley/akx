@@ -7,17 +7,17 @@
 (io/putf "Test: if with true condition\n")
 (let result1 (if 1 "true-branch" "false-branch"))
 (io/putf "  if 1 true-branch false-branch = %s\n" result1)
-(assert-eq result1 "true-branch" "if 1 should take true branch")
+(assert/eq result1 "true-branch" "if 1 should take true branch")
 
 (io/putf "Test: if with false condition\n")
 (let result2 (if 0 "true-branch" "false-branch"))
 (io/putf "  if 0 true-branch false-branch = %s\n" result2)
-(assert-eq result2 "false-branch" "if 0 should take false branch")
+(assert/eq result2 "false-branch" "if 0 should take false branch")
 
 (io/putf "Test: if without else branch (true)\n")
 (let result3 (if 1 "only-then"))
 (io/putf "  if 1 only-then = %s\n" result3)
-(assert-eq result3 "only-then" "if 1 without else should return then")
+(assert/eq result3 "only-then" "if 1 without else should return then")
 
 (io/putf "Test: if without else branch (false)\n")
 (let result4 (if 0 "only-then"))
@@ -26,7 +26,7 @@
 (io/putf "Test: nested if expressions\n")
 (let result5 (if 1 (if 1 "nested-true" "nested-false") "outer-false"))
 (io/putf "  nested if = %s\n" result5)
-(assert-eq result5 "nested-true" "nested if should work")
+(assert/eq result5 "nested-true" "nested if should work")
 
 (io/putf "\n")
 (io/putf "All C keyword :as tests passed!\n")

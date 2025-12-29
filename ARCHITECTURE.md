@@ -13,7 +13,7 @@ graph TB
         
         Manifest --> CMakeGen
         NucleusSrc --> CMakeGen
-        CMakeGen --> CompiledNuclei[Compiled Nuclei<br/>if, lambda, let, set, assert-*]
+        CMakeGen --> CompiledNuclei[Compiled Nuclei<br/>if, lambda, let, set, assert/*]
     end
     
     subgraph Runtime[AKX Runtime Core]
@@ -276,7 +276,7 @@ sequenceDiagram
     RT->>Bootstrap: Register cjit-load-builtin
     Bootstrap->>Map: Add bootstrap loader
     RT->>Nuclei: akx_rt_register_compiled_nuclei()
-    Nuclei->>Map: Add if, lambda, let, set, assert-*
+    Nuclei->>Map: Add if, lambda, let, set, assert/*
     RT->>Main: Runtime ready
     
     Note over Map: 9 builtins available<br/>(1 bootstrap + 8 nuclei)
@@ -317,7 +317,7 @@ pie title Builtin Distribution
     "Runtime-Loadable Nuclei" : 7
 ```
 
-**Compiled-In (8):** if, lambda, let, set, assert-true, assert-false, assert-eq, assert-ne  
+**Compiled-In (8):** if, lambda, let, set, assert/true, assert/false, assert/eq, assert/ne  
 **Runtime-Loadable (7):** +, -, *, /, %, =, print, println  
 **Bootstrap (1):** cjit-load-builtin
 

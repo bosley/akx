@@ -1,4 +1,4 @@
-PASS: assert-true 1
-PASS: assert-true 42
-PASS: assert-true string
-PASS: assert-true variable
+PASS: assert/true 1
+PASS: assert/true 42
+PASS: assert/true string
+PASS: assert/true variable

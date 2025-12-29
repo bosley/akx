@@ -10,7 +10,7 @@
 (io/putf "second(1,2,3) = %d\n" r2)
 (io/putf "third(1,2,3) = %d\n" r3)
 
-(assert-eq r1 1)
-(assert-eq r2 2)
-(assert-eq r3 3)
+(assert/eq r1 1)
+(assert/eq r2 2)
+(assert/eq r3 3)
 (io/putf "PASS: multi-parameter lambdas work\n")

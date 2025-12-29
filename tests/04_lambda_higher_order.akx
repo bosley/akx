@@ -5,5 +5,5 @@
 (let result (my-identity 100))
 
 (io/putf "make-identity()() returned: %d\n" result)
-(assert-eq result 100)
+(assert/eq result 100)
 (io/putf "PASS: higher-order lambdas work\n")

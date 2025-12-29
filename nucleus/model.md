@@ -139,10 +139,10 @@ sequenceDiagram
     Reg->>Map: Add "lambda" → lambda_impl
     Reg->>Map: Add "let" → let_impl
     Reg->>Map: Add "set" → set_impl
-    Reg->>Map: Add "assert-true" → assert_true_impl
-    Reg->>Map: Add "assert-false" → assert_false_impl
-    Reg->>Map: Add "assert-eq" → assert_eq_impl
-    Reg->>Map: Add "assert-ne" → assert_ne_impl
+    Reg->>Map: Add "assert/true" → assert_true_impl
+    Reg->>Map: Add "assert/false" → assert_false_impl
+    Reg->>Map: Add "assert/eq" → assert_eq_impl
+    Reg->>Map: Add "assert/ne" → assert_ne_impl
     
     RT-->>Main: Runtime ready (9 builtins)
 ```

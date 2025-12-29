@@ -6,7 +6,7 @@
 (io/putf "positive = %d\n" positive)
 (io/putf "negative = %d\n" negative)
 
-(assert-eq zero 0)
-(assert-eq positive 42)
-(assert-eq negative -10)
+(assert/eq zero 0)
+(assert/eq positive 42)
+(assert/eq negative -10)
 (io/putf "PASS: integer types work\n")

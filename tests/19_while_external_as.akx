@@ -4,13 +4,13 @@
 (io/putf "Loaded + with :as add\n")
 (let sum1 (+ 1 2 3))
 (io/putf "  + 1 2 3 = %d\n" sum1)
-(assert-eq sum1 6 "+ should work with :as")
+(assert/eq sum1 6 "+ should work with :as")
 
 (cjit-load-builtin if :root "nucleus/core/if.c" :as "if_impl")
 (io/putf "Loaded if with :as builtin_if\n")
 (let result (if 1 "yes" "no"))
 (io/putf "  if 1 yes no = %s\n" result)
-(assert-eq result "yes" "if should work with :as")
+(assert/eq result "yes" "if should work with :as")
 
 (io/putf "All :as tests passed!\n")
 

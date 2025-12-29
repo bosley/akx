@@ -52,7 +52,7 @@ At build time, `nucleus/manifest.txt` defines which language features to compile
 - **OS integration**: `os/args`, `os/cwd`, `os/chdir`, `os/env`
 - **Forms system**: `form/define`, `form/matches`, `form/add-affordance`, `form/invoke`
 - **Runtime**: `akx/exec`
-- **Testing**: `assert-true`, `assert-false`, `assert-eq`, `assert-ne`
+- **Testing**: `assert/true`, `assert/false`, `assert/eq`, `assert/ne`
 
 The same C file works both ways. Change the manifest to rebalance speed vs. flexibility without touching any code. **Disable primitives you don't need to keep the runtime lightweight.**
 
@@ -211,7 +211,7 @@ By default, `make install` installs to `~/.akx`:
 │   ├── core/           # if, lambda, let, set
 │   ├── math/           # +, -, *, /, %, =
 │   ├── io/             # print, println
-│   └── assert/         # assert-true, assert-false, assert-eq, assert-ne
+│   └── assert/         # assert/true, assert/false, assert/eq, assert/ne
 └── stdlib/             # AKX import files
     ├── stdlib.akx      # Load all common operations
     ├── math.akx        # Math operations only

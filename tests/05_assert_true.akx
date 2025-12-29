@@ -1,12 +1,12 @@
-(assert-true 1)
-(io/putf "PASS: assert-true 1\n")
+(assert/true 1)
+(io/putf "PASS: assert/true 1\n")
 
-(assert-true 42)
-(io/putf "PASS: assert-true 42\n")
+(assert/true 42)
+(io/putf "PASS: assert/true 42\n")
 
-(assert-true "hello")
-(io/putf "PASS: assert-true string\n")
+(assert/true "hello")
+(io/putf "PASS: assert/true string\n")
 
 (let x 10)
-(assert-true x)
-(io/putf "PASS: assert-true variable\n")
+(assert/true x)
+(io/putf "PASS: assert/true variable\n")

@@ -10,8 +10,8 @@
 (let added (+ computed 8))
 (io/putf "Added 8: %d\n" added)
 
-(assert-eq computed 30)
-(assert-eq doubled 60)
-(assert-eq added 38)
+(assert/eq computed 30)
+(assert/eq doubled 60)
+(assert/eq added 38)
 (io/putf "All assertions passed\n")
 

@@ -1,2 +1,2 @@
-(assert-false 0)
-(io/putf "PASS: assert-false 0\n")
+(assert/false 0)
+(io/putf "PASS: assert/false 0\n")

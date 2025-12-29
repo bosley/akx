@@ -5,17 +5,17 @@
 (io/putf "Test 1: if with true condition (1)\n")
 (let result1 (if 1 "then-branch" "else-branch"))
 (io/putf "  Result: %s\n" result1)
-(assert-eq result1 "then-branch" "if 1 should return then-branch")
+(assert/eq result1 "then-branch" "if 1 should return then-branch")
 
 (io/putf "Test 2: if with false condition (0)\n")
 (let result2 (if 0 "then-branch" "else-branch"))
 (io/putf "  Result: %s\n" result2)
-(assert-eq result2 "else-branch" "if 0 should return else-branch")
+(assert/eq result2 "else-branch" "if 0 should return else-branch")
 
 (io/putf "Test 3: if with no else branch (true)\n")
 (let result3 (if 1 "then-only"))
 (io/putf "  Result: %s\n" result3)
-(assert-eq result3 "then-only" "if 1 with no else should return then-branch")
+(assert/eq result3 "then-only" "if 1 with no else should return then-branch")
 
 (io/putf "Test 4: if with no else branch (false)\n")
 (let result4 (if 0 "then-only"))

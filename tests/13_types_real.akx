@@ -6,7 +6,7 @@
 (io/putf "e = %f\n" e)
 (io/putf "zero = %f\n" zero)
 
-(assert-eq pi 3.14159)
-(assert-eq e 2.71828)
-(assert-eq zero 0.0)
+(assert/eq pi 3.14159)
+(assert/eq e 2.71828)
+(assert/eq zero 0.0)
 (io/putf "PASS: real types work\n")

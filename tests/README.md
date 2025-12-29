@@ -28,7 +28,7 @@ Each test consists of two files:
 **test_example.akx:**
 ```lisp
 (let x 10)
-(assert-eq x 10)
+(assert/eq x 10)
 ```
 
 **test_example.expect:**
@@ -46,8 +46,8 @@ Each test consists of two files:
 | `02_set_basic` | Variable mutation | Basic `set` updates |
 | `03_lambda_identity` | Lambdas | Simple identity function |
 | `04_lambda_higher_order` | Higher-order functions | Lambdas returning lambdas |
-| `05_assert_true` | Assertions | `assert-true` with various types |
-| `06_assert_false` | Assertions | `assert-false` with falsy values |
+| `05_assert_true` | Assertions | `assert/true` with various types |
+| `06_assert_false` | Assertions | `assert/false` with falsy values |
 | `07_assert_eq` | Assertions | Equality assertions |
 | `08_assert_ne` | Assertions | Inequality assertions |
 | `09_scope_nested` | Scoping | Nested scope shadowing |
@@ -66,7 +66,7 @@ Each test consists of two files:
 2. Write your test code using assertions:
    ```lisp
    (let x 42)
-   (assert-eq x 42)
+   (assert/eq x 42)
    ```
 
 3. Run the test once to capture output:
@@ -137,7 +137,7 @@ Diff:
 ## Best Practices
 
 1. **Keep tests focused** - One feature per test file
-2. **Use assertions** - Leverage `assert-*` builtins for validation
+2. **Use assertions** - Leverage `assert/*` builtins for validation
 3. **Test edge cases** - Include boundary conditions
 4. **Document intent** - Use descriptive test names
 5. **Expect silence** - Most tests should produce no output (empty .expect files)
