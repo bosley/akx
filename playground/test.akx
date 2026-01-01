@@ -1,3 +1,0 @@
-let x (lambda [a] (+ a 1))
-
-io/putf "%d" (x 3)

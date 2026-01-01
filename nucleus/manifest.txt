@@ -115,12 +115,6 @@ str/split      str_split_impl      str/split.c         1
 # Iterator operations (compiled in)
 iter           iter_impl           iter/iter.c         1
 
-# Forms system (compiled in)
-form/define            form_define             forms/form_define.c             1
-form/matches           form_matches            forms/form_matches.c            1
-form/add-affordance    form_add_affordance     forms/form_add_affordance.c     1
-form/invoke            form_invoke             forms/form_invoke.c             1
-
 #
 #  As new nucleus files are created we will have them not directly in-built
 #  but we've been developing core functionality so all are included by-chance for now

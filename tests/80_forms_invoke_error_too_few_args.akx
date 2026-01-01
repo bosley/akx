@@ -1,5 +1,0 @@
-(form/define :Test :int)
-(form/add-affordance :Test :inc (lambda [x] (+ x 1)))
-(let val 10)
-(form/invoke val)
-

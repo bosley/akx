@@ -5,7 +5,6 @@
 #include "akx_sv.h"
 #include <ak24/cjit.h>
 #include <ak24/context.h>
-#include <ak24/forms.h>
 #include <ak24/kernel.h>
 #include <ak24/list.h>
 #include <stdarg.h>
@@ -139,26 +138,4 @@ int akx_rt_register_builtin(akx_runtime_ctx_t *rt, const char *name,
                             void (*reload_fn)(akx_runtime_ctx_t *, void *));
 
 map_void_t *akx_rt_get_builtins(akx_runtime_ctx_t *rt);
-
-int akx_rt_register_form(akx_runtime_ctx_t *rt, const char *name,
-                         ak_form_t *form);
-
-ak_form_t *akx_rt_lookup_form(akx_runtime_ctx_t *rt, const char *name);
-
-int akx_rt_cell_matches_form(akx_runtime_ctx_t *rt, akx_cell_t *cell,
-                             const char *form_name);
-
-int akx_rt_form_add_affordance(akx_runtime_ctx_t *rt, const char *form_name,
-                               const char *affordance_name, ak_lambda_t *impl,
-                               akx_cell_t *param_forms, ak_form_t *return_form);
-
-ak_affect_t *akx_rt_form_get_affordance(akx_runtime_ctx_t *rt,
-                                        const char *form_name,
-                                        const char *affordance_name);
-
-int akx_rt_form_has_affordance(akx_runtime_ctx_t *rt, const char *form_name,
-                               const char *affordance_name);
-
-map_void_t *akx_rt_get_forms(akx_runtime_ctx_t *rt);
-
 #endif

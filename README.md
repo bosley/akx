@@ -52,7 +52,6 @@ At build time, `nucleus/manifest.txt` defines which language features to compile
 - **I/O**: `io/putf`, `io/scanf`
 - **Filesystem**: `fs/read-file`, `fs/write-file`, `fs/open`, `fs/close`, and more
 - **OS integration**: `os/args`, `os/cwd`, `os/chdir`, `os/env`
-- **Forms system**: `form/define`, `form/matches`, `form/add-affordance`, `form/invoke`
 - **Runtime**: `akx/exec`
 - **Testing**: `assert/true`, `assert/false`, `assert/eq`, `assert/ne`
 
@@ -177,7 +176,6 @@ The test suite uses expect-based assertions to validate:
 - Lambda functions and closures
 - Scope management
 - Type system (integers, reals, strings)
-- Forms system (type definitions, pattern matching, affordances)
 - Filesystem operations
 - OS integration
 - Assertion builtins

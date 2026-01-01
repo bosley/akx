@@ -23,15 +23,12 @@ struct akx_runtime_ctx_t {
   akx_rt_error_ctx_t *error_ctx;
   ak_context_t *current_context;
   map_void_t builtins;
-  map_void_t forms;
   list_t(ak_cjit_unit_t *) cjit_units;
   const char *current_module_name;
   int in_tail_position;
   int script_argc;
   char **script_argv;
 };
-
-static void akx_rt_register_primitive_forms(akx_runtime_ctx_t *ctx);
 
 akx_runtime_ctx_t *akx_runtime_init(void) {
   akx_runtime_ctx_t *ctx = AK24_ALLOC(sizeof(akx_runtime_ctx_t));
@@ -60,7 +57,6 @@ akx_runtime_ctx_t *akx_runtime_init(void) {
   }
 
   map_init_generic(&ctx->builtins, sizeof(char *), map_hash_str, map_cmp_str);
-  map_init_generic(&ctx->forms, sizeof(char *), map_hash_str, map_cmp_str);
   list_init(&ctx->cjit_units);
   ctx->current_module_name = NULL;
   ctx->in_tail_position = 0;
@@ -69,7 +65,6 @@ akx_runtime_ctx_t *akx_runtime_init(void) {
 
   akx_rt_register_bootstrap_builtins(ctx);
   akx_rt_register_compiled_nuclei(ctx);
-  akx_rt_register_primitive_forms(ctx);
 
   akx_cell_t *nil_cell = akx_rt_alloc_cell(ctx, AKX_TYPE_SYMBOL);
   akx_rt_set_symbol(ctx, nil_cell, "nil");
@@ -80,80 +75,10 @@ akx_runtime_ctx_t *akx_runtime_init(void) {
   return ctx;
 }
 
-static void akx_rt_register_primitive_forms(akx_runtime_ctx_t *ctx) {
-  if (!ctx) {
-    return;
-  }
-
-  const char *int_name = ak_intern("int");
-  ak_form_t *int_form = ak_form_new_primitive(AK_FORM_PRIMITIVE_I64);
-  if (int_form) {
-    map_set_generic(&ctx->forms, &int_name, int_form);
-    AK24_LOG_TRACE("Registered primitive form: int");
-  }
-
-  const char *real_name = ak_intern("real");
-  ak_form_t *real_form = ak_form_new_primitive(AK_FORM_PRIMITIVE_F64);
-  if (real_form) {
-    map_set_generic(&ctx->forms, &real_name, real_form);
-    AK24_LOG_TRACE("Registered primitive form: real");
-  }
-
-  const char *byte_name = ak_intern("byte");
-  ak_form_t *byte_form = ak_form_new_primitive(AK_FORM_PRIMITIVE_U8);
-  if (byte_form) {
-    map_set_generic(&ctx->forms, &byte_name, byte_form);
-    AK24_LOG_TRACE("Registered primitive form: byte");
-  }
-
-  const char *string_name = ak_intern("string");
-  ak_form_t *string_form =
-      ak_form_new_list(ak_form_new_primitive(AK_FORM_PRIMITIVE_CHAR));
-  if (string_form) {
-    map_set_generic(&ctx->forms, &string_name, string_form);
-    AK24_LOG_TRACE("Registered primitive form: string");
-  }
-
-  const char *symbol_name = ak_intern("symbol");
-  ak_form_t *symbol_form = ak_form_new_named(
-      "symbol", ak_form_new_primitive(AK_FORM_PRIMITIVE_CHAR));
-  if (symbol_form) {
-    map_set_generic(&ctx->forms, &symbol_name, symbol_form);
-    AK24_LOG_TRACE("Registered primitive form: symbol");
-  }
-
-  const char *list_name = ak_intern("list");
-  ak_form_t *list_form = ak_form_new_list(NULL);
-  if (list_form) {
-    map_set_generic(&ctx->forms, &list_name, list_form);
-    AK24_LOG_TRACE("Registered primitive form: list");
-  }
-
-  const char *nil_name = ak_intern("nil");
-  ak_form_t *nil_form =
-      ak_form_new_named("nil", ak_form_new_primitive(AK_FORM_PRIMITIVE_U8));
-  if (nil_form) {
-    map_set_generic(&ctx->forms, &nil_name, nil_form);
-    AK24_LOG_TRACE("Registered primitive form: nil");
-  }
-}
-
 void akx_runtime_deinit(akx_runtime_ctx_t *ctx) {
   if (!ctx) {
     return;
   }
-
-  map_iter_t form_iter = map_iter(&ctx->forms);
-  const char **form_key_ptr;
-  while ((form_key_ptr =
-              (const char **)map_next_generic(&ctx->forms, &form_iter))) {
-    void **form_ptr = map_get_generic(&ctx->forms, form_key_ptr);
-    if (form_ptr && *form_ptr) {
-      ak_form_t *form = (ak_form_t *)*form_ptr;
-      ak_form_free(form);
-    }
-  }
-  map_deinit(&ctx->forms);
 
   map_iter_t iter = map_iter(&ctx->builtins);
   const char **key_ptr;
@@ -1171,177 +1096,4 @@ char **akx_rt_get_script_argv(akx_runtime_ctx_t *rt) {
     return NULL;
   }
   return rt->script_argv;
-}
-
-int akx_rt_register_form(akx_runtime_ctx_t *rt, const char *name,
-                         ak_form_t *form) {
-  if (!rt || !name || !form) {
-    return -1;
-  }
-
-  const char *interned_name = ak_intern(name);
-
-  void **existing_ptr = map_get_generic(&rt->forms, &interned_name);
-  if (existing_ptr && *existing_ptr) {
-    ak_form_t *existing_form = (ak_form_t *)*existing_ptr;
-    ak_form_free(existing_form);
-  }
-
-  map_set_generic(&rt->forms, &interned_name, form);
-  AK24_LOG_DEBUG("Registered form: %s", name);
-  return 0;
-}
-
-ak_form_t *akx_rt_lookup_form(akx_runtime_ctx_t *rt, const char *name) {
-  if (!rt || !name) {
-    return NULL;
-  }
-
-  void **form_ptr = map_get_generic(&rt->forms, &name);
-  if (!form_ptr || !*form_ptr) {
-    return NULL;
-  }
-
-  return (ak_form_t *)*form_ptr;
-}
-
-int akx_rt_cell_matches_form(akx_runtime_ctx_t *rt, akx_cell_t *cell,
-                             const char *form_name) {
-  if (!rt || !cell || !form_name) {
-    return 0;
-  }
-
-  ak_form_t *form = akx_rt_lookup_form(rt, form_name);
-  if (!form) {
-    return 0;
-  }
-
-  if (form->kind == AK_FORM_NAMED && form->data.named.actual_form) {
-    form = form->data.named.actual_form;
-  }
-
-  switch (cell->type) {
-  case AKX_TYPE_INTEGER_LITERAL:
-    return form->kind == AK_FORM_PRIMITIVE &&
-           (form->data.primitive == AK_FORM_PRIMITIVE_I64 ||
-            form->data.primitive == AK_FORM_PRIMITIVE_I32 ||
-            form->data.primitive == AK_FORM_PRIMITIVE_I16 ||
-            form->data.primitive == AK_FORM_PRIMITIVE_I8);
-
-  case AKX_TYPE_REAL_LITERAL:
-    return form->kind == AK_FORM_PRIMITIVE &&
-           (form->data.primitive == AK_FORM_PRIMITIVE_F64 ||
-            form->data.primitive == AK_FORM_PRIMITIVE_F32);
-
-  case AKX_TYPE_STRING_LITERAL:
-    if (form->kind == AK_FORM_LIST && form->data.list_form.element_type) {
-      return form->data.list_form.element_type->kind == AK_FORM_PRIMITIVE &&
-             form->data.list_form.element_type->data.primitive ==
-                 AK_FORM_PRIMITIVE_CHAR;
-    }
-    return 0;
-
-  case AKX_TYPE_LIST:
-  case AKX_TYPE_LIST_SQUARE:
-  case AKX_TYPE_LIST_CURLY:
-  case AKX_TYPE_LIST_TEMPLE:
-    return form->kind == AK_FORM_LIST || form->kind == AK_FORM_COMPOUND;
-
-  case AKX_TYPE_SYMBOL:
-    return form->kind == AK_FORM_NAMED && strcmp(form->name, "symbol") == 0;
-
-  case AKX_TYPE_LAMBDA:
-    return form->kind == AK_FORM_NAMED && strcmp(form->name, "lambda") == 0;
-
-  default:
-    return 0;
-  }
-}
-
-int akx_rt_form_add_affordance(akx_runtime_ctx_t *rt, const char *form_name,
-                               const char *affordance_name, ak_lambda_t *impl,
-                               akx_cell_t *param_forms,
-                               ak_form_t *return_form) {
-  if (!rt || !form_name || !affordance_name || !impl) {
-    return -1;
-  }
-
-  ak_form_t *form = akx_rt_lookup_form(rt, form_name);
-  if (!form) {
-    akx_rt_error_fmt(rt, "form not found: %s", form_name);
-    return -1;
-  }
-
-  list_void_t param_list;
-  list_init(&param_list);
-
-  if (param_forms) {
-    akx_cell_t *current = param_forms;
-    while (current) {
-      if (current->type == AKX_TYPE_SYMBOL) {
-        const char *param_form_name = akx_rt_cell_as_symbol(current);
-        ak_form_t *param_form = akx_rt_lookup_form(rt, param_form_name);
-        if (param_form) {
-          list_push(&param_list, param_form);
-        }
-      }
-      current = current->next;
-    }
-  }
-
-  ak_affect_t *affect =
-      ak_affect_new(affordance_name, impl, &param_list, return_form);
-  if (!affect) {
-    list_deinit(&param_list);
-    akx_rt_error(rt, "failed to create affordance");
-    return -1;
-  }
-
-  int result = ak_form_add_affect(form, affect);
-  if (result != 0) {
-    ak_affect_free(affect);
-    akx_rt_error_fmt(rt, "failed to add affordance %s to form %s",
-                     affordance_name, form_name);
-    return -1;
-  }
-
-  AK24_LOG_DEBUG("Added affordance '%s' to form '%s'", affordance_name,
-                 form_name);
-  return 0;
-}
-
-ak_affect_t *akx_rt_form_get_affordance(akx_runtime_ctx_t *rt,
-                                        const char *form_name,
-                                        const char *affordance_name) {
-  if (!rt || !form_name || !affordance_name) {
-    return NULL;
-  }
-
-  ak_form_t *form = akx_rt_lookup_form(rt, form_name);
-  if (!form) {
-    return NULL;
-  }
-
-  return ak_form_get_affect(form, affordance_name);
-}
-
-int akx_rt_form_has_affordance(akx_runtime_ctx_t *rt, const char *form_name,
-                               const char *affordance_name) {
-  if (!rt || !form_name || !affordance_name) {
-    return 0;
-  }
-
-  ak_form_t *form = akx_rt_lookup_form(rt, form_name);
-  if (!form) {
-    return 0;
-  }
-
-  return ak_form_has_affordance(form, affordance_name);
-}
-
-map_void_t *akx_rt_get_forms(akx_runtime_ctx_t *rt) {
-  if (!rt) {
-    return NULL;
-  }
-  return &rt->forms;
 }
